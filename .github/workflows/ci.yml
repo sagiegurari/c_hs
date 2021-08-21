@@ -1,0 +1,63 @@
+name: CI
+on: [push, pull_request]
+env:
+  BUILD_TYPE: Release
+jobs:
+  ci:
+    name: CI
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Setup Env
+      run: cmake -E make_directory ${{runner.workspace}}/target
+    - name: Checkout cmake-modules
+      uses: actions/checkout@v2
+      with:
+        repository: sagiegurari/cmake-modules
+        path: target/cmake-modules
+    - name: Checkout c_stringfn
+      uses: actions/checkout@v2
+      with:
+        repository: sagiegurari/c_stringfn
+        path: target/c_stringfn
+    - name: Checkout c_string_buffer
+      uses: actions/checkout@v2
+      with:
+        repository: sagiegurari/c_string_buffer
+        path: target/c_string_buffer
+    - name: Checkout c_vector
+      uses: actions/checkout@v2
+      with:
+        repository: sagiegurari/c_vector
+        path: target/c_vector
+    - name: Checkout c_fsio
+      uses: actions/checkout@v2
+      with:
+        repository: sagiegurari/c_fsio
+        path: target/c_fsio
+    - name: Configure
+      shell: bash
+      working-directory: ${{runner.workspace}}/target
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+    - name: Build
+      shell: bash
+      working-directory: ${{runner.workspace}}/target
+      run: cmake --build . --config $BUILD_TYPE
+    - name: Test
+      shell: bash
+      working-directory: ${{runner.workspace}}/target
+      run: ctest -C $BUILD_TYPE --output-on-failure
+    - name: Memory Leak Test
+      if: matrix.os == 'ubuntu-latest'
+      shell: bash
+      working-directory: ${{runner.workspace}}/target
+      run: |
+        sudo apt update
+        sudo apt install -y valgrind --fix-missing
+        for testfile in ./bin/test_*; do echo "Testing ${testfile}" && valgrind --leak-check=full --show-leak-kinds=definite,indirect,possible --error-exitcode=1 "${testfile}"; done
+

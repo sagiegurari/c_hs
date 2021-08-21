@@ -1,0 +1,183 @@
+#include "fsio.h"
+#include "hs_io.h"
+#include "hs_routes.h"
+#include <dirent.h>
+#include <libgen.h>
+#include <string.h>
+
+struct HSRouteServeResponse *_hs_routes_404_serve(struct HSRoute *, struct HSHttpRequest *, int);
+struct HSRouteServeResponse *_hs_routes_file_serve(struct HSRoute *, struct HSHttpRequest *, int);
+struct HSRouteServeResponse *_hs_routes_directory_serve(struct HSRoute *, struct HSHttpRequest *, int);
+
+struct HSRoute              *hs_routes_new_404_route()
+{
+  struct HSRoute *route = hs_route_new_route();
+
+  route->serve     = _hs_routes_404_serve;
+  route->is_get    = true;
+  route->is_post   = true;
+  route->is_put    = true;
+  route->is_delete = true;
+
+  return(route);
+}
+
+struct HSRoute *hs_routes_new_file_route(char *base_directory)
+{
+  struct HSRoute *route = hs_route_new_route();
+
+  route->serve  = _hs_routes_file_serve;
+  route->is_get = true;
+
+  route->extension = base_directory;
+
+  return(route);
+}
+
+struct HSRoute *hs_routes_new_directory_route(char *base_directory)
+{
+  struct HSRoute *route = hs_route_new_route();
+
+  route->serve  = _hs_routes_directory_serve;
+  route->is_get = true;
+
+  route->extension = base_directory;
+
+  return(route);
+}
+
+struct HSRouteServeResponse *_hs_routes_404_serve(struct HSRoute *route, struct HSHttpRequest *request, int socket)
+{
+  if (route == NULL || request == NULL || !socket)
+  {
+    return(NULL);
+  }
+
+  struct HSRouteServeResponse *response = hs_route_new_serve_response();
+  response->code = HS_HTTP_RESPONSE_CODE_NOT_FOUND;
+
+  return(response);
+}
+
+struct HSRouteServeResponse *_hs_routes_file_serve(struct HSRoute *route, struct HSHttpRequest *request, int socket)
+{
+  if (route == NULL || request == NULL || !socket || request->resource == NULL)
+  {
+    return(NULL);
+  }
+
+  if (strstr(request->resource, "..") != NULL)
+  {
+    return(NULL);
+  }
+
+  char *path = fsio_join_paths((char *)route->extension, request->resource);
+  if (path == NULL)
+  {
+    return(NULL);
+  }
+
+  if (!fsio_file_exists(path))
+  {
+    hs_io_free(path);
+    return(NULL);
+  }
+
+  struct HSRouteServeResponse *response = hs_route_new_serve_response();
+  response->code         = HS_HTTP_RESPONSE_CODE_OK;
+  response->content_file = path;
+  response->mime_type    = hs_constants_file_extension_to_mime_type(path);
+
+  return(response);
+}
+
+struct HSRouteServeResponse *_hs_routes_directory_serve(struct HSRoute *route, struct HSHttpRequest *request, int socket)
+{
+  if (route == NULL || request == NULL || !socket || request->resource == NULL)
+  {
+    return(NULL);
+  }
+
+  if (strstr(request->resource, "..") != NULL)
+  {
+    return(NULL);
+  }
+
+  char *path = fsio_join_paths((char *)route->extension, request->resource);
+  if (path == NULL)
+  {
+    return(NULL);
+  }
+
+  if (!fsio_dir_exists(path))
+  {
+    hs_io_free(path);
+    return(NULL);
+  }
+
+  DIR *directory = opendir(path);
+  if (directory == NULL)
+  {
+    return(NULL);
+  }
+
+  char                *path_clone = strdup(path);
+  char                *dir_name   = basename(path_clone);
+
+  struct dirent       *entry;
+  struct StringBuffer *html_buffer = string_buffer_new();
+  string_buffer_append_string(html_buffer, "<html>\n"
+                              "<head>\n"
+                              "<title>");
+  string_buffer_append_string(html_buffer, dir_name);
+  string_buffer_append_string(html_buffer, "</title>\n");
+  if (request->state.base_path != NULL)
+  {
+    string_buffer_append_string(html_buffer, "<base href=\"");
+    string_buffer_append_string(html_buffer, request->state.base_path);
+    string_buffer_append_string(html_buffer, "<\">\n");
+  }
+  string_buffer_append_string(html_buffer, "</head>\n"
+                              "<body>\n");
+  string_buffer_append_string(html_buffer, "<h1>Directory: ");
+  string_buffer_append_string(html_buffer, dir_name);
+  string_buffer_append_string(html_buffer, "</h1>\n");
+  hs_io_free(path_clone);
+
+  while ((entry = readdir(directory)))
+  {
+    if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, ".."))
+    {
+      // skip special directories
+      continue;
+    }
+
+    char *entry_path = fsio_join_paths(path, entry->d_name);
+
+    if (fsio_path_exists(entry_path))
+    {
+      string_buffer_append_string(html_buffer, "<a href=\"");
+      string_buffer_append_string(html_buffer, entry_path);
+      string_buffer_append_string(html_buffer, "\">");
+      string_buffer_append_string(html_buffer, entry_path);
+      string_buffer_append_string(html_buffer, "</a><br>\n");
+    }
+
+    hs_io_free(entry_path);
+  }
+
+  closedir(directory);
+
+  string_buffer_append_string(html_buffer, "</body>\n"
+                              "</html>");
+
+  char *html = string_buffer_to_string(html_buffer);
+  string_buffer_release(html_buffer);
+
+  struct HSRouteServeResponse *response = hs_route_new_serve_response();
+  response->code           = HS_HTTP_RESPONSE_CODE_OK;
+  response->content_string = html;
+
+  return(response);
+} /* _hs_routes_directory_serve */
+
