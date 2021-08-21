@@ -15,7 +15,7 @@
 <a name="overview"></a>
 ## Overview
 This library provides both embeddable http server and HTTP parsing utility functions.<br>
-I wrote it for some internal small projects that needed to expose integration via http.
+I wrote it for some small personal projects that needed to expose integration via http.
 The requirements were very basic and therefore this server is not really production ready.
 It is lacking many features, such as:
 
