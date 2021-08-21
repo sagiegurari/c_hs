@@ -184,9 +184,9 @@ struct StringBuffer *hs_router_write_common_response_header(enum HSHttpResponseC
 
   // write status line
   string_buffer_append_string(buffer, "HTTP/1.1 ");
-  string_buffer_append_int(buffer, code);
+  string_buffer_append_unsigned_int(buffer, code);
   string_buffer_append(buffer, ' ');
-  string_buffer_append_int(buffer, code);
+  string_buffer_append_unsigned_int(buffer, code);
   string_buffer_append_string(buffer, "\r\n");
 
   // write headers (may contain set cookie headers)

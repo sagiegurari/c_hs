@@ -1,4 +1,4 @@
-# ini
+# hs (HTTP Server)
 
 [![CI](https://github.com/sagiegurari/c_hs/workflows/CI/badge.svg?branch=master)](https://github.com/sagiegurari/c_hs/actions)
 [![Release](https://img.shields.io/github/v/release/sagiegurari/c_hs)](https://github.com/sagiegurari/c_hs/releases)
