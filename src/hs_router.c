@@ -184,9 +184,9 @@ struct StringBuffer *hs_router_write_common_response_header(enum HSHttpResponseC
 
   // write status line
   string_buffer_append_string(buffer, "HTTP/1.1 ");
-  string_buffer_append_int(buffer, code);
+  string_buffer_append_unsigned_int(buffer, code);
   string_buffer_append(buffer, ' ');
-  string_buffer_append_int(buffer, code);
+  string_buffer_append_unsigned_int(buffer, code);
   string_buffer_append_string(buffer, "\r\n");
 
   // write headers (may contain set cookie headers)
@@ -410,7 +410,7 @@ bool _hs_router_serve(struct HSRouter *router, struct HSHttpRequest *request, in
         {
           size_t content_length = strlen(serve_response->content_string);
           string_buffer_append_string(header_buffer, "Content-Length: ");
-          string_buffer_append_unsigned_int(header_buffer, content_length);
+          string_buffer_append_unsigned_long(header_buffer, content_length);
           string_buffer_append_string(header_buffer, "\r\n\r\n");
 
           if (!content_length)

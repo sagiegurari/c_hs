@@ -1,4 +1,4 @@
-# ini
+# HS (HTTP Server)
 
 [![CI](https://github.com/sagiegurari/c_hs/workflows/CI/badge.svg?branch=master)](https://github.com/sagiegurari/c_hs/actions)
 [![Release](https://img.shields.io/github/v/release/sagiegurari/c_hs)](https://github.com/sagiegurari/c_hs/releases)
@@ -15,7 +15,7 @@
 <a name="overview"></a>
 ## Overview
 This library provides both embeddable http server and HTTP parsing utility functions.<br>
-I wrote it for some internal small projects that needed to expose integration via http.
+I wrote it for some small personal projects that needed to expose integration via http.
 The requirements were very basic and therefore this server is not really production ready.
 It is lacking many features, such as:
 
@@ -25,6 +25,8 @@ It is lacking many features, such as:
 * Configuration Based
 
 It does however provide support for many core capabilities.
+
+*Developed and tested only on linux*
 
 <a name="usage"></a>
 ## Usage
