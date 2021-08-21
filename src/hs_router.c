@@ -410,7 +410,7 @@ bool _hs_router_serve(struct HSRouter *router, struct HSHttpRequest *request, in
         {
           size_t content_length = strlen(serve_response->content_string);
           string_buffer_append_string(header_buffer, "Content-Length: ");
-          string_buffer_append_unsigned_int(header_buffer, content_length);
+          string_buffer_append_unsigned_long(header_buffer, content_length);
           string_buffer_append_string(header_buffer, "\r\n\r\n");
 
           if (!content_length)
