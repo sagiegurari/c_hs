@@ -26,6 +26,8 @@ It is lacking many features, such as:
 
 It does however provide support for many core capabilities.
 
+*Developed and tested only on linux*
+
 <a name="usage"></a>
 ## Usage
 
