@@ -124,7 +124,7 @@ void hs_server_on_connection(struct HSServer *server, int socket, void *context,
 }
 
 
-struct sockaddr_in hs_server_init_ipv4_address(int port)
+struct sockaddr_in hs_server_init_ipv4_address(uint16_t port)
 {
   struct sockaddr_in address;
 
