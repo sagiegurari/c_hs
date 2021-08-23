@@ -15,6 +15,12 @@ struct HSRoute *hs_routes_new_404_route(void);
 struct HSRoute *hs_routes_new_file_route(char * /* base directory */);
 
 /**
+ * Returns the file content with the relevant mime type.
+ * It will ignore non file paths or paths that do not exist.
+ */
+struct HSRoute *hs_routes_new_file_route_with_options(char * /* base directory */, enum HSMimeType (*get_mime_type)(char * /* file */, enum HSMimeType /* detected mime type */));
+
+/**
  * Returns the directory content.
  * It will ignore non file paths or paths that do not exist.
  */

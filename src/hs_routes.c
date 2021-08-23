@@ -3,10 +3,18 @@
 #include "hs_routes.h"
 #include <dirent.h>
 #include <libgen.h>
+#include <stdlib.h>
 #include <string.h>
+
+struct HSRoutesFileServeContext
+{
+  char *base_directory;
+  enum HSMimeType (*get_mime_type)(char *, enum HSMimeType);
+};
 
 struct HSRouteServeResponse *_hs_routes_404_serve(struct HSRoute *, struct HSHttpRequest *, int);
 struct HSRouteServeResponse *_hs_routes_file_serve(struct HSRoute *, struct HSHttpRequest *, int);
+void _hs_routes_file_release(struct HSRoute *);
 struct HSRouteServeResponse *_hs_routes_directory_serve(struct HSRoute *, struct HSHttpRequest *, int);
 
 struct HSRoute              *hs_routes_new_404_route()
@@ -24,12 +32,22 @@ struct HSRoute              *hs_routes_new_404_route()
 
 struct HSRoute *hs_routes_new_file_route(char *base_directory)
 {
+  return(hs_routes_new_file_route_with_options(base_directory, NULL));
+}
+
+struct HSRoute *hs_routes_new_file_route_with_options(char *base_directory, enum HSMimeType (*get_mime_type)(char *, enum HSMimeType))
+{
   struct HSRoute *route = hs_route_new_route();
 
   route->serve  = _hs_routes_file_serve;
   route->is_get = true;
 
-  route->extension = base_directory;
+  struct HSRoutesFileServeContext *context = malloc(sizeof(struct HSRoutesFileServeContext));
+  context->base_directory = base_directory;
+  context->get_mime_type  = get_mime_type;
+  route->extension        = context;
+
+  route->release = _hs_routes_file_release;
 
   return(route);
 }
@@ -71,7 +89,9 @@ struct HSRouteServeResponse *_hs_routes_file_serve(struct HSRoute *route, struct
     return(NULL);
   }
 
-  char *path = fsio_join_paths((char *)route->extension, request->resource);
+  struct HSRoutesFileServeContext *context = (struct HSRoutesFileServeContext *)route->extension;
+
+  char                            *path = fsio_join_paths(context->base_directory, request->resource);
   if (path == NULL)
   {
     return(NULL);
@@ -88,7 +108,23 @@ struct HSRouteServeResponse *_hs_routes_file_serve(struct HSRoute *route, struct
   response->content_file = path;
   response->mime_type    = hs_constants_file_extension_to_mime_type(path);
 
+  if (context->get_mime_type != NULL)
+  {
+    response->mime_type = context->get_mime_type(path, response->mime_type);
+  }
+
   return(response);
+}
+
+
+void _hs_routes_file_release(struct HSRoute *route)
+{
+  if (route == NULL)
+  {
+    return;
+  }
+
+  hs_io_free(route->extension);
 }
 
 struct HSRouteServeResponse *_hs_routes_directory_serve(struct HSRoute *route, struct HSHttpRequest *request, int socket)
