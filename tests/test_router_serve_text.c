@@ -7,6 +7,17 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+bool callback_called = false;
+
+
+void _test_callback(struct HSPostResponseCallback *callback)
+{
+  assert_true(callback != NULL);
+  assert_true(callback->context != NULL);
+  assert_true(stringfn_equal((char *)callback->context, "test callback"));
+  callback_called = true;
+}
+
 struct HSRouteServeResponse *_test_serve(struct HSRoute *route, struct HSHttpRequest *request, int socket)
 {
   assert_true(route != NULL);
@@ -46,6 +57,10 @@ struct HSRouteServeResponse *_test_serve(struct HSRoute *route, struct HSHttpReq
 
   response->content_string = strdup("some content\nsecond line.");
 
+  response->callback          = hs_route_new_post_response_callback();
+  response->callback->context = "test callback";
+  response->callback->run     = _test_callback;
+
   return(response);
 } /* _test_serve */
 
@@ -69,10 +84,12 @@ void test_impl()
   char *filename = "./test_router_serve_text.txt";
 
   fsio_create_empty_file(filename);
-  int  socket = open(filename, O_WRONLY);
+  int socket = open(filename, O_WRONLY);
 
+  assert_true(!callback_called);
   bool done = hs_router_serve(router, request, socket);
   assert_true(done);
+  assert_true(callback_called);
 
   close(socket);
 

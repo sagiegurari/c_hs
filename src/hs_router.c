@@ -17,6 +17,7 @@ bool _hs_router_serve(struct HSRouter *, struct HSHttpRequest *, int, struct HSR
 struct HSRouteRedirectResponse *_hs_router_as_route_redirect(struct HSRoute *, struct HSHttpRequest *, int);
 struct HSRouteServeResponse    *_hs_router_as_route_serve(struct HSRoute *, struct HSHttpRequest *, int);
 void                           _hs_router_as_route_release(struct HSRoute *);
+void _hs_router_run_callback(struct HSPostResponseCallback *);
 
 struct HSRouter *hs_router_new()
 {
@@ -368,7 +369,6 @@ bool _hs_router_serve(struct HSRouter *router, struct HSHttpRequest *request, in
         string_buffer_append_string(header_buffer, redirection_response->path);
         string_buffer_append_string(header_buffer, "\r\n");
       }
-      hs_route_release_redirect_response(redirection_response);
       string_buffer_append_string(header_buffer, "Content-Length: 0\r\n\r\n");
 
       char *header_string = string_buffer_to_string(header_buffer);
@@ -381,6 +381,9 @@ bool _hs_router_serve(struct HSRouter *router, struct HSHttpRequest *request, in
         hs_io_close(socket);
         request->state.closed_connection = true;
       }
+
+      _hs_router_run_callback(redirection_response->callback);
+      hs_route_release_redirect_response(redirection_response);
 
       return(true);
     }
@@ -467,13 +470,14 @@ bool _hs_router_serve(struct HSRouter *router, struct HSHttpRequest *request, in
 
       string_buffer_release(header_buffer);
 
-      hs_route_release_serve_response(serve_response);
-
       if (close_connection)
       {
         hs_io_close(socket);
         request->state.closed_connection = true;
       }
+
+      _hs_router_run_callback(serve_response->callback);
+      hs_route_release_serve_response(serve_response);
 
       return(true);
     }
@@ -558,3 +562,15 @@ void _hs_router_as_route_release(struct HSRoute *route)
 
   hs_router_release(router);
 }
+
+
+void _hs_router_run_callback(struct HSPostResponseCallback *callback)
+{
+  if (callback == NULL || callback->run == NULL)
+  {
+    return;
+  }
+
+  callback->run(callback);
+}
+

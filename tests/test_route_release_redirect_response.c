@@ -2,6 +2,12 @@
 #include "test.h"
 
 
+void _test_release_callback(struct HSPostResponseCallback *callback)
+{
+  hs_io_free(callback->context);
+}
+
+
 void test_impl()
 {
   struct HSRouteRedirectResponse *response = hs_route_new_redirect_response();
@@ -23,6 +29,11 @@ void test_impl()
   {
     response->headers->pairs[index] = hs_types_new_key_value(stringfn_new_empty_string(), stringfn_new_empty_string());
   }
+
+  response->callback          = hs_route_new_post_response_callback();
+  response->callback->context = stringfn_new_empty_string();
+  response->callback->release = _test_release_callback;
+
   hs_route_release_redirect_response(response);
 }
 

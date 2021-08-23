@@ -3,32 +3,43 @@
 
 #include "hs_types.h"
 
+struct HSPostResponseCallback
+{
+  void *context;
+  void (*run)(struct HSPostResponseCallback *);
+  void (*release)(struct HSPostResponseCallback *);
+};
+
 struct HSRouteRedirectResponse
 {
   // The path to redirect to
-  char                    *path;
+  char                          *path;
   // The status code (should be 3xx)
-  enum HSHttpResponseCode code;
+  enum HSHttpResponseCode       code;
   // Any extra headers to return
-  struct HSKeyValueArray  *headers;
+  struct HSKeyValueArray        *headers;
   // Any cookies we want to set/delete as part of the redirection
-  struct HSCookies        *cookies;
+  struct HSCookies              *cookies;
+  // Optional callback after response is written
+  struct HSPostResponseCallback *callback;
 };
 
 struct HSRouteServeResponse
 {
   // The status code
-  enum HSHttpResponseCode code;
+  enum HSHttpResponseCode       code;
   // Any extra headers to return
-  struct HSKeyValueArray  *headers;
+  struct HSKeyValueArray        *headers;
   // Any cookies we want to set/delete as part of the redirection
-  struct HSCookies        *cookies;
+  struct HSCookies              *cookies;
   // The content type header value, if the enum doesn't contain a relevant value
   // use the HS_MIME_TYPE_NONE and add the actual value manually to the headers array.
-  enum HSMimeType         mime_type;
+  enum HSMimeType               mime_type;
   // The content to return (one of the following)
-  char                    *content_string;
-  char                    *content_file;
+  char                          *content_string;
+  char                          *content_file;
+  // Optional callback after response is written
+  struct HSPostResponseCallback *callback;
 };
 
 struct HSRoute
@@ -56,6 +67,17 @@ struct HSRoute
   // Any extended data/functions needed on the route (must be manually released)
   void                           *extension;
 };
+
+/**
+ * Creates and returns the new struct.
+ */
+struct HSPostResponseCallback *hs_route_new_post_response_callback();
+
+/**
+ * Releases the struct memory, not including the context.
+ * Optional release function (if defined) will be invoked.
+ */
+void hs_route_release_post_response_callback(struct HSPostResponseCallback *callback);
 
 /**
  * Creates and returns a new redirect response struct.

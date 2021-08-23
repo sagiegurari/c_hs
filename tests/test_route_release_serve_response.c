@@ -2,6 +2,12 @@
 #include "test.h"
 
 
+void _test_release_callback(struct HSPostResponseCallback *callback)
+{
+  hs_io_free(callback->context);
+}
+
+
 void test_impl()
 {
   struct HSRouteServeResponse *response = hs_route_new_serve_response();
@@ -26,6 +32,10 @@ void test_impl()
 
   response->content_string = stringfn_new_empty_string();
   response->content_file   = stringfn_new_empty_string();
+
+  response->callback          = hs_route_new_post_response_callback();
+  response->callback->context = stringfn_new_empty_string();
+  response->callback->release = _test_release_callback;
 
   hs_route_release_serve_response(response);
 }

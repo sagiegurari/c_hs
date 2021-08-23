@@ -4,14 +4,42 @@
 #include <stdlib.h>
 #include <string.h>
 
+struct HSPostResponseCallback *hs_route_new_post_response_callback()
+{
+  struct HSPostResponseCallback *callback = malloc(sizeof(struct HSPostResponseCallback));
+
+  callback->context = NULL;
+  callback->run     = NULL;
+  callback->release = NULL;
+
+  return(callback);
+}
+
+
+void hs_route_release_post_response_callback(struct HSPostResponseCallback *callback)
+{
+  if (callback == NULL)
+  {
+    return;
+  }
+
+  if (callback->release != NULL)
+  {
+    callback->release(callback);
+  }
+
+  hs_io_free(callback);
+}
+
 struct HSRouteRedirectResponse *hs_route_new_redirect_response()
 {
   struct HSRouteRedirectResponse *response = malloc(sizeof(struct HSRouteRedirectResponse));
 
-  response->path    = NULL;
-  response->code    = HS_HTTP_RESPONSE_CODE_TEMPORARY_REDIRECT;
-  response->headers = hs_types_new_key_value_array();
-  response->cookies = hs_types_new_cookies();
+  response->path     = NULL;
+  response->code     = HS_HTTP_RESPONSE_CODE_TEMPORARY_REDIRECT;
+  response->headers  = hs_types_new_key_value_array();
+  response->cookies  = hs_types_new_cookies();
+  response->callback = NULL;
 
   return(response);
 }
@@ -27,6 +55,7 @@ void hs_route_release_redirect_response(struct HSRouteRedirectResponse *response
   hs_io_free(response->path);
   hs_types_release_key_value_array(response->headers);
   hs_types_release_cookies(response->cookies);
+  hs_route_release_post_response_callback(response->callback);
 
   hs_io_free(response);
 }
@@ -41,6 +70,7 @@ struct HSRouteServeResponse *hs_route_new_serve_response()
   response->mime_type      = HS_MIME_TYPE_TEXT_HTML;
   response->content_string = NULL;
   response->content_file   = NULL;
+  response->callback       = NULL;
 
   return(response);
 }
@@ -57,6 +87,7 @@ void hs_route_release_serve_response(struct HSRouteServeResponse *response)
   hs_types_release_cookies(response->cookies);
   hs_io_free(response->content_string);
   hs_io_free(response->content_file);
+  hs_route_release_post_response_callback(response->callback);
 
   hs_io_free(response);
 }

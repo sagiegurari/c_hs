@@ -7,6 +7,17 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+bool callback_called = false;
+
+
+void _test_callback(struct HSPostResponseCallback *callback)
+{
+  assert_true(callback != NULL);
+  assert_true(callback->context != NULL);
+  assert_true(stringfn_equal((char *)callback->context, "test callback"));
+  callback_called = true;
+}
+
 struct HSRouteRedirectResponse *_test_redirect(struct HSRoute *route, struct HSHttpRequest *request, int socket)
 {
   assert_true(route != NULL);
@@ -44,8 +55,12 @@ struct HSRouteRedirectResponse *_test_redirect(struct HSRoute *route, struct HSH
 
   response->path = strdup("/location/sublocation?key=value");
 
+  response->callback          = hs_route_new_post_response_callback();
+  response->callback->context = "test callback";
+  response->callback->run     = _test_callback;
+
   return(response);
-}
+} /* _test_redirect */
 
 
 void test_impl()
@@ -67,10 +82,12 @@ void test_impl()
   char *filename = "./test_router_redirection.txt";
 
   fsio_create_empty_file(filename);
-  int  socket = open(filename, O_WRONLY);
+  int socket = open(filename, O_WRONLY);
 
+  assert_true(!callback_called);
   bool done = hs_router_serve(router, request, socket);
   assert_true(done);
+  assert_true(callback_called);
 
   close(socket);
 
