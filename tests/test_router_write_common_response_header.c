@@ -62,9 +62,9 @@ void test_impl()
   text                           = string_buffer_to_string(buffer);
   string_buffer_release(buffer);
   assert_string_equal(text, "HTTP/1.1 403 403\r\n"
-                      "value1: value1\r\n"
-                      "value2: value2\r\n"
-                      "value3: value3\r\n"
+                      "header1: value1\r\n"
+                      "header2: value2\r\n"
+                      "header3: value3\r\n"
                       "Set-Cookie: c1=v1; Expires=1 1 1980; Max-Age=200; Secure; HttpOnly; Domain=mydomain; Path=/somepath; SameSite=None\r\n"
                       "Set-Cookie: c2=v2; SameSite=Strict\r\n"
                       "Set-Cookie: c3=v3; SameSite=Lax\r\n"

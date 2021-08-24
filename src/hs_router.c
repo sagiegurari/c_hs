@@ -199,7 +199,7 @@ struct StringBuffer *hs_router_write_common_response_header(enum HSHttpResponseC
 
       if (header != NULL && header->key != NULL && header->value != NULL)
       {
-        string_buffer_append_string(buffer, header->value);
+        string_buffer_append_string(buffer, header->key);
         string_buffer_append_string(buffer, ": ");
         string_buffer_append_string(buffer, header->value);
         string_buffer_append_string(buffer, "\r\n");

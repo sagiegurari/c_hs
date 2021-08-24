@@ -1,5 +1,9 @@
 ## CHANGELOG
 
+### v0.2.3
+
+* Fix response headers writing
+
 ### v0.2.2 (2021-08-24)
 
 * Fix directory route - show only file name, not full path
