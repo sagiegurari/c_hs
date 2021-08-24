@@ -1,8 +1,10 @@
 ## CHANGELOG
 
-### v0.2.3
+### v0.2.3 (2021-08-24)
 
 * Fix response headers writing
+* New basic auth route
+* Authorization http request header support
 * Adding doctype to directory route html response
 
 ### v0.2.2 (2021-08-24)

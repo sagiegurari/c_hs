@@ -33,5 +33,11 @@ struct HSRoute *hs_routes_new_directory_route(char * /* base directory */);
  */
 struct HSRoute *hs_routes_new_directory_route_with_options(char * /* base directory */, char * /* additional_head_content */);
 
+/**
+ * Returns a new basic auth route.
+ * None of the input parameters will be released when the route is released.
+ */
+struct HSRoute *hs_routes_new_basic_auth(char * /* realm */, bool (*auth)(char * /* base64 auth value */, void * /* context */), void * /* context */);
+
 #endif
 

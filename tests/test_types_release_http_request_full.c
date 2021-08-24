@@ -10,6 +10,7 @@ void test_impl()
   request->resource        = stringfn_new_empty_string();
   request->query_string    = stringfn_new_empty_string();
   request->user_agent      = stringfn_new_empty_string();
+  request->authorization   = stringfn_new_empty_string();
   request->payload         = hs_types_new_http_request_payload(NULL);
   request->state.base_path = stringfn_new_empty_string();
 

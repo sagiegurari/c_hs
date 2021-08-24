@@ -55,6 +55,7 @@ It does however provide support for many core capabilities.
  */
 
 struct HSRouteServeResponse *_home_route_serve(struct HSRoute *, struct HSHttpRequest *, int);
+bool _fs_basic_auth(char *, void *);
 
 
 int main(int argc, char *argv[])
@@ -88,6 +89,10 @@ int main(int argc, char *argv[])
   // The sub routes in this fs router, will 'listen' to paths without
   // the /fs/ prefix
   struct HSRouter *fs_router = hs_router_new();
+
+  // Protect FS access via basic auth
+  struct HSRoute *basic_auth_route = hs_routes_new_basic_auth("My Realm", _fs_basic_auth, NULL);
+  hs_router_add_route(fs_router, basic_auth_route);
 
   // Adding directory route that will handle any request that maps
   // into a directory location in our file system.
@@ -147,6 +152,16 @@ struct HSRouteServeResponse *_home_route_serve(struct HSRoute *route, struct HSH
   return(response);
 }
 
+
+bool _fs_basic_auth(char *auth_value, void *context)
+{
+  if (context != NULL)
+  {
+    return(false);
+  }
+
+  return(!strcmp(auth_value, "bXl1c2VyOm15cGFzc3dvcmQ=")); // myuser:mypassword
+}
 ```
 
 ## Contributing

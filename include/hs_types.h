@@ -57,6 +57,7 @@ struct HSHttpRequest
   char                        *query_string;
   // specific headers
   char                        *user_agent;
+  char                        *authorization;
   size_t                      content_length;
   enum HSConnectionType       connection;
   struct HSCookies            *cookies;

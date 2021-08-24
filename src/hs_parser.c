@@ -216,6 +216,10 @@ void hs_parser_set_header(struct HSHttpRequest *request, struct HSKeyValue *head
     {
       request->user_agent = strdup(header->value);
     }
+    else if (stringfn_equal(header->key, "authorization"))
+    {
+      request->authorization = strdup(header->value);
+    }
   }
 }
 

@@ -1,6 +1,7 @@
 #include "fsio.h"
 #include "hs_io.h"
 #include "hs_routes.h"
+#include "stringfn.h"
 #include <dirent.h>
 #include <libgen.h>
 #include <stdlib.h>
@@ -19,10 +20,18 @@ struct HSRoutesDirectoryServeContext
   char *additional_head_content;
 };
 
+struct HSRoutesBasicAuthContext
+{
+  char *realm;
+  bool (*auth)(char *, void *);
+  void *context;
+};
+
 struct HSRouteServeResponse *_hs_routes_404_serve(struct HSRoute *, struct HSHttpRequest *, int);
 struct HSRouteServeResponse *_hs_routes_file_serve(struct HSRoute *, struct HSHttpRequest *, int);
 struct HSRouteServeResponse *_hs_routes_directory_serve(struct HSRoute *, struct HSHttpRequest *, int);
-void _hs_routes_fs_release(struct HSRoute *);
+struct HSRouteServeResponse *_hs_routes_basic_auth_serve(struct HSRoute *, struct HSHttpRequest *, int);
+void _hs_routes_extension_release(struct HSRoute *);
 
 struct HSRoute *hs_routes_new_404_route()
 {
@@ -54,7 +63,7 @@ struct HSRoute *hs_routes_new_file_route_with_options(char *base_directory, enum
   context->get_mime_type  = get_mime_type;
   route->extension        = context;
 
-  route->release = _hs_routes_fs_release;
+  route->release = _hs_routes_extension_release;
 
   return(route);
 }
@@ -76,7 +85,32 @@ struct HSRoute *hs_routes_new_directory_route_with_options(char *base_directory,
   context->additional_head_content = additional_head_content;
   route->extension                 = context;
 
-  route->release = _hs_routes_fs_release;
+  route->release = _hs_routes_extension_release;
+
+  return(route);
+}
+
+struct HSRoute *hs_routes_new_basic_auth(char *realm, bool (*auth)(char *, void *), void *auth_context)
+{
+  if (realm == NULL || auth == NULL)
+  {
+    return(NULL);
+  }
+
+  struct HSRoute *route = hs_route_new_route();
+  route->is_get         = true;
+  route->is_post        = true;
+  route->is_put         = true;
+  route->is_delete      = true;
+  route->is_parent_path = true;
+
+  struct HSRoutesBasicAuthContext *context = malloc(sizeof(struct HSRoutesBasicAuthContext));
+  context->realm   = realm;
+  context->auth    = auth;
+  context->context = auth_context;
+  route->extension = context;
+  route->serve     = _hs_routes_basic_auth_serve;
+  route->release   = _hs_routes_extension_release;
 
   return(route);
 }
@@ -96,7 +130,7 @@ struct HSRouteServeResponse *_hs_routes_404_serve(struct HSRoute *route, struct 
 
 struct HSRouteServeResponse *_hs_routes_file_serve(struct HSRoute *route, struct HSHttpRequest *request, int socket)
 {
-  if (route == NULL || request == NULL || !socket || request->resource == NULL)
+  if (route == NULL || request == NULL || !socket || request->resource == NULL || route->extension == NULL)
   {
     return(NULL);
   }
@@ -136,7 +170,7 @@ struct HSRouteServeResponse *_hs_routes_file_serve(struct HSRoute *route, struct
 
 struct HSRouteServeResponse *_hs_routes_directory_serve(struct HSRoute *route, struct HSHttpRequest *request, int socket)
 {
-  if (route == NULL || request == NULL || !socket || request->resource == NULL)
+  if (route == NULL || request == NULL || !socket || request->resource == NULL || route->extension == NULL)
   {
     return(NULL);
   }
@@ -232,8 +266,49 @@ struct HSRouteServeResponse *_hs_routes_directory_serve(struct HSRoute *route, s
   return(response);
 } /* _hs_routes_directory_serve */
 
+struct HSRouteServeResponse *_hs_routes_basic_auth_serve(struct HSRoute *route, struct HSHttpRequest *request, int socket)
+{
+  if (route == NULL || request == NULL || !socket || route->extension == NULL)
+  {
+    return(NULL);
+  }
 
-void _hs_routes_fs_release(struct HSRoute *route)
+  struct HSRoutesBasicAuthContext *context = (struct HSRoutesBasicAuthContext *)route->extension;
+
+  bool                            valid = false;
+  if (request->authorization != NULL)
+  {
+    if (stringfn_starts_with(request->authorization, "Basic ") && strlen(request->authorization) > 6)
+    {
+      char *authorization = stringfn_mut_substring(request->authorization, 6, 0);
+      valid = context->auth(authorization, context->context);
+
+      // auth is valid, go to next route
+      if (valid)
+      {
+        return(NULL);
+      }
+    }
+  }
+
+  struct StringBuffer *buffer = string_buffer_new();
+  string_buffer_append_string(buffer, "Basic realm=\"");
+  string_buffer_append_string(buffer, context->realm);
+  string_buffer_append(buffer, '"');
+  char                        *realm = string_buffer_to_string(buffer);
+
+  struct HSRouteServeResponse *response = hs_route_new_serve_response();
+  response->code              = HS_HTTP_RESPONSE_CODE_UNAUTHORIZED;
+  response->headers->count    = 1;
+  response->headers->pairs    = malloc(sizeof(struct HSKeyValue) * response->headers->count);
+  response->headers->pairs[0] = hs_types_new_key_value(strdup("WWW-Authenticate"), realm);
+  response->content_string    = strdup("Unauthenticated");
+
+  return(response);
+}
+
+
+void _hs_routes_extension_release(struct HSRoute *route)
 {
   if (route == NULL)
   {

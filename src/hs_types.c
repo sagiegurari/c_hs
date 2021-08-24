@@ -23,6 +23,7 @@ struct HSHttpRequest *hs_types_new_http_request()
   request->content_length = 0;
   request->connection     = HS_CONNECTION_TYPE_UNKNOWN;
   request->user_agent     = NULL;
+  request->authorization  = NULL;
   request->cookies        = hs_types_new_cookies();
   request->headers        = hs_types_new_key_value_array();
   request->payload        = NULL;
@@ -49,6 +50,7 @@ void hs_types_release_http_request(struct HSHttpRequest *request)
   hs_io_free(request->resource);
   hs_io_free(request->query_string);
   hs_io_free(request->user_agent);
+  hs_io_free(request->authorization);
 
   hs_types_release_cookies(request->cookies);
   request->cookies = NULL;
