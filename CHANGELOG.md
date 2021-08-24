@@ -3,6 +3,7 @@
 ### v0.2.3
 
 * Fix response headers writing
+* Adding doctype to directory route html response
 
 ### v0.2.2 (2021-08-24)
 

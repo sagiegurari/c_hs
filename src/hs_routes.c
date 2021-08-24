@@ -171,7 +171,8 @@ struct HSRouteServeResponse *_hs_routes_directory_serve(struct HSRoute *route, s
 
   struct dirent       *entry;
   struct StringBuffer *html_buffer = string_buffer_new();
-  string_buffer_append_string(html_buffer, "<html>\n"
+  string_buffer_append_string(html_buffer, "<!DOCTYPE html>\n"
+                              "<html>\n"
                               "<head>\n"
                               "<title>");
   string_buffer_append_string(html_buffer, dir_name);
