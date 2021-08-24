@@ -1,6 +1,6 @@
 ## CHANGELOG
 
-### v0.2.0
+### v0.2.0 (2021-08-24)
 
 * Reading payload will limit based on content length header
 
