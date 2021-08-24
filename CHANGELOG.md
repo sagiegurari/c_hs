@@ -1,6 +1,6 @@
 ## CHANGELOG
 
-### v0.2.1
+### v0.2.1 (2021-08-24)
 
 * Enable directory route to accept additional head html
 * Added classes on directory view to enable customization
