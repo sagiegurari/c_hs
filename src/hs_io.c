@@ -106,56 +106,80 @@ void hs_io_release_http_request_payload(struct HSIOHttpRequestPayload *payload)
 }
 
 
-bool hs_io_read_fully(int socket, struct StringBuffer *buffer)
+bool hs_io_read_fully(int socket, struct StringBuffer *buffer, size_t length)
 {
   if (!socket || buffer == NULL)
   {
     return(false);
   }
 
+  if (!length)
+  {
+    return(true);
+  }
+
   ssize_t size                              = 0;
   char    io_buffer[HS_IO_READ_BUFFER_SIZE] = { 0 };
+  size_t  left                              = length;
   do
   {
     // read next bulk
-    size = read(socket, io_buffer, HS_IO_READ_BUFFER_SIZE);
-
-    if (size)
+    size_t buffer_size = HS_IO_READ_BUFFER_SIZE;
+    if (left < HS_IO_READ_BUFFER_SIZE)
     {
+      buffer_size = left;
+    }
+    size = read(socket, io_buffer, buffer_size);
+
+    if (size > 0)
+    {
+      left            = left - (size_t)size;
       io_buffer[size] = 0;
       string_buffer_append_string(buffer, io_buffer);
     }
-  } while (size > 0);
+  } while (size > 0 && left > 0);
 
-  return(true);
+  return(!left);
 }
 
 
-bool hs_io_read_and_write_to_file(int socket, FILE *fp)
+bool hs_io_read_and_write_to_file(int socket, FILE *fp, size_t length)
 {
   if (!socket)
   {
     return(false);
   }
 
+  if (!length)
+  {
+    return(true);
+  }
+
   ssize_t size                              = 0;
   char    io_buffer[HS_IO_READ_BUFFER_SIZE] = { 0 };
+  size_t  left                              = length;
   do
   {
     // read next bulk
-    size = read(socket, io_buffer, HS_IO_READ_BUFFER_SIZE);
-
-    if (size)
+    size_t buffer_size = HS_IO_READ_BUFFER_SIZE;
+    if (left < HS_IO_READ_BUFFER_SIZE)
     {
+      buffer_size = left;
+    }
+    size = read(socket, io_buffer, buffer_size);
+
+    if (size > 0)
+    {
+      left            = left - (size_t)size;
       io_buffer[size] = 0;
       if (fputs(io_buffer, fp) < 0)
       {
         return(false);
       }
     }
-  } while (size > 0);
+  } while (size > 0 && left > 0);
 
-  return(true);
+  return(!left);
 }
 
 

@@ -137,19 +137,19 @@ struct HSHttpRequestPayload *hs_types_new_http_request_payload(void *);
  * Returns true if we already loaded the payload content, making this struct
  * no longer usable.
  */
-bool hs_types_http_request_payload_is_loaded(struct HSHttpRequestPayload *);
+bool hs_types_http_request_payload_is_loaded(struct HSHttpRequest *);
 
 /**
  * Loads the entire payload to memory and returns it.
  * Once loaded, the payload struct is no longer usable.
  */
-char *hs_types_http_request_payload_to_string(struct HSHttpRequestPayload *);
+char *hs_types_http_request_payload_to_string(struct HSHttpRequest *);
 
 /**
  * Writes the entire payload to the requested file.
  * Once loaded, the payload struct is no longer usable.
  */
-bool hs_types_http_request_payload_to_file(struct HSHttpRequestPayload *, char * /* filename */);
+bool hs_types_http_request_payload_to_file(struct HSHttpRequest *, char * /* filename */);
 
 #endif
 

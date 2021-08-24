@@ -228,51 +228,83 @@ struct HSHttpRequestPayload *hs_types_new_http_request_payload(void *io_payload)
 }
 
 
-bool hs_types_http_request_payload_is_loaded(struct HSHttpRequestPayload *payload)
+bool hs_types_http_request_payload_is_loaded(struct HSHttpRequest *request)
 {
-  if (payload == NULL)
+  if (request == NULL || request->payload == NULL)
   {
     return(false);
   }
 
-  return(payload->loaded);
+  return(request->payload->loaded);
 }
 
 
-char *hs_types_http_request_payload_to_string(struct HSHttpRequestPayload *payload)
+char *hs_types_http_request_payload_to_string(struct HSHttpRequest *request)
 {
-  if (payload == NULL || payload->loaded)
+  if (request == NULL || request->payload == NULL || request->payload->loaded)
   {
     return(NULL);
   }
 
-  payload->loaded = true;
+  request->payload->loaded = true;
 
-  struct StringBuffer *buffer = payload->payload->partial;
+  struct StringBuffer *buffer = request->payload->payload->partial;
+  size_t              length  = request->content_length;
+  size_t              trim    = 0;
   if (buffer == NULL)
   {
     buffer = string_buffer_new();
   }
+  else
+  {
+    size_t current_length = string_buffer_get_content_size(request->payload->payload->partial);
+    if (current_length > length)
+    {
+      trim   = length;
+      length = 0;
+    }
+    else if (current_length == length)
+    {
+      length = 0;
+    }
+    else
+    {
+      length = length - current_length;
+    }
+  }
 
-  hs_io_read_fully(payload->payload->socket, buffer);
+  if (length)
+  {
+    hs_io_read_fully(request->payload->payload->socket, buffer, length);
+  }
 
   char *content = string_buffer_to_string(buffer);
+  if (trim > 0)
+  {
+    stringfn_mut_substring(content, 0, trim);
+  }
 
   string_buffer_release(buffer);
-  payload->payload->partial = NULL;
+  request->payload->payload->partial = NULL;
 
   return(content);
-}
+} /* hs_types_http_request_payload_to_string */
 
 
-bool hs_types_http_request_payload_to_file(struct HSHttpRequestPayload *payload, char *filename)
+bool hs_types_http_request_payload_to_file(struct HSHttpRequest *request, char *filename)
 {
-  if (payload == NULL || payload->loaded || filename == NULL)
+  if (request == NULL || request->payload == NULL || request->payload->loaded || filename == NULL)
   {
     return(false);
   }
 
-  payload->loaded = true;
+  request->payload->loaded = true;
+
+  size_t length = request->content_length;
+  if (!length)
+  {
+    return(true);
+  }
 
   FILE *fp = fopen(filename, "w");
   if (fp == NULL)
@@ -281,26 +313,49 @@ bool hs_types_http_request_payload_to_file(struct HSHttpRequestPayload *payload,
   }
 
   char *text = NULL;
-  if (payload->payload->partial != NULL && !string_buffer_is_empty(payload->payload->partial))
+  if (request->payload->payload->partial != NULL)
   {
-    text = string_buffer_to_string(payload->payload->partial);
-    string_buffer_release(payload->payload->partial);
-    payload->payload->partial = NULL;
-
-    if (fputs(text, fp) == EOF)
+    size_t current_length = string_buffer_get_content_size(request->payload->payload->partial);
+    size_t trim           = 0;
+    if (current_length > length)
     {
-      hs_io_free(text);
-      fclose(fp);
-
-      // prevent partially written file to be
-      remove(filename);
-
-      return(false);
+      trim   = length;
+      length = 0;
     }
-    hs_io_free(text);
+    else if (current_length == length)
+    {
+      length = 0;
+    }
+    else
+    {
+      length = length - current_length;
+    }
+
+    if (current_length)
+    {
+      text = string_buffer_to_string(request->payload->payload->partial);
+      if (trim > 0)
+      {
+        stringfn_mut_substring(text, 0, trim);
+      }
+      string_buffer_release(request->payload->payload->partial);
+      request->payload->payload->partial = NULL;
+
+      if (fputs(text, fp) == EOF)
+      {
+        hs_io_free(text);
+        fclose(fp);
+
+        // prevent partially written file to be
+        remove(filename);
+
+        return(false);
+      }
+      hs_io_free(text);
+    }
   }
 
-  bool done = hs_io_read_and_write_to_file(payload->payload->socket, fp);
+  bool done = hs_io_read_and_write_to_file(request->payload->payload->socket, fp, length);
 
   fflush(fp);
   fclose(fp);

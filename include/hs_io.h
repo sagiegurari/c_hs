@@ -44,12 +44,12 @@ void hs_io_release_http_request_payload(struct HSIOHttpRequestPayload *);
 /**
  * Reads the entire content into the provided buffer.
  */
-bool hs_io_read_fully(int /* socket */, struct StringBuffer *);
+bool hs_io_read_fully(int /* socket */, struct StringBuffer *, size_t /* length */);
 
 /**
  * Reads the entire content and writes it to the file.
  */
-bool hs_io_read_and_write_to_file(int /* socket */, FILE *);
+bool hs_io_read_and_write_to_file(int /* socket */, FILE *, size_t /* length */);
 
 /**
  * Writes the entire string to the socket.
