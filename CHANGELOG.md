@@ -1,5 +1,9 @@
 ## CHANGELOG
 
+### v0.2.2 (2021-08-24)
+
+* Fix directory route - show only file name, not full path
+
 ### v0.2.1 (2021-08-24)
 
 * Enable directory route to accept additional head html

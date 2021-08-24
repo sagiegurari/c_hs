@@ -209,7 +209,7 @@ struct HSRouteServeResponse *_hs_routes_directory_serve(struct HSRoute *route, s
       string_buffer_append_string(html_buffer, "<a class=\"entry\" href=\"");
       string_buffer_append_string(html_buffer, entry_path);
       string_buffer_append_string(html_buffer, "\">");
-      string_buffer_append_string(html_buffer, entry_path);
+      string_buffer_append_string(html_buffer, entry->d_name);
       string_buffer_append_string(html_buffer, "</a><br>\n");
     }
 
