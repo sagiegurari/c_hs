@@ -12,12 +12,19 @@ struct HSRoutesFileServeContext
   enum HSMimeType (*get_mime_type)(char *, enum HSMimeType);
 };
 
+
+struct HSRoutesDirectoryServeContext
+{
+  char *base_directory;
+  char *additional_head_content;
+};
+
 struct HSRouteServeResponse *_hs_routes_404_serve(struct HSRoute *, struct HSHttpRequest *, int);
 struct HSRouteServeResponse *_hs_routes_file_serve(struct HSRoute *, struct HSHttpRequest *, int);
-void _hs_routes_file_release(struct HSRoute *);
 struct HSRouteServeResponse *_hs_routes_directory_serve(struct HSRoute *, struct HSHttpRequest *, int);
+void _hs_routes_fs_release(struct HSRoute *);
 
-struct HSRoute              *hs_routes_new_404_route()
+struct HSRoute *hs_routes_new_404_route()
 {
   struct HSRoute *route = hs_route_new_route();
 
@@ -47,19 +54,29 @@ struct HSRoute *hs_routes_new_file_route_with_options(char *base_directory, enum
   context->get_mime_type  = get_mime_type;
   route->extension        = context;
 
-  route->release = _hs_routes_file_release;
+  route->release = _hs_routes_fs_release;
 
   return(route);
 }
 
 struct HSRoute *hs_routes_new_directory_route(char *base_directory)
 {
+  return(hs_routes_new_directory_route_with_options(base_directory, NULL));
+}
+
+struct HSRoute *hs_routes_new_directory_route_with_options(char *base_directory, char *additional_head_content)
+{
   struct HSRoute *route = hs_route_new_route();
 
   route->serve  = _hs_routes_directory_serve;
   route->is_get = true;
 
-  route->extension = base_directory;
+  struct HSRoutesDirectoryServeContext *context = malloc(sizeof(struct HSRoutesDirectoryServeContext));
+  context->base_directory          = base_directory;
+  context->additional_head_content = additional_head_content;
+  route->extension                 = context;
+
+  route->release = _hs_routes_fs_release;
 
   return(route);
 }
@@ -117,16 +134,6 @@ struct HSRouteServeResponse *_hs_routes_file_serve(struct HSRoute *route, struct
 }
 
 
-void _hs_routes_file_release(struct HSRoute *route)
-{
-  if (route == NULL)
-  {
-    return;
-  }
-
-  hs_io_free(route->extension);
-}
-
 struct HSRouteServeResponse *_hs_routes_directory_serve(struct HSRoute *route, struct HSHttpRequest *request, int socket)
 {
   if (route == NULL || request == NULL || !socket || request->resource == NULL)
@@ -139,7 +146,9 @@ struct HSRouteServeResponse *_hs_routes_directory_serve(struct HSRoute *route, s
     return(NULL);
   }
 
-  char *path = fsio_join_paths((char *)route->extension, request->resource);
+  struct HSRoutesDirectoryServeContext *context = (struct HSRoutesDirectoryServeContext *)route->extension;
+
+  char                                 *path = fsio_join_paths(context->base_directory, request->resource);
   if (path == NULL)
   {
     return(NULL);
@@ -166,16 +175,21 @@ struct HSRouteServeResponse *_hs_routes_directory_serve(struct HSRoute *route, s
                               "<head>\n"
                               "<title>");
   string_buffer_append_string(html_buffer, dir_name);
-  string_buffer_append_string(html_buffer, "</title>\n");
+  string_buffer_append_string(html_buffer, "</title>\n"
+                              "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\">\n");
   if (request->state.base_path != NULL)
   {
     string_buffer_append_string(html_buffer, "<base href=\"");
     string_buffer_append_string(html_buffer, request->state.base_path);
     string_buffer_append_string(html_buffer, "<\">\n");
   }
+  if (context->additional_head_content != NULL)
+  {
+    string_buffer_append_string(html_buffer, context->additional_head_content);
+  }
   string_buffer_append_string(html_buffer, "</head>\n"
                               "<body>\n");
-  string_buffer_append_string(html_buffer, "<h1>Directory: ");
+  string_buffer_append_string(html_buffer, "<h1 class=\"header\">Directory: ");
   string_buffer_append_string(html_buffer, dir_name);
   string_buffer_append_string(html_buffer, "</h1>\n");
   hs_io_free(path_clone);
@@ -192,7 +206,7 @@ struct HSRouteServeResponse *_hs_routes_directory_serve(struct HSRoute *route, s
 
     if (fsio_path_exists(entry_path))
     {
-      string_buffer_append_string(html_buffer, "<a href=\"");
+      string_buffer_append_string(html_buffer, "<a class=\"entry\" href=\"");
       string_buffer_append_string(html_buffer, entry_path);
       string_buffer_append_string(html_buffer, "\">");
       string_buffer_append_string(html_buffer, entry_path);
@@ -216,4 +230,15 @@ struct HSRouteServeResponse *_hs_routes_directory_serve(struct HSRoute *route, s
 
   return(response);
 } /* _hs_routes_directory_serve */
+
+
+void _hs_routes_fs_release(struct HSRoute *route)
+{
+  if (route == NULL)
+  {
+    return;
+  }
+
+  hs_io_free(route->extension);
+}
 

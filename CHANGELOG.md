@@ -1,5 +1,10 @@
 ## CHANGELOG
 
+### v0.2.1
+
+* Enable directory route to accept additional head html
+* Added classes on directory view to enable customization
+
 ### v0.2.0 (2021-08-24)
 
 * Reading payload will limit based on content length header

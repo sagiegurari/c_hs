@@ -26,5 +26,12 @@ struct HSRoute *hs_routes_new_file_route_with_options(char * /* base directory *
  */
 struct HSRoute *hs_routes_new_directory_route(char * /* base directory */);
 
+/**
+ * Returns the directory content.
+ * It will ignore non file paths or paths that do not exist.
+ * The optional additional_head_content will not be released with the route.
+ */
+struct HSRoute *hs_routes_new_directory_route_with_options(char * /* base directory */, char * /* additional_head_content */);
+
 #endif
 
