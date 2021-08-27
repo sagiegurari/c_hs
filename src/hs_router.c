@@ -164,10 +164,7 @@ struct HSRoute *hs_router_as_route(struct HSRouter *router)
   struct HSRoute *route = hs_route_new_route();
 
   // enable for all method types as the routes will limit it
-  route->is_get         = true;
-  route->is_post        = true;
-  route->is_put         = true;
-  route->is_delete      = true;
+  hs_route_set_all_methods(route, true);
   route->is_parent_path = true;
 
   route->redirect = _hs_router_as_route_redirect;

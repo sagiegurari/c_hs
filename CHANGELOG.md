@@ -1,5 +1,10 @@
 ## CHANGELOG
 
+### v0.3.0
+
+* Routes support all HTTP methods.
+* 404 route supports all child paths by default.
+
 ### v0.2.3 (2021-08-24)
 
 * Fix response headers writing

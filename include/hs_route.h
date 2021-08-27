@@ -54,6 +54,11 @@ struct HSRoute
   bool                           is_post;
   bool                           is_put;
   bool                           is_delete;
+  bool                           is_head;
+  bool                           is_connect;
+  bool                           is_options;
+  bool                           is_trace;
+  bool                           is_patch;
 
   // Enables the route to redirect to another route
   struct HSRouteRedirectResponse * (*redirect)(struct HSRoute *, struct HSHttpRequest *, int /* socket */);
@@ -108,6 +113,11 @@ struct HSRoute *hs_route_new_route(void);
  * Frees all internal memory and struct.
  */
 void hs_route_release_route(struct HSRoute *);
+
+/**
+ * Enables/disables all http methods for route.
+ */
+void hs_route_set_all_methods(struct HSRoute *, bool /* enable */);
 
 /**
  * Returns true if the request method is supported by the given route.

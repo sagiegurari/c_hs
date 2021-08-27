@@ -98,14 +98,11 @@ struct HSRoute *hs_route_new_route()
 
   route->path           = NULL;
   route->is_parent_path = false;
-  route->is_get         = false;
-  route->is_post        = false;
-  route->is_put         = false;
-  route->is_delete      = false;
-  route->redirect       = NULL;
-  route->serve          = NULL;
-  route->release        = NULL;
-  route->extension      = NULL;
+  hs_route_set_all_methods(route, false);
+  route->redirect  = NULL;
+  route->serve     = NULL;
+  route->release   = NULL;
+  route->extension = NULL;
 
   return(route);
 }
@@ -126,6 +123,25 @@ void hs_route_release_route(struct HSRoute *route)
   hs_io_free(route->path);
 
   hs_io_free(route);
+}
+
+
+void hs_route_set_all_methods(struct HSRoute *route, bool enable)
+{
+  if (route == NULL)
+  {
+    return;
+  }
+
+  route->is_get     = enable;
+  route->is_post    = enable;
+  route->is_put     = enable;
+  route->is_delete  = enable;
+  route->is_head    = enable;
+  route->is_connect = enable;
+  route->is_options = enable;
+  route->is_trace   = enable;
+  route->is_patch   = enable;
 }
 
 
@@ -152,9 +168,29 @@ bool hs_route_is_allowed_for_method(struct HSRoute *route, struct HSHttpRequest 
   {
     return(true);
   }
+  if (route->is_head && request->method == HS_HTTP_METHOD_HEAD)
+  {
+    return(true);
+  }
+  if (route->is_connect && request->method == HS_HTTP_METHOD_CONNECT)
+  {
+    return(true);
+  }
+  if (route->is_options && request->method == HS_HTTP_METHOD_OPTIONS)
+  {
+    return(true);
+  }
+  if (route->is_trace && request->method == HS_HTTP_METHOD_TRACE)
+  {
+    return(true);
+  }
+  if (route->is_patch && request->method == HS_HTTP_METHOD_PATCH)
+  {
+    return(true);
+  }
 
   return(false);
-}
+} /* hs_route_is_allowed_for_method */
 
 
 bool hs_route_is_supported_path(struct HSRoute *route, struct HSHttpRequest *request)

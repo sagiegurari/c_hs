@@ -37,11 +37,9 @@ struct HSRoute *hs_routes_new_404_route()
 {
   struct HSRoute *route = hs_route_new_route();
 
-  route->serve     = _hs_routes_404_serve;
-  route->is_get    = true;
-  route->is_post   = true;
-  route->is_put    = true;
-  route->is_delete = true;
+  route->serve = _hs_routes_404_serve;
+  hs_route_set_all_methods(route, true);
+  route->is_parent_path = true;
 
   return(route);
 }
