@@ -39,7 +39,7 @@ bool hs_router_serve_next(struct HSRouter *, int /* socket */);
 /**
  * Handles a HTTP request.
  */
-bool hs_router_serve(struct HSRouter *, struct HSHttpRequest *, int /* socket */);
+bool hs_router_serve(struct HSRouter *, struct HSServeFlowParams *);
 
 /**
  * Returns a route which calls an internal router which will contain sub routes.

@@ -20,7 +20,7 @@
  * See the various header files for the complete API.
  */
 
-struct HSRouteServeResponse *_home_route_serve(struct HSRoute *, struct HSHttpRequest *, int);
+enum HSServeFlowResponse _home_route_serve(struct HSRoute *, struct HSServeFlowParams *);
 bool _fs_basic_auth(char *, void *);
 
 
@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 
   // This route will server as our top domain route and will return
   // a custom HTML that we are building in runtime (we can also point to a file).
-  struct HSRoute *home_route = hs_route_new_route();
+  struct HSRoute *home_route = hs_route_new();
   home_route->path   = strdup("/");
   home_route->is_get = true;
   home_route->serve  = _home_route_serve;
@@ -95,27 +95,26 @@ int main(int argc, char *argv[])
 } /* main */
 
 
-struct HSRouteServeResponse *_home_route_serve(struct HSRoute *route, struct HSHttpRequest *request, int socket)
+enum HSServeFlowResponse _home_route_serve(struct HSRoute *route, struct HSServeFlowParams *params)
 {
-  if (route == NULL || request == NULL || !socket)
+  if (route == NULL)
   {
-    return(NULL);
+    return(HS_SERVE_FLOW_RESPONSE_DONE);
   }
 
-  struct HSRouteServeResponse *response = hs_route_new_serve_response();
-  response->code           = HS_HTTP_RESPONSE_CODE_OK;
-  response->mime_type      = HS_MIME_TYPE_TEXT_HTML;
-  response->content_string = strdup("<html>\n"
-                                    "<head>\n"
-                                    "<title>Example Home Page</title>\n"
-                                    "</head>\n"
-                                    "<body>\n"
-                                    "<h1>Welcome To The Example Home Page</h1>\n"
-                                    "<a href=\"/fs/\">Go To File System</a>\n"
-                                    "</body>\n"
-                                    "</html>");
+  params->response->code           = HS_HTTP_RESPONSE_CODE_OK;
+  params->response->mime_type      = HS_MIME_TYPE_TEXT_HTML;
+  params->response->content_string = strdup("<html>\n"
+                                            "<head>\n"
+                                            "<title>Example Home Page</title>\n"
+                                            "</head>\n"
+                                            "<body>\n"
+                                            "<h1>Welcome To The Example Home Page</h1>\n"
+                                            "<a href=\"/fs/\">Go To File System</a>\n"
+                                            "</body>\n"
+                                            "</html>");
 
-  return(response);
+  return(HS_SERVE_FLOW_RESPONSE_DONE);
 }
 
 

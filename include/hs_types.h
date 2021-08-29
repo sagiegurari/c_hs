@@ -38,12 +38,10 @@ struct HSCookies
 
 struct HSHttpRequestPayload;
 
-struct HSHttpRequestState
+struct HSRouterFlowState
 {
   bool done;
   bool closed_connection;
-  bool prevent_redirect;
-  bool prevent_serve;
   char *base_path;
 };
 
@@ -64,9 +62,62 @@ struct HSHttpRequest
   // all headers
   struct HSKeyValueArray      *headers;
   struct HSHttpRequestPayload *payload;
-  // state, used internally by the router
-  struct HSHttpRequestState   state;
 };
+
+struct HSHttpResponse
+{
+  // The status code
+  enum HSHttpResponseCode code;
+  // Any cookies we want to set/delete
+  struct HSCookies        *cookies;
+  // Any extra headers to return
+  struct HSKeyValueArray  *headers;
+  // The content type header value, if the enum doesn't contain a relevant value
+  // use the HS_MIME_TYPE_NONE and add the actual value manually to the headers array.
+  enum HSMimeType         mime_type;
+  // The content to return (one of the following)
+  char                    *content_string;
+  char                    *content_file;
+};
+
+struct HSPostResponseCallback
+{
+  void *context;
+  void (*run)(struct HSPostResponseCallback *);
+  void (*release)(struct HSPostResponseCallback *);
+};
+
+struct HSServeFlowParams
+{
+  struct HSHttpRequest          *request;
+  struct HSHttpResponse         *response;
+  int                           socket;
+  // Optional callback after response is written
+  struct HSPostResponseCallback *callback;
+  // state, used internally by the router
+  struct HSRouterFlowState      *router_state;
+};
+
+enum HSServeFlowResponse
+{
+  HS_SERVE_FLOW_RESPONSE_CONTINUE = 1,
+  HS_SERVE_FLOW_RESPONSE_DONE     = 2,
+};
+
+/**
+ * Creates and returns a new struct.
+ */
+struct HSServeFlowParams *hs_types_new_serve_flow_params(void);
+
+/**
+ * Creates and returns a new struct.
+ */
+struct HSServeFlowParams *hs_types_new_serve_flow_params_pre_populated(struct HSHttpRequest *);
+
+/**
+ * Frees all internal memory and struct.
+ */
+void hs_types_release_serve_flow_params(struct HSServeFlowParams *);
 
 /**
  * Creates and returns a new http request struct.
@@ -78,6 +129,39 @@ struct HSHttpRequest *hs_types_new_http_request(void);
  * any internal member/struct.
  */
 void hs_types_release_http_request(struct HSHttpRequest *);
+
+/**
+ * Creates and returns a new http response struct.
+ */
+struct HSHttpResponse *hs_types_new_http_response(void);
+
+/**
+ * Frees all memory used by the provided struct, including
+ * any internal member/struct.
+ */
+void hs_types_release_http_response(struct HSHttpResponse *);
+
+/**
+ * Creates and returns the new struct.
+ */
+struct HSPostResponseCallback *hs_types_new_post_response_callback(void);
+
+/**
+ * Releases the struct memory, not including the context.
+ * Optional release function (if defined) will be invoked.
+ */
+void hs_types_release_post_response_callback(struct HSPostResponseCallback *callback);
+
+/**
+ * Creates and returns a new state struct.
+ */
+struct HSRouterFlowState *hs_types_new_router_flow_state(void);
+
+/**
+ * Frees all memory used by the provided struct, including
+ * any internal member/struct.
+ */
+void hs_types_release_router_flow_state(struct HSRouterFlowState *);
 
 /**
  * Creates and returns a new cookie struct.

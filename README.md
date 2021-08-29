@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
 
   // This route will server as our top domain route and will return
   // a custom HTML that we are building in runtime (we can also point to a file).
-  struct HSRoute *home_route = hs_route_new_route();
+  struct HSRoute *home_route = hs_route_new();
   home_route->path   = strdup("/");
   home_route->is_get = true;
   home_route->serve  = _home_route_serve;

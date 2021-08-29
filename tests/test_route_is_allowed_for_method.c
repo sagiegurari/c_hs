@@ -3,7 +3,7 @@
 
 void test_impl()
 {
-  struct HSRoute       *route   = hs_route_new_route();
+  struct HSRoute       *route   = hs_route_new();
   struct HSHttpRequest *request = hs_types_new_http_request();
 
   route->is_get   = true;

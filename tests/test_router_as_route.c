@@ -7,32 +7,30 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-struct HSRouteRedirectResponse *_test_redirect(struct HSRoute *route, struct HSHttpRequest *request, int socket)
+enum HSServeFlowResponse _test_redirect(struct HSRoute *route, struct HSServeFlowParams *params)
 {
   assert_true(route != NULL);
-  assert_true(request != NULL);
-  assert_true(socket);
+  assert_true(params != NULL);
 
-  struct HSRouteRedirectResponse *response = hs_route_new_redirect_response();
+  params->response->code              = HS_HTTP_RESPONSE_CODE_TEMPORARY_REDIRECT;
+  params->response->headers->count    = 1;
+  params->response->headers->pairs    = malloc(sizeof(struct HSKeyValue) * params->response->headers->count);
+  params->response->headers->pairs[0] = hs_types_new_key_value(strdup("Location"), strdup("/mylocation"));
 
-  response->path = strdup("/mylocation");
-
-  return(response);
+  return(HS_SERVE_FLOW_RESPONSE_DONE);
 }
 
 
-struct HSRouteServeResponse *_test_serve(struct HSRoute *route, struct HSHttpRequest *request, int socket)
+enum HSServeFlowResponse _test_serve(struct HSRoute *route, struct HSServeFlowParams *params)
 {
   assert_true(route != NULL);
-  assert_true(request != NULL);
-  assert_true(socket);
+  assert_true(params != NULL);
 
-  struct HSRouteServeResponse *response = hs_route_new_serve_response();
+  params->response->code           = HS_HTTP_RESPONSE_CODE_OK;
+  params->response->mime_type      = HS_MIME_TYPE_TEXT_HTML;
+  params->response->content_string = strdup("my html");
 
-  response->code           = HS_HTTP_RESPONSE_CODE_OK;
-  response->content_string = strdup("my html");
-
-  return(response);
+  return(HS_SERVE_FLOW_RESPONSE_DONE);
 }
 
 
@@ -47,13 +45,16 @@ void _test_with_values(struct HSRouter *router, char *request_path, char *expect
   fsio_remove(filename);
   assert_true(!fsio_path_exists(filename));
   fsio_create_empty_file(filename);
-  int  socket = open(filename, O_WRONLY);
+  int                      socket = open(filename, O_WRONLY);
 
-  bool done = hs_router_serve(router, request, socket);
+  struct HSServeFlowParams *params = hs_types_new_serve_flow_params_pre_populated(request);
+  params->socket = socket;
+
+  bool done = hs_router_serve(router, params);
   assert_true(done);
   close(socket);
   assert_string_equal(request->resource, request_path);
-  hs_types_release_http_request(request);
+  hs_types_release_serve_flow_params(params);
 
   char *content = fsio_read_text_file(filename);
   fsio_remove(filename);
@@ -66,14 +67,14 @@ void test_impl()
 {
   struct HSRouter *router = hs_router_new();
 
-  struct HSRoute  *route = hs_route_new_route();
+  struct HSRoute  *route = hs_route_new();
 
-  route->is_get   = true;
-  route->path     = strdup("/gohome");
-  route->redirect = _test_redirect;
+  route->is_get = true;
+  route->path   = strdup("/gohome");
+  route->serve  = _test_redirect;
   hs_router_add_route(router, route);
 
-  route         = hs_route_new_route();
+  route         = hs_route_new();
   route->is_get = true;
   route->path   = strdup("/index.html");
   route->serve  = _test_serve;
@@ -89,25 +90,22 @@ void test_impl()
 
   _test_with_values(router, "/test", "HTTP/1.1 404 404\r\n"
                     "Connection: close\r\n"
-                    "Content-Type: text/html\r\n"
                     "Content-Length: 0\r\n"
                     "\r\n");
 
   _test_with_values(router, "/admin", "HTTP/1.1 404 404\r\n"
                     "Connection: close\r\n"
-                    "Content-Type: text/html\r\n"
                     "Content-Length: 0\r\n"
                     "\r\n");
 
   _test_with_values(router, "/admin/", "HTTP/1.1 404 404\r\n"
                     "Connection: close\r\n"
-                    "Content-Type: text/html\r\n"
                     "Content-Length: 0\r\n"
                     "\r\n");
 
   _test_with_values(router, "/admin/gohome", "HTTP/1.1 307 307\r\n"
-                    "Connection: close\r\n"
                     "Location: /mylocation\r\n"
+                    "Connection: close\r\n"
                     "Content-Length: 0\r\n"
                     "\r\n");
 

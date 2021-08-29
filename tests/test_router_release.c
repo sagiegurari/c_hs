@@ -18,15 +18,15 @@ void test_impl()
   hs_router_release(router);
 
   router = hs_router_new();
-  struct HSRoute *route = hs_route_new_route();
+  struct HSRoute *route = hs_route_new();
   route->path = stringfn_new_empty_string();
   hs_router_add_route(router, route);
-  route            = hs_route_new_route();
+  route            = hs_route_new();
   route->path      = stringfn_new_empty_string();
   route->release   = _test_release_fn;
   route->extension = "do not free";
   hs_router_add_route(router, route);
-  route          = hs_route_new_route();
+  route          = hs_route_new();
   route->path    = stringfn_new_empty_string();
   route->release = _test_release_fn;
   hs_router_add_route(router, route);

@@ -7,38 +7,36 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-int                            global_counter = -2;
+int                      global_counter = -2;
 
-struct HSRouteRedirectResponse *_test_redirect(struct HSRoute *route, struct HSHttpRequest *request, int socket)
+enum HSServeFlowResponse _test_redirect(struct HSRoute *route, struct HSServeFlowParams *params)
 {
   assert_true(route != NULL);
-  assert_true(request != NULL);
-  assert_true(socket);
+  assert_true(params != NULL);
 
-  assert_string_equal(request->state.base_path, "/admin/");
+  assert_string_equal(params->router_state->base_path, "/admin/");
 
-  struct HSRouteRedirectResponse *response = hs_route_new_redirect_response();
+  params->response->code              = HS_HTTP_RESPONSE_CODE_TEMPORARY_REDIRECT;
+  params->response->headers->count    = 1;
+  params->response->headers->pairs    = malloc(sizeof(struct HSKeyValue) * params->response->headers->count);
+  params->response->headers->pairs[0] = hs_types_new_key_value(strdup("Location"), strdup("/mylocation"));
 
-  response->path = strdup("/mylocation");
-
-  return(response);
+  return(HS_SERVE_FLOW_RESPONSE_DONE);
 }
 
 
-struct HSRouteServeResponse *_test_serve(struct HSRoute *route, struct HSHttpRequest *request, int socket)
+enum HSServeFlowResponse _test_serve(struct HSRoute *route, struct HSServeFlowParams *params)
 {
   assert_true(route != NULL);
-  assert_true(request != NULL);
-  assert_true(socket);
+  assert_true(params != NULL);
 
-  assert_string_equal(request->state.base_path, "/admin/");
+  assert_string_equal(params->router_state->base_path, "/admin/");
 
-  struct HSRouteServeResponse *response = hs_route_new_serve_response();
+  params->response->code           = HS_HTTP_RESPONSE_CODE_OK;
+  params->response->mime_type      = HS_MIME_TYPE_TEXT_HTML;
+  params->response->content_string = strdup("my html");
 
-  response->code           = HS_HTTP_RESPONSE_CODE_OK;
-  response->content_string = strdup("my html");
-
-  return(response);
+  return(HS_SERVE_FLOW_RESPONSE_DONE);
 }
 
 
@@ -110,14 +108,14 @@ void test_impl()
 {
   struct HSRouter *router = hs_router_new();
 
-  struct HSRoute  *route = hs_route_new_route();
+  struct HSRoute  *route = hs_route_new();
 
-  route->is_get   = true;
-  route->path     = strdup("/gohome");
-  route->redirect = _test_redirect;
+  route->is_get = true;
+  route->path   = strdup("/gohome");
+  route->serve  = _test_redirect;
   hs_router_add_route(router, route);
 
-  route         = hs_route_new_route();
+  route         = hs_route_new();
   route->is_get = true;
   route->path   = strdup("/index.html");
   route->serve  = _test_serve;
@@ -146,7 +144,6 @@ void test_impl()
                       "\r\n"
                       "HTTP/1.1 404 404\r\n"
                       "Connection: keep-alive\r\n"
-                      "Content-Type: text/html\r\n"
                       "Content-Length: 0\r\n"
                       "\r\n"
                       "GET /admin HTTP/1.0\r\n"
@@ -155,7 +152,6 @@ void test_impl()
                       "\r\n"
                       "HTTP/1.1 404 404\r\n"
                       "Connection: keep-alive\r\n"
-                      "Content-Type: text/html\r\n"
                       "Content-Length: 0\r\n"
                       "\r\n"
                       "GET /admin/ HTTP/1.0\r\n"
@@ -164,7 +160,6 @@ void test_impl()
                       "\r\n"
                       "HTTP/1.1 404 404\r\n"
                       "Connection: keep-alive\r\n"
-                      "Content-Type: text/html\r\n"
                       "Content-Length: 0\r\n"
                       "\r\n"
                       "GET /admin/gohome HTTP/1.0\r\n"
@@ -172,8 +167,8 @@ void test_impl()
                       "Content-Length: 0\r\n"
                       "\r\n"
                       "HTTP/1.1 307 307\r\n"
-                      "Connection: keep-alive\r\n"
                       "Location: /mylocation\r\n"
+                      "Connection: keep-alive\r\n"
                       "Content-Length: 0\r\n"
                       "\r\n"
                       "GET /admin/index.html HTTP/1.0\r\n"

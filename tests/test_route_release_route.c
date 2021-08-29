@@ -13,11 +13,11 @@ void _test_release_fn(struct HSRoute *route)
 
 void test_impl()
 {
-  struct HSRoute *route = hs_route_new_route();
+  struct HSRoute *route = hs_route_new();
 
   hs_route_release_route(route);
 
-  route          = hs_route_new_route();
+  route          = hs_route_new();
   route->path    = stringfn_new_empty_string();
   route->release = _test_release_fn;
 

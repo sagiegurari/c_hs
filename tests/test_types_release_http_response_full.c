@@ -2,19 +2,10 @@
 #include "test.h"
 
 
-void _test_release_callback(struct HSPostResponseCallback *callback)
-{
-  hs_io_free(callback->context);
-}
-
-
 void test_impl()
 {
-  struct HSRouteServeResponse *response = hs_route_new_serve_response();
+  struct HSHttpResponse *response = hs_types_new_http_response();
 
-  hs_route_release_serve_response(response);
-
-  response                   = hs_route_new_serve_response();
   response->cookies->count   = 3;
   response->cookies->cookies = malloc(sizeof(struct HSCookie) * response->cookies->count);
   for (size_t index = 0; index < response->cookies->count; index++)
@@ -33,11 +24,7 @@ void test_impl()
   response->content_string = stringfn_new_empty_string();
   response->content_file   = stringfn_new_empty_string();
 
-  response->callback          = hs_route_new_post_response_callback();
-  response->callback->context = stringfn_new_empty_string();
-  response->callback->release = _test_release_callback;
-
-  hs_route_release_serve_response(response);
+  hs_types_release_http_response(response);
 }
 
 

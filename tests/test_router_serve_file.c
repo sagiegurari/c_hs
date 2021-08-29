@@ -7,47 +7,44 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-struct HSRouteServeResponse *_test_serve(struct HSRoute *route, struct HSHttpRequest *request, int socket)
+enum HSServeFlowResponse _test_serve(struct HSRoute *route, struct HSServeFlowParams *params)
 {
   assert_true(route != NULL);
-  assert_true(request != NULL);
-  assert_true(socket);
+  assert_true(params != NULL);
 
-  struct HSRouteServeResponse *response = hs_route_new_serve_response();
-
-  response->code              = HS_HTTP_RESPONSE_CODE_NOT_FOUND;
-  response->headers->count    = 3;
-  response->headers->pairs    = malloc(sizeof(struct HSKeyValue) * response->headers->count);
-  response->headers->pairs[0] = hs_types_new_key_value(strdup("header1"), strdup("value1"));
-  response->headers->pairs[1] = hs_types_new_key_value(strdup("header2"), strdup("value2"));
-  response->headers->pairs[2] = hs_types_new_key_value(strdup("header3"), strdup("value3"));
-  response->cookies->count    = 3;
-  response->cookies->cookies  = malloc(sizeof(struct HSCookie) * response->cookies->count);
-  for (size_t index = 0; index < response->cookies->count; index++)
+  params->response->code              = HS_HTTP_RESPONSE_CODE_NOT_FOUND;
+  params->response->headers->count    = 3;
+  params->response->headers->pairs    = malloc(sizeof(struct HSKeyValue) * params->response->headers->count);
+  params->response->headers->pairs[0] = hs_types_new_key_value(strdup("header1"), strdup("value1"));
+  params->response->headers->pairs[1] = hs_types_new_key_value(strdup("header2"), strdup("value2"));
+  params->response->headers->pairs[2] = hs_types_new_key_value(strdup("header3"), strdup("value3"));
+  params->response->cookies->count    = 3;
+  params->response->cookies->cookies  = malloc(sizeof(struct HSCookie) * params->response->cookies->count);
+  for (size_t index = 0; index < params->response->cookies->count; index++)
   {
-    response->cookies->cookies[index] = hs_types_new_cookie();
+    params->response->cookies->cookies[index] = hs_types_new_cookie();
   }
-  response->cookies->cookies[0]->name      = strdup("c1");
-  response->cookies->cookies[0]->value     = strdup("v1");
-  response->cookies->cookies[0]->expires   = strdup("1 1 1980");
-  response->cookies->cookies[0]->max_age   = 200;
-  response->cookies->cookies[0]->secure    = true;
-  response->cookies->cookies[0]->http_only = true;
-  response->cookies->cookies[0]->domain    = strdup("mydomain");
-  response->cookies->cookies[0]->path      = strdup("/somepath");
-  response->cookies->cookies[0]->same_site = HS_COOKIE_SAME_SITE_NONE;
-  response->cookies->cookies[1]->name      = strdup("c2");
-  response->cookies->cookies[1]->value     = strdup("v2");
-  response->cookies->cookies[1]->same_site = HS_COOKIE_SAME_SITE_STRICT;
-  response->cookies->cookies[2]->name      = strdup("c3");
-  response->cookies->cookies[2]->value     = strdup("v3");
+  params->response->cookies->cookies[0]->name      = strdup("c1");
+  params->response->cookies->cookies[0]->value     = strdup("v1");
+  params->response->cookies->cookies[0]->expires   = strdup("1 1 1980");
+  params->response->cookies->cookies[0]->max_age   = 200;
+  params->response->cookies->cookies[0]->secure    = true;
+  params->response->cookies->cookies[0]->http_only = true;
+  params->response->cookies->cookies[0]->domain    = strdup("mydomain");
+  params->response->cookies->cookies[0]->path      = strdup("/somepath");
+  params->response->cookies->cookies[0]->same_site = HS_COOKIE_SAME_SITE_NONE;
+  params->response->cookies->cookies[1]->name      = strdup("c2");
+  params->response->cookies->cookies[1]->value     = strdup("v2");
+  params->response->cookies->cookies[1]->same_site = HS_COOKIE_SAME_SITE_STRICT;
+  params->response->cookies->cookies[2]->name      = strdup("c3");
+  params->response->cookies->cookies[2]->value     = strdup("v3");
 
-  response->mime_type = HS_MIME_TYPE_TEXT_PLAIN;
+  params->response->mime_type = HS_MIME_TYPE_TEXT_PLAIN;
 
   fsio_write_text_file("./test_router_serve_file.out.txt", "some file content\nsecond line.");
-  response->content_file = strdup("./test_router_serve_file.out.txt");
+  params->response->content_file = strdup("./test_router_serve_file.out.txt");
 
-  return(response);
+  return(HS_SERVE_FLOW_RESPONSE_DONE);
 } /* _test_serve */
 
 
@@ -55,7 +52,7 @@ void test_impl()
 {
   struct HSRouter *router = hs_router_new();
 
-  struct HSRoute  *route = hs_route_new_route();
+  struct HSRoute  *route = hs_route_new();
 
   route->path   = strdup("/test");
   route->serve  = _test_serve;
@@ -70,9 +67,12 @@ void test_impl()
   char *filename = "./test_router_serve_file.txt";
 
   fsio_create_empty_file(filename);
-  int  socket = open(filename, O_WRONLY);
+  int                      socket = open(filename, O_WRONLY);
 
-  bool done = hs_router_serve(router, request, socket);
+  struct HSServeFlowParams *params = hs_types_new_serve_flow_params_pre_populated(request);
+  params->socket = socket;
+
+  bool done = hs_router_serve(router, params);
   assert_true(done);
 
   close(socket);
@@ -96,7 +96,7 @@ void test_impl()
   hs_io_free(content);
   fsio_remove(filename);
   fsio_remove("./test_router_serve_file.out.txt");
-  hs_types_release_http_request(request);
+  hs_types_release_serve_flow_params(params);
   hs_router_release(router);
 } /* test_impl */
 

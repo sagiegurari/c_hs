@@ -10,7 +10,7 @@
 
 void _test_with_values(char *route_path, char *request_path, char *expected_path)
 {
-  struct HSRoute *route = hs_route_new_route();
+  struct HSRoute *route = hs_route_new();
 
   route->path = strdup(route_path);
   struct HSHttpRequest *request = hs_types_new_http_request();

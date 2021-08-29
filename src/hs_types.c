@@ -10,6 +10,42 @@ struct HSHttpRequestPayload
   struct HSIOHttpRequestPayload *payload;
 };
 
+struct HSServeFlowParams *hs_types_new_serve_flow_params()
+{
+  struct HSHttpRequest *request = hs_types_new_http_request();
+
+  return(hs_types_new_serve_flow_params_pre_populated(request));
+}
+
+struct HSServeFlowParams *hs_types_new_serve_flow_params_pre_populated(struct HSHttpRequest *request)
+{
+  struct HSServeFlowParams *params = malloc(sizeof(struct HSServeFlowParams));
+
+  params->request      = request;
+  params->response     = hs_types_new_http_response();
+  params->socket       = 0;
+  params->callback     = hs_types_new_post_response_callback();
+  params->router_state = hs_types_new_router_flow_state();
+
+  return(params);
+}
+
+
+void hs_types_release_serve_flow_params(struct HSServeFlowParams *params)
+{
+  if (params == NULL)
+  {
+    return;
+  }
+
+  hs_types_release_http_request(params->request);
+  hs_types_release_http_response(params->response);
+  hs_types_release_post_response_callback(params->callback);
+  hs_types_release_router_flow_state(params->router_state);
+
+  hs_io_free(params);
+}
+
 struct HSHttpRequest *hs_types_new_http_request()
 {
   struct HSHttpRequest *request = malloc(sizeof(struct HSHttpRequest));
@@ -27,13 +63,6 @@ struct HSHttpRequest *hs_types_new_http_request()
   request->cookies        = hs_types_new_cookies();
   request->headers        = hs_types_new_key_value_array();
   request->payload        = NULL;
-
-  // setup state
-  request->state.done              = false;
-  request->state.closed_connection = false;
-  request->state.prevent_redirect  = false;
-  request->state.prevent_serve     = false;
-  request->state.base_path         = NULL;
 
   return(request);
 }
@@ -53,22 +82,99 @@ void hs_types_release_http_request(struct HSHttpRequest *request)
   hs_io_free(request->authorization);
 
   hs_types_release_cookies(request->cookies);
-  request->cookies = NULL;
 
   hs_types_release_key_value_array(request->headers);
-  request->headers = NULL;
 
   if (request->payload != NULL)
   {
     hs_io_release_http_request_payload(request->payload->payload);
     request->payload->payload = NULL;
     hs_io_free(request->payload);
-    request->payload = NULL;
   }
 
-  hs_io_free(request->state.base_path);
-
   hs_io_free(request);
+}
+
+
+struct HSHttpResponse *hs_types_new_http_response()
+{
+  struct HSHttpResponse *response = malloc(sizeof(struct HSHttpResponse));
+
+  response->code           = HS_HTTP_RESPONSE_CODE_OK;
+  response->cookies        = hs_types_new_cookies();
+  response->headers        = hs_types_new_key_value_array();
+  response->mime_type      = HS_MIME_TYPE_NONE;
+  response->content_string = NULL;
+  response->content_file   = NULL;
+
+  return(response);
+}
+
+
+void hs_types_release_http_response(struct HSHttpResponse *response)
+{
+  if (response == NULL)
+  {
+    return;
+  }
+
+  hs_io_free(response->content_string);
+  hs_io_free(response->content_file);
+  hs_types_release_cookies(response->cookies);
+  hs_types_release_key_value_array(response->headers);
+
+  hs_io_free(response);
+}
+
+struct HSPostResponseCallback *hs_types_new_post_response_callback()
+{
+  struct HSPostResponseCallback *callback = malloc(sizeof(struct HSPostResponseCallback));
+
+  callback->context = NULL;
+  callback->run     = NULL;
+  callback->release = NULL;
+
+  return(callback);
+}
+
+
+void hs_types_release_post_response_callback(struct HSPostResponseCallback *callback)
+{
+  if (callback == NULL)
+  {
+    return;
+  }
+
+  if (callback->release != NULL)
+  {
+    callback->release(callback);
+  }
+
+  hs_io_free(callback);
+}
+
+
+struct HSRouterFlowState *hs_types_new_router_flow_state()
+{
+  struct HSRouterFlowState *state = malloc(sizeof(struct HSRouterFlowState));
+
+  state->done              = false;
+  state->closed_connection = false;
+  state->base_path         = NULL;
+
+  return(state);
+}
+
+
+void hs_types_release_router_flow_state(struct HSRouterFlowState *state)
+{
+  if (state == NULL)
+  {
+    return;
+  }
+
+  hs_io_free(state->base_path);
+  hs_io_free(state);
 }
 
 struct HSCookie *hs_types_new_cookie()
