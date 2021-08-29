@@ -18,19 +18,12 @@ enum HSServeFlowResponse _test_serve(struct HSRoute *route, struct HSServeFlowPa
 }
 
 
-void test_impl()
+void _test_with_values(struct HSRouter *router, struct HSRoute *route, bool is_get, bool is_post, bool closed, char *expected_response)
 {
-  struct HSRouter *router = hs_router_new();
+  route->is_get  = is_get;
+  route->is_post = is_post;
 
-  struct HSRoute  *route = hs_route_new();
-
-  route->path   = strdup("/test");
-  route->serve  = _test_serve;
-  route->is_get = true;
-  hs_router_add_route(router, route);
-
-  char *filename = "./test_router_serve_multi_routes.txt";
-
+  char                     *filename = "./test_router_serve_multi_routes.txt";
   fsio_create_empty_file(filename);
   int                      socket = open(filename, O_WRONLY);
 
@@ -39,101 +32,73 @@ void test_impl()
   params->request->resource = strdup("/test");
   params->request->method   = HS_HTTP_METHOD_GET;
 
-  params->router_state->closed_connection = false;
+  params->router_state->closed_connection = closed;
   bool done = hs_router_serve(router, params);
-  assert_true(done);
+
+  if (expected_response == NULL || closed)
+  {
+    assert_true(!done);
+  }
+  else
+  {
+    assert_true(done);
+  }
 
   close(socket);
 
-  char *content = fsio_read_text_file(filename);
+  if (expected_response != NULL)
+  {
+    char *content = fsio_read_text_file(filename);
 
-  assert_string_equal(content, "HTTP/1.1 200 200\r\n"
-                      "Connection: close\r\n"
-                      "Content-Length: 0\r\n"
-                      "\r\n");
+    assert_string_equal(content, expected_response);
 
-  hs_io_free(content);
+    hs_io_free(content);
+  }
+
   fsio_remove(filename);
+  hs_types_release_serve_flow_params(params);
+} /* _test_with_values */
 
-  route->is_get                           = false;
-  route->is_post                          = true;
-  params->router_state->closed_connection = false;
-  done                                    = hs_router_serve(router, params);
-  assert_true(!done);
 
-  route         = hs_route_new();
+void test_impl()
+{
+  struct HSRouter *router = hs_router_new();
+
+  hs_router_add_route(router, hs_routes_new_powered_by(NULL));
+
+  struct HSRoute *route = hs_route_new();
+
   route->path   = strdup("/test");
   route->serve  = _test_serve;
   route->is_get = true;
   hs_router_add_route(router, route);
 
-  fsio_create_empty_file(filename);
-  socket         = open(filename, O_WRONLY);
-  params->socket = socket;
+  _test_with_values(router, route, true, false, false, "HTTP/1.1 200 200\r\n"
+                    "X-Powered-By: CHS\r\n"
+                    "Connection: close\r\n"
+                    "Content-Length: 0\r\n"
+                    "\r\n");
 
-  params->router_state->closed_connection = false;
-  done                                    = hs_router_serve(router, params);
-  assert_true(done);
+  _test_with_values(router, route, false, true, false, NULL);
 
-  close(socket);
+  _test_with_values(router, route, true, false, false, "HTTP/1.1 200 200\r\n"
+                    "X-Powered-By: CHS\r\n"
+                    "Connection: close\r\n"
+                    "Content-Length: 0\r\n"
+                    "\r\n");
 
-  content = fsio_read_text_file(filename);
+  _test_with_values(router, route, false, true, false, NULL);
 
-  assert_string_equal(content, "HTTP/1.1 200 200\r\n"
-                      "Connection: close\r\n"
-                      "Content-Length: 0\r\n"
-                      "\r\n");
+  hs_router_add_route(router, hs_routes_new_404_route());
 
-  hs_io_free(content);
-  fsio_remove(filename);
+  _test_with_values(router, route, false, false, false, "HTTP/1.1 404 404\r\n"
+                    "X-Powered-By: CHS\r\n"
+                    "Connection: close\r\n"
+                    "Content-Length: 0\r\n"
+                    "\r\n");
 
-  route->is_get                           = false;
-  route->is_post                          = true;
-  params->router_state->closed_connection = false;
-  done                                    = hs_router_serve(router, params);
-  assert_true(!done);
+  _test_with_values(router, route, true, true, true, "");
 
-  route = hs_routes_new_404_route();
-  hs_router_add_route(router, route);
-
-  fsio_create_empty_file(filename);
-  socket         = open(filename, O_WRONLY);
-  params->socket = socket;
-
-  params->router_state->closed_connection = false;
-  done                                    = hs_router_serve(router, params);
-  assert_true(done);
-
-  close(socket);
-
-  content = fsio_read_text_file(filename);
-
-  assert_string_equal(content, "HTTP/1.1 404 404\r\n"
-                      "Connection: close\r\n"
-                      "Content-Length: 0\r\n"
-                      "\r\n");
-
-  hs_io_free(content);
-  fsio_remove(filename);
-
-  fsio_create_empty_file(filename);
-  socket         = open(filename, O_WRONLY);
-  params->socket = socket;
-
-  params->router_state->closed_connection = true;
-  done                                    = hs_router_serve(router, params);
-  assert_true(!done);
-
-  close(socket);
-
-  content = fsio_read_text_file(filename);
-
-  assert_string_equal(content, "");
-
-  hs_io_free(content);
-  fsio_remove(filename);
-
-  hs_types_release_serve_flow_params(params);
   hs_router_release(router);
 } /* test_impl */
 

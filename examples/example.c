@@ -40,6 +40,10 @@ int main(int argc, char *argv[])
   }
   struct sockaddr_in address = hs_server_init_ipv4_address(port);
 
+  // add powered by response header to all responses
+  struct HSRoute *powered_by_route = hs_routes_new_powered_by(NULL);
+  hs_router_add_route(server->router, powered_by_route);
+
   // This route will server as our top domain route and will return
   // a custom HTML that we are building in runtime (we can also point to a file).
   struct HSRoute *home_route = hs_route_new();

@@ -6,6 +6,7 @@
 * 404 route supports all child paths by default.
 * Refactor router flow invocation to enable non response routes to modify final HTTP response.
 * New simplified api for adding headers and cookies
+* New powered-by route
 
 ### v0.2.3 (2021-08-24)
 

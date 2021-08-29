@@ -3,6 +3,8 @@
 
 #include "hs_route.h"
 
+#define HS_ROUTES_POWERED_BY    "CHS"
+
 /**
  * Simple route which returns 404 when invoked.
  */
@@ -38,6 +40,13 @@ struct HSRoute *hs_routes_new_directory_route_with_options(char * /* base direct
  * None of the input parameters will be released when the route is released.
  */
 struct HSRoute *hs_routes_new_basic_auth(char * /* realm */, bool (*auth)(char * /* base64 auth value */, void * /* context */), void * /* context */);
+
+/**
+ * Adds the X-Powered-By response header.
+ * If no value is provided, the default HS server value is returned.
+ * The provided value will not be released when the route is released.
+ */
+struct HSRoute *hs_routes_new_powered_by(char *);
 
 #endif
 
