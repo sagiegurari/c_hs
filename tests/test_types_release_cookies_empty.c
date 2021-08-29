@@ -3,7 +3,7 @@
 
 void test_impl()
 {
-  struct HSCookies *cookies = hs_types_new_cookies();
+  struct HSCookies *cookies = hs_types_new_cookies(1);
 
   hs_types_release_cookies(cookies);
 }

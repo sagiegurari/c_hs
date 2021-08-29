@@ -16,10 +16,8 @@ enum HSServeFlowResponse _test_redirect(struct HSRoute *route, struct HSServeFlo
 
   assert_string_equal(params->router_state->base_path, "/admin/");
 
-  params->response->code              = HS_HTTP_RESPONSE_CODE_TEMPORARY_REDIRECT;
-  params->response->headers->count    = 1;
-  params->response->headers->pairs    = malloc(sizeof(struct HSKeyValue) * params->response->headers->count);
-  params->response->headers->pairs[0] = hs_types_new_key_value(strdup("Location"), strdup("/mylocation"));
+  params->response->code = HS_HTTP_RESPONSE_CODE_TEMPORARY_REDIRECT;
+  hs_types_key_value_array_add(params->response->headers, strdup("Location"), strdup("/mylocation"));
 
   return(HS_SERVE_FLOW_RESPONSE_DONE);
 }

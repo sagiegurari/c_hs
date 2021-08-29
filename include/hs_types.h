@@ -15,6 +15,7 @@ struct HSKeyValueArray
 {
   struct HSKeyValue **pairs;
   size_t            count;
+  size_t            capacity;
 };
 
 struct HSCookie
@@ -34,6 +35,7 @@ struct HSCookies
 {
   struct HSCookie **cookies;
   size_t          count;
+  size_t          capacity;
 };
 
 struct HSHttpRequestPayload;
@@ -177,7 +179,7 @@ void hs_types_release_cookie(struct HSCookie *);
 /**
  * Creates and returns a new cookies struct.
  */
-struct HSCookies *hs_types_new_cookies(void);
+struct HSCookies *hs_types_new_cookies(size_t /* capacity */);
 
 /**
  * Frees all memory used by the provided struct, including
@@ -186,9 +188,15 @@ struct HSCookies *hs_types_new_cookies(void);
 void hs_types_release_cookies(struct HSCookies *);
 
 /**
+ * Adds the cookie to the cookies structure.
+ * If needed, a new internal array will be allocated with enough capacity.
+ */
+bool hs_types_cookies_add(struct HSCookies *, struct HSCookie *);
+
+/**
  * Creates and returns a new key value array struct.
  */
-struct HSKeyValueArray *hs_types_new_key_value_array(void);
+struct HSKeyValueArray *hs_types_new_key_value_array(size_t /* capacity */);
 
 /**
  * Frees all memory used by the provided struct, including
@@ -200,7 +208,13 @@ void hs_types_release_key_value_array(struct HSKeyValueArray *);
  * Searches the array and returns the first value for the given key.
  * If not found or array/key are null, null will be returned.
  */
-char *hs_types_get_value_for_key_from_array(struct HSKeyValueArray *, char *);
+char *hs_types_key_value_array_get_by_key(struct HSKeyValueArray *, char *);
+
+/**
+ * Adds the key/value pair to the array.
+ * If needed, a new internal pairs array will be allocated with enough capacity.
+ */
+bool hs_types_key_value_array_add(struct HSKeyValueArray *, char * /* key */, char * /* value */);
 
 /**
  * Creates and returns a new key value pair struct.

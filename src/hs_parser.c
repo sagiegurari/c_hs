@@ -87,19 +87,19 @@ struct HSKeyValue *hs_parser_parse_header(char *line)
   return(header);
 }
 
-struct HSCookies *hs_parser_parse_cookie_header(char *cookie_line)
+
+bool hs_parser_parse_cookie_header(struct HSCookies *cookies, char *cookie_line)
 {
-  if (cookie_line == NULL)
+  if (cookies == NULL || cookie_line == NULL)
   {
-    return(NULL);
+    return(false);
   }
 
-  struct HSCookies *cookies = NULL;
-  size_t           length   = strlen(cookie_line);
+  size_t length = strlen(cookie_line);
+  bool   added  = false;
   if (length)
   {
-    struct Vector       *cookies_vector = vector_new();
-    struct StringBuffer *buffer         = string_buffer_new_with_options(length, true);
+    struct StringBuffer *buffer = string_buffer_new_with_options(length, true);
 
     char                *name            = NULL;
     char                *value           = NULL;
@@ -132,7 +132,7 @@ struct HSCookies *hs_parser_parse_cookie_header(char *cookie_line)
           struct HSCookie *cookie = hs_types_new_cookie();
           cookie->name  = name;
           cookie->value = value;
-          vector_push(cookies_vector, cookie);
+          added         = hs_types_cookies_add(cookies, cookie);
 
           name  = NULL;
           value = NULL;
@@ -152,7 +152,7 @@ struct HSCookies *hs_parser_parse_cookie_header(char *cookie_line)
       struct HSCookie *cookie = hs_types_new_cookie();
       cookie->name  = name;
       cookie->value = value;
-      vector_push(cookies_vector, cookie);
+      added         = hs_types_cookies_add(cookies, cookie);
     }
     else
     {
@@ -160,25 +160,9 @@ struct HSCookies *hs_parser_parse_cookie_header(char *cookie_line)
     }
 
     string_buffer_release(buffer);
-
-    size_t count = vector_size(cookies_vector);
-    if (count)
-    {
-      cookies          = hs_types_new_cookies();
-      cookies->count   = count;
-      cookies->cookies = malloc(sizeof(struct HSCookie *) * cookies->count);
-
-      for (size_t index = 0; index < count; index++)
-      {
-        struct HSCookie *cookie = (struct HSCookie *)vector_get(cookies_vector, index);
-        cookies->cookies[index] = cookie;
-      }
-    }
-
-    vector_release(cookies_vector);
   }
 
-  return(cookies);
+  return(added);
 } /* hs_parser_parse_cookie_header */
 
 
@@ -193,9 +177,7 @@ void hs_parser_set_header(struct HSHttpRequest *request, struct HSKeyValue *head
   {
     if (stringfn_equal(header->key, "cookie"))
     {
-      // we are overwriting the previous cookie header if any
-      hs_types_release_cookies(request->cookies);
-      request->cookies = hs_parser_parse_cookie_header(header->value);
+      hs_parser_parse_cookie_header(request->cookies, header->value);
     }
     else if (stringfn_equal(header->key, "content-length"))
     {
@@ -402,7 +384,8 @@ struct HSKeyValueArray *hs_parser_parse_query_string(char *query_string)
 
   string_buffer_release(buffer);
 
-  struct HSKeyValueArray *array = hs_types_new_key_value_array();
+  size_t                 capacity = vector_size(pairs);
+  struct HSKeyValueArray *array   = hs_types_new_key_value_array(capacity);
   _hs_parser_convert_vector_to_key_value_pair(array, pairs);
 
   return(array);
@@ -602,7 +585,13 @@ void _hs_parser_convert_vector_to_key_value_pair(struct HSKeyValueArray *array, 
   array->count = vector_size(vector);
   if (array->count)
   {
-    array->pairs = malloc(sizeof(struct HSKeyValue) * array->count);
+    if (array->count > array->capacity)
+    {
+      hs_io_free(array->pairs);
+      array->capacity = array->count;
+      array->pairs    = malloc(sizeof(struct HSKeyValue *) * array->capacity);
+    }
+
     for (size_t index = 0; index < array->count; index++)
     {
       array->pairs[index] = vector_get(vector, index);

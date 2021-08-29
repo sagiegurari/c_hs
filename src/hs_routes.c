@@ -296,11 +296,9 @@ enum HSServeFlowResponse _hs_routes_basic_auth_serve(struct HSRoute *route, stru
   string_buffer_append(buffer, '"');
   char *realm = string_buffer_to_string(buffer);
 
-  params->response->code              = HS_HTTP_RESPONSE_CODE_UNAUTHORIZED;
-  params->response->headers->count    = 1;
-  params->response->headers->pairs    = malloc(sizeof(struct HSKeyValue) * params->response->headers->count);
-  params->response->headers->pairs[0] = hs_types_new_key_value(strdup("WWW-Authenticate"), realm);
-  params->response->content_string    = strdup("Unauthenticated");
+  params->response->code = HS_HTTP_RESPONSE_CODE_UNAUTHORIZED;
+  hs_types_key_value_array_add(params->response->headers, strdup("WWW-Authenticate"), realm);
+  params->response->content_string = strdup("Unauthenticated");
 
   return(HS_SERVE_FLOW_RESPONSE_DONE);
 } /* _hs_routes_basic_auth_serve */

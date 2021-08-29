@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define HS_TYPES_DEFAULT_HEADERS_CAPACITY    50
+#define HS_TYPES_DEFAULT_COOKIES_CAPACITY    10
+
 struct HSHttpRequestPayload
 {
   bool                          loaded;
@@ -60,8 +63,8 @@ struct HSHttpRequest *hs_types_new_http_request()
   request->connection     = HS_CONNECTION_TYPE_UNKNOWN;
   request->user_agent     = NULL;
   request->authorization  = NULL;
-  request->cookies        = hs_types_new_cookies();
-  request->headers        = hs_types_new_key_value_array();
+  request->cookies        = hs_types_new_cookies(HS_TYPES_DEFAULT_COOKIES_CAPACITY);
+  request->headers        = hs_types_new_key_value_array(HS_TYPES_DEFAULT_HEADERS_CAPACITY);
   request->payload        = NULL;
 
   return(request);
@@ -101,8 +104,8 @@ struct HSHttpResponse *hs_types_new_http_response()
   struct HSHttpResponse *response = malloc(sizeof(struct HSHttpResponse));
 
   response->code           = HS_HTTP_RESPONSE_CODE_OK;
-  response->cookies        = hs_types_new_cookies();
-  response->headers        = hs_types_new_key_value_array();
+  response->cookies        = hs_types_new_cookies(HS_TYPES_DEFAULT_COOKIES_CAPACITY);
+  response->headers        = hs_types_new_key_value_array(HS_TYPES_DEFAULT_HEADERS_CAPACITY);
   response->mime_type      = HS_MIME_TYPE_NONE;
   response->content_string = NULL;
   response->content_file   = NULL;
@@ -211,12 +214,14 @@ void hs_types_release_cookie(struct HSCookie *cookie)
   hs_io_free(cookie);
 }
 
-struct HSCookies *hs_types_new_cookies()
+struct HSCookies *hs_types_new_cookies(size_t capacity)
 {
   struct HSCookies *cookies = malloc(sizeof(struct HSCookies));
 
-  cookies->cookies = NULL;
-  cookies->count   = 0;
+  cookies->count    = 0;
+  cookies->capacity = capacity;
+
+  cookies->cookies = malloc(sizeof(struct HSCookie *) * cookies->capacity);
 
   return(cookies);
 }
@@ -236,21 +241,48 @@ void hs_types_release_cookies(struct HSCookies *cookies)
       struct HSCookie *cookie = cookies->cookies[index];
       hs_types_release_cookie(cookie);
     }
-
-    hs_io_free(cookies->cookies);
-    cookies->cookies = NULL;
-    cookies->count   = 0;
   }
+  hs_io_free(cookies->cookies);
 
   hs_io_free(cookies);
 }
 
-struct HSKeyValueArray *hs_types_new_key_value_array()
+
+bool hs_types_cookies_add(struct HSCookies *cookies, struct HSCookie *cookie)
+{
+  if (cookies == NULL || cookie == NULL)
+  {
+    return(false);
+  }
+
+  if (cookies->count >= cookies->capacity)
+  {
+    struct HSCookie **old_cookies = cookies->cookies;
+    cookies->capacity = cookies->capacity * 2;
+    cookies->cookies  = malloc(sizeof(struct HSCookie *) * cookies->capacity);
+
+    for (size_t index = 0; index < cookies->count; index++)
+    {
+      cookies->cookies[index] = old_cookies[index];
+    }
+
+    hs_io_free(old_cookies);
+  }
+
+  cookies->cookies[cookies->count] = cookie;
+  cookies->count++;
+
+  return(true);
+}
+
+struct HSKeyValueArray *hs_types_new_key_value_array(size_t capacity)
 {
   struct HSKeyValueArray *array = malloc(sizeof(struct HSKeyValueArray));
 
-  array->pairs = NULL;
-  array->count = 0;
+  array->count    = 0;
+  array->capacity = capacity;
+
+  array->pairs = malloc(sizeof(struct HSKeyValue *) * array->capacity);
 
   return(array);
 }
@@ -270,17 +302,15 @@ void hs_types_release_key_value_array(struct HSKeyValueArray *array)
       struct HSKeyValue *key_value = array->pairs[index];
       hs_types_release_key_value(key_value);
     }
-
-    hs_io_free(array->pairs);
-    array->pairs = NULL;
-    array->count = 0;
   }
+
+  hs_io_free(array->pairs);
 
   hs_io_free(array);
 }
 
 
-char *hs_types_get_value_for_key_from_array(struct HSKeyValueArray *array, char *key)
+char *hs_types_key_value_array_get_by_key(struct HSKeyValueArray *array, char *key)
 {
   if (array == NULL || key == NULL || !array->count)
   {
@@ -298,6 +328,40 @@ char *hs_types_get_value_for_key_from_array(struct HSKeyValueArray *array, char 
   }
 
   return(NULL);
+}
+
+
+bool hs_types_key_value_array_add(struct HSKeyValueArray *array, char *key, char *value)
+{
+  if (array == NULL || key == NULL)
+  {
+    return(false);
+  }
+
+  struct HSKeyValue *key_value = hs_types_new_key_value(key, value);
+  if (key_value == NULL)
+  {
+    return(false);
+  }
+
+  if (array->count >= array->capacity)
+  {
+    struct HSKeyValue **old_pairs = array->pairs;
+    array->capacity = array->capacity * 2;
+    array->pairs    = malloc(sizeof(struct HSKeyValue *) * array->capacity);
+
+    for (size_t index = 0; index < array->count; index++)
+    {
+      array->pairs[index] = old_pairs[index];
+    }
+
+    hs_io_free(old_pairs);
+  }
+
+  array->pairs[array->count] = key_value;
+  array->count++;
+
+  return(true);
 }
 
 struct HSKeyValue *hs_types_new_key_value(char *key, char *value)

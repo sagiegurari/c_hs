@@ -4,23 +4,20 @@
 
 void _test_set_cookies(struct HSCookies *cookies)
 {
-  cookies->count   = 3;
-  cookies->cookies = malloc(sizeof(struct HSCookie) * cookies->count);
-  for (size_t index = 0; index < cookies->count; index++)
+  for (size_t index = 0; index < 3; index++)
   {
-    cookies->cookies[index]       = hs_types_new_cookie();
-    cookies->cookies[index]->name = stringfn_new_empty_string();
+    struct HSCookie *cookie = hs_types_new_cookie();
+    hs_types_cookies_add(cookies, cookie);
   }
 }
 
 
 void _test_set_headers(struct HSKeyValueArray *headers)
 {
-  headers->count = 5;
-  headers->pairs = malloc(sizeof(struct HSKeyValue) * headers->count);
-  for (size_t index = 0; index < headers->count; index++)
+  for (size_t index = 0; index < 5; index++)
   {
-    headers->pairs[index] = hs_types_new_key_value(stringfn_new_empty_string(), stringfn_new_empty_string());
+    bool added = hs_types_key_value_array_add(headers, stringfn_new_empty_string(), stringfn_new_empty_string());
+    assert_true(added);
   }
 }
 

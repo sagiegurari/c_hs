@@ -4,10 +4,9 @@
 
 void test_impl()
 {
-  struct HSKeyValueArray *key_value_array = hs_types_new_key_value_array();
+  struct HSKeyValueArray *key_value_array = hs_types_new_key_value_array(50);
 
   key_value_array->count = 5;
-  key_value_array->pairs = malloc(sizeof(struct HSKeyValue) * key_value_array->count);
   for (size_t index = 0; index < key_value_array->count; index++)
   {
     key_value_array->pairs[index] = hs_types_new_key_value(stringfn_new_empty_string(), stringfn_new_empty_string());

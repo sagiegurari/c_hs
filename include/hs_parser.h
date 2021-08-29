@@ -32,9 +32,9 @@ struct HSHttpRequest *hs_parser_parse_request_line(char *);
 struct HSKeyValue *hs_parser_parse_header(char *);
 
 /**
- * Parsers the cookie header value (without key) and returns the cookies.
+ * Parsers the cookie header value (without key) and updates the cookies container.
  */
-struct HSCookies *hs_parser_parse_cookie_header(char *);
+bool hs_parser_parse_cookie_header(struct HSCookies *, char *);
 
 /**
  * Sets the specific header attribute in the given request from the header key/pair.
