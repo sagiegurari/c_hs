@@ -1,6 +1,7 @@
 #include "fsio.h"
 #include "hs_io.h"
-#include "hs_routes.h"
+#include "hs_routes_common.h"
+#include "hs_routes_fs.h"
 #include "stringfn.h"
 #include <dirent.h>
 #include <libgen.h>
@@ -20,37 +21,15 @@ struct HSRoutesDirectoryServeContext
   char *additional_head_content;
 };
 
-struct HSRoutesBasicAuthContext
-{
-  char *realm;
-  bool (*auth)(char *, void *);
-  void *context;
-};
-
-enum HSServeFlowResponse _hs_routes_404_serve(struct HSRoute *, struct HSServeFlowParams *);
 enum HSServeFlowResponse _hs_routes_file_serve(struct HSRoute *, struct HSServeFlowParams *);
 enum HSServeFlowResponse _hs_routes_directory_serve(struct HSRoute *, struct HSServeFlowParams *);
-enum HSServeFlowResponse _hs_routes_basic_auth_serve(struct HSRoute *, struct HSServeFlowParams *);
-enum HSServeFlowResponse _hs_routes_powered_by_serve(struct HSRoute *, struct HSServeFlowParams *);
-void _hs_routes_extension_release(struct HSRoute *);
 
-struct HSRoute *hs_routes_new_404_route()
+struct HSRoute           *hs_routes_fs_file_route_new(char *base_directory)
 {
-  struct HSRoute *route = hs_route_new();
-
-  route->serve = _hs_routes_404_serve;
-  hs_route_set_all_methods(route, true);
-  route->is_parent_path = true;
-
-  return(route);
+  return(hs_routes_fs_file_route_new_with_options(base_directory, NULL));
 }
 
-struct HSRoute *hs_routes_new_file_route(char *base_directory)
-{
-  return(hs_routes_new_file_route_with_options(base_directory, NULL));
-}
-
-struct HSRoute *hs_routes_new_file_route_with_options(char *base_directory, enum HSMimeType (*get_mime_type)(char *, enum HSMimeType))
+struct HSRoute *hs_routes_fs_file_route_new_with_options(char *base_directory, enum HSMimeType (*get_mime_type)(char *, enum HSMimeType))
 {
   struct HSRoute *route = hs_route_new();
 
@@ -62,17 +41,17 @@ struct HSRoute *hs_routes_new_file_route_with_options(char *base_directory, enum
   context->get_mime_type  = get_mime_type;
   route->extension        = context;
 
-  route->release = _hs_routes_extension_release;
+  route->release = hs_routes_common_extension_release;
 
   return(route);
 }
 
-struct HSRoute *hs_routes_new_directory_route(char *base_directory)
+struct HSRoute *hs_routes_fs_directory_route_new(char *base_directory)
 {
-  return(hs_routes_new_directory_route_with_options(base_directory, NULL));
+  return(hs_routes_fs_directory_route_new_with_options(base_directory, NULL));
 }
 
-struct HSRoute *hs_routes_new_directory_route_with_options(char *base_directory, char *additional_head_content)
+struct HSRoute *hs_routes_fs_directory_route_new_with_options(char *base_directory, char *additional_head_content)
 {
   struct HSRoute *route = hs_route_new();
 
@@ -84,60 +63,9 @@ struct HSRoute *hs_routes_new_directory_route_with_options(char *base_directory,
   context->additional_head_content = additional_head_content;
   route->extension                 = context;
 
-  route->release = _hs_routes_extension_release;
+  route->release = hs_routes_common_extension_release;
 
   return(route);
-}
-
-struct HSRoute *hs_routes_new_basic_auth(char *realm, bool (*auth)(char *, void *), void *auth_context)
-{
-  if (realm == NULL || auth == NULL)
-  {
-    return(NULL);
-  }
-
-  struct HSRoute *route = hs_route_new();
-  hs_route_set_all_methods(route, true);
-  route->is_parent_path = true;
-
-  struct HSRoutesBasicAuthContext *context = malloc(sizeof(struct HSRoutesBasicAuthContext));
-  context->realm   = realm;
-  context->auth    = auth;
-  context->context = auth_context;
-  route->extension = context;
-  route->serve     = _hs_routes_basic_auth_serve;
-  route->release   = _hs_routes_extension_release;
-
-  return(route);
-}
-
-struct HSRoute *hs_routes_new_powered_by(char *powered_by)
-{
-  struct HSRoute *route = hs_route_new();
-
-  hs_route_set_all_methods(route, true);
-  route->is_parent_path = true;
-
-  route->extension = powered_by;
-  if (route->extension == NULL)
-  {
-    route->extension = HS_ROUTES_POWERED_BY;
-  }
-  route->serve = _hs_routes_powered_by_serve;
-
-  return(route);
-}
-
-enum HSServeFlowResponse _hs_routes_404_serve(struct HSRoute *route, struct HSServeFlowParams *params)
-{
-  if (route == NULL || params == NULL || params->response == NULL)
-  {
-    return(HS_SERVE_FLOW_RESPONSE_CONTINUE);
-  }
-
-  params->response->code = HS_HTTP_RESPONSE_CODE_NOT_FOUND;
-
-  return(HS_SERVE_FLOW_RESPONSE_DONE);
 }
 
 enum HSServeFlowResponse _hs_routes_file_serve(struct HSRoute *route, struct HSServeFlowParams *params)
@@ -275,71 +203,4 @@ enum HSServeFlowResponse _hs_routes_directory_serve(struct HSRoute *route, struc
 
   return(HS_SERVE_FLOW_RESPONSE_DONE);
 } /* _hs_routes_directory_serve */
-
-enum HSServeFlowResponse _hs_routes_basic_auth_serve(struct HSRoute *route, struct HSServeFlowParams *params)
-{
-  if (  route == NULL
-     || params == NULL
-     || params->request == NULL
-     || params->response == NULL
-     || route->extension == NULL)
-  {
-    return(HS_SERVE_FLOW_RESPONSE_CONTINUE);
-  }
-
-  struct HSRoutesBasicAuthContext *context = (struct HSRoutesBasicAuthContext *)route->extension;
-
-  bool                            valid = false;
-  if (params->request->authorization != NULL)
-  {
-    if (stringfn_starts_with(params->request->authorization, "Basic ") && strlen(params->request->authorization) > 6)
-    {
-      char *authorization = stringfn_mut_substring(params->request->authorization, 6, 0);
-      valid = context->auth(authorization, context->context);
-
-      // auth is valid, go to next route
-      if (valid)
-      {
-        return(HS_SERVE_FLOW_RESPONSE_CONTINUE);
-      }
-    }
-  }
-
-  struct StringBuffer *buffer = string_buffer_new();
-  string_buffer_append_string(buffer, "Basic realm=\"");
-  string_buffer_append_string(buffer, context->realm);
-  string_buffer_append(buffer, '"');
-  char *realm = string_buffer_to_string(buffer);
-
-  params->response->code = HS_HTTP_RESPONSE_CODE_UNAUTHORIZED;
-  hs_types_key_value_array_add(params->response->headers, strdup("WWW-Authenticate"), realm);
-  params->response->content_string = strdup("Unauthenticated");
-
-  return(HS_SERVE_FLOW_RESPONSE_DONE);
-} /* _hs_routes_basic_auth_serve */
-
-enum HSServeFlowResponse _hs_routes_powered_by_serve(struct HSRoute *route, struct HSServeFlowParams *params)
-{
-  if (route == NULL || params == NULL || params->response == NULL || params->response->headers == NULL)
-  {
-    return(HS_SERVE_FLOW_RESPONSE_CONTINUE);
-  }
-
-  char *value = (char *)route->extension;
-
-  hs_types_key_value_array_add(params->response->headers, strdup("X-Powered-By"), strdup(value));
-
-  return(HS_SERVE_FLOW_RESPONSE_CONTINUE);
-}
-
-
-void _hs_routes_extension_release(struct HSRoute *route)
-{
-  if (route == NULL)
-  {
-    return;
-  }
-
-  hs_io_free(route->extension);
-}
 

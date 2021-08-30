@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
   struct sockaddr_in address = hs_server_init_ipv4_address(port);
 
   // add powered by response header to all responses
-  struct HSRoute *powered_by_route = hs_routes_new_powered_by(NULL);
+  struct HSRoute *powered_by_route = hs_routes_powered_by_route_new(NULL);
   hs_router_add_route(server->router, powered_by_route);
 
   // This route will server as our top domain route and will return
@@ -61,18 +61,18 @@ int main(int argc, char *argv[])
   struct HSRouter *fs_router = hs_router_new();
 
   // Protect FS access via basic auth
-  struct HSRoute *basic_auth_route = hs_routes_new_basic_auth("My Realm", _fs_basic_auth, NULL);
+  struct HSRoute *basic_auth_route = hg_routes_auth_basic_new("My Realm", _fs_basic_auth, NULL);
   hs_router_add_route(fs_router, basic_auth_route);
 
   // Adding directory route that will handle any request that maps
   // into a directory location in our file system.
-  struct HSRoute *fs_directory_route = hs_routes_new_directory_route(".");
+  struct HSRoute *fs_directory_route = hs_routes_fs_directory_route_new(".");
   fs_directory_route->is_parent_path = true; // enable to listen to all request sub paths
   hs_router_add_route(fs_router, fs_directory_route);
 
   // Adding file route that will handle any request that maps
   // into a file location on our file system.
-  struct HSRoute *fs_file_route = hs_routes_new_file_route(".");
+  struct HSRoute *fs_file_route = hs_routes_fs_file_route_new(".");
   fs_file_route->is_parent_path = true;
   hs_router_add_route(fs_router, fs_file_route);
 
@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
   hs_router_add_route(server->router, fs_route);
 
   // Any request that doesn't map to what we support, should get a 404
-  struct HSRoute *not_found_error_route = hs_routes_new_404_route();
+  struct HSRoute *not_found_error_route = hs_routes_error_404_route_new();
   hs_router_add_route(server->router, not_found_error_route);
 
   // start listening and serving content.

@@ -83,7 +83,7 @@ void test_impl()
 
   router = hs_router_new();
   hs_router_add_route(router, route);
-  route = hs_routes_new_404_route();
+  route = hs_routes_error_404_route_new();
   hs_router_add_route(router, route);
 
   _test_with_values(router, "/test", "HTTP/1.1 404 404\r\n"

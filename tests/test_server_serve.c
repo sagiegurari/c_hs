@@ -104,7 +104,7 @@ void test_impl()
     route->path = strdup("/admin/");
 
     hs_router_add_route(server->router, route);
-    route = hs_routes_new_404_route();
+    route = hs_routes_error_404_route_new();
     hs_router_add_route(server->router, route);
 
     bool done = hs_server_serve(server, address, "test context", _test_should_stop_server, _test_should_stop_router);
