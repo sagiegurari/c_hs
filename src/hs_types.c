@@ -4,9 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define HS_TYPES_DEFAULT_HEADERS_CAPACITY                    50
-#define HS_TYPES_DEFAULT_COOKIES_CAPACITY                    10
-#define HS_TYPES_DEFAULT_POST_RESPONSE_CALLBACKS_CAPACITY    10
+#define HS_TYPES_DEFAULT_HEADERS_CAPACITY                          50
+#define HS_TYPES_DEFAULT_COOKIES_CAPACITY                          10
+#define HS_TYPES_DEFAULT_POST_RESPONSE_CALLBACKS_CAPACITY          10
+#define HS_TYPES_DEFAULT_ROUTE_FLOW_STATE_STRING_PAIRS_CAPACITY    20
 
 struct HSHttpRequestPayload
 {
@@ -29,6 +30,7 @@ struct HSServeFlowParams *hs_types_new_serve_flow_params_pre_populated(struct HS
   params->response     = hs_types_new_http_response();
   params->socket       = 0;
   params->callbacks    = hs_types_new_post_response_callbacks(HS_TYPES_DEFAULT_POST_RESPONSE_CALLBACKS_CAPACITY);
+  params->route_state  = hs_types_new_route_flow_state();
   params->router_state = hs_types_new_router_flow_state();
 
   return(params);
@@ -45,6 +47,7 @@ void hs_types_release_serve_flow_params(struct HSServeFlowParams *params)
   hs_types_release_http_request(params->request);
   hs_types_release_http_response(params->response);
   hs_types_release_post_response_callbacks(params->callbacks);
+  hs_types_release_route_flow_state(params->route_state);
   hs_types_release_router_flow_state(params->router_state);
 
   hs_io_free(params);
@@ -238,6 +241,28 @@ void hs_types_release_router_flow_state(struct HSRouterFlowState *state)
   }
 
   hs_io_free(state->base_path);
+  hs_io_free(state);
+}
+
+struct HSRouteFlowState *hs_types_new_route_flow_state()
+{
+  struct HSRouteFlowState *state = malloc(sizeof(struct HSRouteFlowState));
+
+  state->string_pairs = hs_types_new_key_value_array(HS_TYPES_DEFAULT_ROUTE_FLOW_STATE_STRING_PAIRS_CAPACITY);
+
+  return(state);
+}
+
+
+void hs_types_release_route_flow_state(struct HSRouteFlowState *state)
+{
+  if (state == NULL)
+  {
+    return;
+  }
+
+  hs_types_release_key_value_array(state->string_pairs);
+
   hs_io_free(state);
 }
 

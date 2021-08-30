@@ -8,6 +8,7 @@
 * New simplified api for adding headers and cookies
 * New powered-by route
 * Support multiple post response callbacks
+* New route flow state which can be used to store data as part of the request handling flow
 
 ### v0.2.3 (2021-08-24)
 

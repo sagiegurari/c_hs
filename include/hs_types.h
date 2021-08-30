@@ -47,6 +47,11 @@ struct HSRouterFlowState
   char *base_path;
 };
 
+struct HSRouteFlowState
+{
+  struct HSKeyValueArray *string_pairs;
+};
+
 struct HSHttpRequest
 {
   enum HSHttpMethod           method;
@@ -103,6 +108,8 @@ struct HSServeFlowParams
   int                            socket;
   // Optional callbacks after response is written
   struct HSPostResponseCallbacks *callbacks;
+  // state, can be used by the routes to store data in the context of the request
+  struct HSRouteFlowState        *route_state;
   // state, used internally by the router
   struct HSRouterFlowState       *router_state;
 };
@@ -187,6 +194,17 @@ struct HSRouterFlowState *hs_types_new_router_flow_state(void);
  * any internal member/struct.
  */
 void hs_types_release_router_flow_state(struct HSRouterFlowState *);
+
+/**
+ * Creates and returns a new state struct.
+ */
+struct HSRouteFlowState *hs_types_new_route_flow_state(void);
+
+/**
+ * Frees all memory used by the provided struct, including
+ * any internal member/struct.
+ */
+void hs_types_release_route_flow_state(struct HSRouteFlowState *);
 
 /**
  * Creates and returns a new cookie struct.
