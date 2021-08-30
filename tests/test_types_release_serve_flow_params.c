@@ -52,8 +52,10 @@ void test_impl()
   params->response->content_string = stringfn_new_empty_string();
   params->response->content_file   = stringfn_new_empty_string();
 
-  params->callback->context = stringfn_new_empty_string();
-  params->callback->release = _test_release_callback;
+  struct HSPostResponseCallback *callback = hs_types_new_post_response_callback();
+  callback->context = stringfn_new_empty_string();
+  callback->release = _test_release_callback;
+  hs_types_post_response_callbacks_add(params->callbacks, callback);
 
   params->router_state->base_path = stringfn_new_empty_string();
 

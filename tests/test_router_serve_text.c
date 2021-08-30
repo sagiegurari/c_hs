@@ -52,8 +52,10 @@ enum HSServeFlowResponse _test_serve(struct HSRoute *route, struct HSServeFlowPa
 
   params->response->content_string = strdup("some content\nsecond line.");
 
-  params->callback->context = "test callback";
-  params->callback->run     = _test_callback;
+  struct HSPostResponseCallback *callback = hs_types_new_post_response_callback();
+  callback->context = "test callback";
+  callback->run     = _test_callback;
+  hs_types_post_response_callbacks_add(params->callbacks, callback);
 
   return(HS_SERVE_FLOW_RESPONSE_DONE);
 } /* _test_serve */

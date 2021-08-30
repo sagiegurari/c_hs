@@ -4,8 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define HS_TYPES_DEFAULT_HEADERS_CAPACITY    50
-#define HS_TYPES_DEFAULT_COOKIES_CAPACITY    10
+#define HS_TYPES_DEFAULT_HEADERS_CAPACITY                    50
+#define HS_TYPES_DEFAULT_COOKIES_CAPACITY                    10
+#define HS_TYPES_DEFAULT_POST_RESPONSE_CALLBACKS_CAPACITY    10
 
 struct HSHttpRequestPayload
 {
@@ -27,7 +28,7 @@ struct HSServeFlowParams *hs_types_new_serve_flow_params_pre_populated(struct HS
   params->request      = request;
   params->response     = hs_types_new_http_response();
   params->socket       = 0;
-  params->callback     = hs_types_new_post_response_callback();
+  params->callbacks    = hs_types_new_post_response_callbacks(HS_TYPES_DEFAULT_POST_RESPONSE_CALLBACKS_CAPACITY);
   params->router_state = hs_types_new_router_flow_state();
 
   return(params);
@@ -43,7 +44,7 @@ void hs_types_release_serve_flow_params(struct HSServeFlowParams *params)
 
   hs_types_release_http_request(params->request);
   hs_types_release_http_response(params->response);
-  hs_types_release_post_response_callback(params->callback);
+  hs_types_release_post_response_callbacks(params->callbacks);
   hs_types_release_router_flow_state(params->router_state);
 
   hs_io_free(params);
@@ -156,6 +157,66 @@ void hs_types_release_post_response_callback(struct HSPostResponseCallback *call
   hs_io_free(callback);
 }
 
+struct HSPostResponseCallbacks *hs_types_new_post_response_callbacks(size_t capacity)
+{
+  struct HSPostResponseCallbacks *callbacks = malloc(sizeof(struct HSPostResponseCallbacks));
+
+  callbacks->count    = 0;
+  callbacks->capacity = capacity;
+
+  callbacks->callbacks = malloc(sizeof(struct HSPostResponseCallback *) * callbacks->capacity);
+
+  return(callbacks);
+}
+
+
+void hs_types_release_post_response_callbacks(struct HSPostResponseCallbacks *callbacks)
+{
+  if (callbacks == NULL)
+  {
+    return;
+  }
+
+  if (callbacks->count)
+  {
+    for (size_t index = 0; index < callbacks->count; index++)
+    {
+      struct HSPostResponseCallback *callback = callbacks->callbacks[index];
+      hs_types_release_post_response_callback(callback);
+    }
+  }
+  hs_io_free(callbacks->callbacks);
+
+  hs_io_free(callbacks);
+}
+
+
+bool hs_types_post_response_callbacks_add(struct HSPostResponseCallbacks *callbacks, struct HSPostResponseCallback *callback)
+{
+  if (callbacks == NULL || callback == NULL)
+  {
+    return(false);
+  }
+
+  if (callbacks->count >= callbacks->capacity)
+  {
+    struct HSPostResponseCallback **old_callbacks = callbacks->callbacks;
+    callbacks->capacity  = callbacks->capacity * 2;
+    callbacks->callbacks = malloc(sizeof(struct HSPostResponseCallback *) * callbacks->capacity);
+
+    for (size_t index = 0; index < callbacks->count; index++)
+    {
+      callbacks->callbacks[index] = old_callbacks[index];
+    }
+
+    hs_io_free(old_callbacks);
+  }
+
+  callbacks->callbacks[callbacks->count] = callback;
+  callbacks->count++;
+
+  return(true);
+}
 
 struct HSRouterFlowState *hs_types_new_router_flow_state()
 {

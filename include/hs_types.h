@@ -89,15 +89,22 @@ struct HSPostResponseCallback
   void (*release)(struct HSPostResponseCallback *);
 };
 
+struct HSPostResponseCallbacks
+{
+  struct HSPostResponseCallback **callbacks;
+  size_t                        count;
+  size_t                        capacity;
+};
+
 struct HSServeFlowParams
 {
-  struct HSHttpRequest          *request;
-  struct HSHttpResponse         *response;
-  int                           socket;
-  // Optional callback after response is written
-  struct HSPostResponseCallback *callback;
+  struct HSHttpRequest           *request;
+  struct HSHttpResponse          *response;
+  int                            socket;
+  // Optional callbacks after response is written
+  struct HSPostResponseCallbacks *callbacks;
   // state, used internally by the router
-  struct HSRouterFlowState      *router_state;
+  struct HSRouterFlowState       *router_state;
 };
 
 enum HSServeFlowResponse
@@ -152,7 +159,23 @@ struct HSPostResponseCallback *hs_types_new_post_response_callback(void);
  * Releases the struct memory, not including the context.
  * Optional release function (if defined) will be invoked.
  */
-void hs_types_release_post_response_callback(struct HSPostResponseCallback *callback);
+void hs_types_release_post_response_callback(struct HSPostResponseCallback *);
+
+/**
+ * Creates and returns the new struct.
+ */
+struct HSPostResponseCallbacks *hs_types_new_post_response_callbacks(size_t /* capacity */);
+
+/**
+ * Releases the struct memory, including all sub callbacks.
+ */
+void hs_types_release_post_response_callbacks(struct HSPostResponseCallbacks *);
+
+/**
+ * Adds additional callback.
+ * If needed, a new internal array will be allocated with enough capacity.
+ */
+bool hs_types_post_response_callbacks_add(struct HSPostResponseCallbacks *, struct HSPostResponseCallback *);
 
 /**
  * Creates and returns a new state struct.

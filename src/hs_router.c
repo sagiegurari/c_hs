@@ -17,7 +17,7 @@ struct HSRouter
 bool _hs_router_serve(struct HSRouter *, struct HSServeFlowParams *, struct HSRoute *);
 enum HSServeFlowResponse _hs_router_as_route_serve(struct HSRoute *, struct HSServeFlowParams *);
 void                           _hs_router_as_route_release(struct HSRoute *);
-void _hs_router_run_callback(struct HSPostResponseCallback *);
+void _hs_router_run_callbacks(struct HSPostResponseCallbacks *);
 
 struct HSRouter *hs_router_new()
 {
@@ -452,7 +452,7 @@ bool _hs_router_serve(struct HSRouter *router, struct HSServeFlowParams *params,
     params->router_state->closed_connection = true;
   }
 
-  _hs_router_run_callback(params->callback);
+  _hs_router_run_callbacks(params->callbacks);
 
   return(true);
 }   /* _hs_router_serve */
@@ -509,13 +509,20 @@ void _hs_router_as_route_release(struct HSRoute *route)
 }
 
 
-void _hs_router_run_callback(struct HSPostResponseCallback *callback)
+void _hs_router_run_callbacks(struct HSPostResponseCallbacks *callbacks)
 {
-  if (callback == NULL || callback->run == NULL)
+  if (callbacks == NULL || !callbacks->count)
   {
     return;
   }
 
-  callback->run(callback);
+  for (size_t index = 0; index < callbacks->count; index++)
+  {
+    struct HSPostResponseCallback *callback = callbacks->callbacks[index];
+    if (callback != NULL && callback->run != NULL)
+    {
+      callback->run(callback);
+    }
+  }
 }
 
