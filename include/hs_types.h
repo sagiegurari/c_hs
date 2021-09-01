@@ -49,7 +49,14 @@ struct HSRouterFlowState
 
 struct HSRouteFlowState
 {
+  // string key/value pairs (all values will be freed at end of request)
   struct HSKeyValueArray *string_pairs;
+  // data array (values are not freed at end of request and must be manually freed via post response callback)
+  void                   **data;
+  // The key for each data item used to identify the data element (will be freed at the end of the flow)
+  char                   **data_keys;
+  size_t                 data_count;
+  size_t                 data_capacity;
 };
 
 struct HSHttpRequest
@@ -198,13 +205,25 @@ void hs_types_release_router_flow_state(struct HSRouterFlowState *);
 /**
  * Creates and returns a new state struct.
  */
-struct HSRouteFlowState *hs_types_new_route_flow_state(void);
+struct HSRouteFlowState *hs_types_new_route_flow_state(size_t /* data capacity */);
 
 /**
  * Frees all memory used by the provided struct, including
  * any internal member/struct.
  */
 void hs_types_release_route_flow_state(struct HSRouteFlowState *);
+
+/**
+ * Adds additional data items to the state.
+ * The data is not freed at the end of the request.
+ */
+void hs_types_route_flow_state_add_data(struct HSRouteFlowState *, char * /* key */, void * /* data */);
+
+/**
+ * Searches the data element by key and returns the first one.
+ * If not found, null will be returned.
+ */
+void *hs_types_route_flow_state_get_data_by_key(struct HSRouteFlowState *, char *);
 
 /**
  * Creates and returns a new cookie struct.
@@ -233,6 +252,12 @@ void hs_types_release_cookies(struct HSCookies *);
  * If needed, a new internal array will be allocated with enough capacity.
  */
 bool hs_types_cookies_add(struct HSCookies *, struct HSCookie *);
+
+/**
+ * Searches the cookie by name and returns the first one.
+ * If not found, null will be returned.
+ */
+struct HSCookie *hs_types_coookies_get_by_name(struct HSCookies *, char *);
 
 /**
  * Creates and returns a new key value array struct.

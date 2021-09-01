@@ -155,18 +155,22 @@ bool hs_router_serve(struct HSRouter *router, struct HSServeFlowParams *params)
   }
 
   size_t count = vector_size(router->routes);
+  bool   done  = false;
   for (size_t index = 0; index < count; index++)
   {
     struct HSRoute *route = (struct HSRoute *)vector_get(router->routes, index);
 
     if (_hs_router_serve(router, params, route))
     {
-      return(true);
+      done = true;
+      break;
     }
   }
 
-  return(false);
-}
+  _hs_router_run_callbacks(params->callbacks);
+
+  return(done);
+} /* hs_router_serve */
 
 struct HSRoute *hs_router_as_route(struct HSRouter *router)
 {
@@ -451,8 +455,6 @@ bool _hs_router_serve(struct HSRouter *router, struct HSServeFlowParams *params,
     params->socket                          = 0;
     params->router_state->closed_connection = true;
   }
-
-  _hs_router_run_callbacks(params->callbacks);
 
   return(true);
 }   /* _hs_router_serve */

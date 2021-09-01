@@ -8,6 +8,7 @@
 #define HS_TYPES_DEFAULT_COOKIES_CAPACITY                          10
 #define HS_TYPES_DEFAULT_POST_RESPONSE_CALLBACKS_CAPACITY          10
 #define HS_TYPES_DEFAULT_ROUTE_FLOW_STATE_STRING_PAIRS_CAPACITY    20
+#define HS_TYPES_DEFAULT_ROUTE_FLOW_STATE_DATA_CAPACITY            20
 
 struct HSHttpRequestPayload
 {
@@ -30,7 +31,7 @@ struct HSServeFlowParams *hs_types_new_serve_flow_params_pre_populated(struct HS
   params->response     = hs_types_new_http_response();
   params->socket       = 0;
   params->callbacks    = hs_types_new_post_response_callbacks(HS_TYPES_DEFAULT_POST_RESPONSE_CALLBACKS_CAPACITY);
-  params->route_state  = hs_types_new_route_flow_state();
+  params->route_state  = hs_types_new_route_flow_state(HS_TYPES_DEFAULT_ROUTE_FLOW_STATE_DATA_CAPACITY);
   params->router_state = hs_types_new_router_flow_state();
 
   return(params);
@@ -244,11 +245,16 @@ void hs_types_release_router_flow_state(struct HSRouterFlowState *state)
   hs_io_free(state);
 }
 
-struct HSRouteFlowState *hs_types_new_route_flow_state()
+struct HSRouteFlowState *hs_types_new_route_flow_state(size_t capacity)
 {
   struct HSRouteFlowState *state = malloc(sizeof(struct HSRouteFlowState));
 
   state->string_pairs = hs_types_new_key_value_array(HS_TYPES_DEFAULT_ROUTE_FLOW_STATE_STRING_PAIRS_CAPACITY);
+
+  state->data_capacity = capacity;
+  state->data_count    = 0;
+  state->data          = malloc(sizeof(void *) * state->data_capacity);
+  state->data_keys     = malloc(sizeof(char *) * state->data_capacity);
 
   return(state);
 }
@@ -262,8 +268,65 @@ void hs_types_release_route_flow_state(struct HSRouteFlowState *state)
   }
 
   hs_types_release_key_value_array(state->string_pairs);
+  hs_io_free(state->data);
+
+  for (size_t index = 0; index < state->data_count; index++)
+  {
+    hs_io_free(state->data_keys[index]);
+  }
+  hs_io_free(state->data_keys);
 
   hs_io_free(state);
+}
+
+
+void hs_types_route_flow_state_add_data(struct HSRouteFlowState *state, char *key, void *data)
+{
+  if (state == NULL || key == NULL || data == NULL)
+  {
+    return;
+  }
+
+  if (state->data_count >= state->data_capacity)
+  {
+    void **old_data      = state->data;
+    char **old_data_keys = state->data_keys;
+    state->data_capacity = state->data_capacity * 2;
+    state->data          = malloc(sizeof(void *) * state->data_capacity);
+    state->data_keys     = malloc(sizeof(char *) * state->data_capacity);
+
+    for (size_t index = 0; index < state->data_count; index++)
+    {
+      state->data[index]      = old_data[index];
+      state->data_keys[index] = old_data_keys[index];
+    }
+
+    hs_io_free(old_data);
+    hs_io_free(old_data_keys);
+  }
+
+  state->data[state->data_count]      = data;
+  state->data_keys[state->data_count] = key;
+  state->data_count++;
+}
+
+
+void *hs_types_route_flow_state_get_data_by_key(struct HSRouteFlowState *state, char *key)
+{
+  if (state == NULL || key == NULL)
+  {
+    return(NULL);
+  }
+
+  for (size_t index = 0; index < state->data_count; index++)
+  {
+    if (state->data_keys[index] != NULL && stringfn_equal(state->data_keys[index], key))
+    {
+      return(state->data[index]);
+    }
+  }
+
+  return(NULL);
 }
 
 struct HSCookie *hs_types_new_cookie()
@@ -359,6 +422,25 @@ bool hs_types_cookies_add(struct HSCookies *cookies, struct HSCookie *cookie)
   cookies->count++;
 
   return(true);
+}
+
+struct HSCookie *hs_types_coookies_get_by_name(struct HSCookies *cookies, char *name)
+{
+  if (cookies == NULL || name == NULL || !cookies->count)
+  {
+    return(NULL);
+  }
+
+  for (size_t index = 0; index < cookies->count; index++)
+  {
+    struct HSCookie *cookie = cookies->cookies[index];
+    if (stringfn_equal(cookie->name, name))
+    {
+      return(cookie);
+    }
+  }
+
+  return(NULL);
 }
 
 struct HSKeyValueArray *hs_types_new_key_value_array(size_t capacity)
