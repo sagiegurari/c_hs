@@ -40,6 +40,11 @@ jobs:
       with:
         repository: sagiegurari/c_fsio
         path: target/c_fsio
+    - name: Checkout c_ini
+      uses: actions/checkout@v2
+      with:
+        repository: sagiegurari/c_ini
+        path: target/c_ini
     - name: Configure
       shell: bash
       working-directory: ${{runner.workspace}}/target
