@@ -54,7 +54,7 @@ void _test_with_values(struct HSRouter *router, struct HSRoute *route, bool is_g
 
   if (global_session_id != NULL)
   {
-    struct HSCookie *cookie = hs_types_new_cookie();
+    struct HSCookie *cookie = hs_types_cookie_new();
     cookie->name  = strdup("sc");
     cookie->value = strdup(global_session_id);
     hs_types_cookies_add(params->request->cookies, cookie);

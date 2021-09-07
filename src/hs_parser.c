@@ -129,7 +129,7 @@ bool hs_parser_parse_cookie_header(struct HSCookies *cookies, char *cookie_line)
           value            = string_buffer_to_string(buffer);
           string_buffer_clear(buffer);
 
-          struct HSCookie *cookie = hs_types_new_cookie();
+          struct HSCookie *cookie = hs_types_cookie_new();
           cookie->name  = name;
           cookie->value = value;
           added         = hs_types_cookies_add(cookies, cookie);
@@ -149,7 +149,7 @@ bool hs_parser_parse_cookie_header(struct HSCookies *cookies, char *cookie_line)
       looking_for_name = true;
       value            = string_buffer_to_string(buffer);
 
-      struct HSCookie *cookie = hs_types_new_cookie();
+      struct HSCookie *cookie = hs_types_cookie_new();
       cookie->name  = name;
       cookie->value = value;
       added         = hs_types_cookies_add(cookies, cookie);

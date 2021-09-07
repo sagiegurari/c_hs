@@ -222,11 +222,12 @@ struct StringBuffer *hs_router_write_common_response_header(enum HSHttpResponseC
   }
 
   // write set cookie headers
-  if (cookies != NULL && cookies->count)
+  if (cookies != NULL)
   {
-    for (size_t index = 0; index < cookies->count; index++)
+    size_t count = hs_types_cookies_count(cookies);
+    for (size_t index = 0; index < count; index++)
     {
-      struct HSCookie *cookie = (struct HSCookie *)cookies->cookies[index];
+      struct HSCookie *cookie = hs_types_cookies_get(cookies, index);
 
       if (cookie != NULL && cookie->name != NULL && cookie->value != NULL)
       {

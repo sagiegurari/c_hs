@@ -27,8 +27,12 @@ char *_test_with_values(struct HSCookie *cookie, struct HSRoute *route)
   struct HSPostResponseCallback *callback = params->callbacks->callbacks[0];
   assert_true(callback != NULL);
 
-  assert_string_equal(HS_DEFAULT_SESSION_COOKIE_NAME, params->response->cookies->cookies[0]->name);
-  char *session_id = strdup(params->response->cookies->cookies[0]->value);
+  assert_num_equal(hs_types_cookies_count(params->response->cookies), 1);
+  struct HSCookie *session_cookie = hs_types_cookies_get(params->response->cookies, 0);
+  assert_true(session_cookie != NULL);
+  assert_string_equal(HS_DEFAULT_SESSION_COOKIE_NAME, session_cookie->name);
+  assert_true(session_cookie->value != NULL);
+  char *session_id = strdup(session_cookie->value);
   if (cookie != NULL)
   {
     assert_string_equal(session_id, cookie->value);
@@ -53,12 +57,12 @@ void _test_flow(struct HSRoute *route)
 
   assert_true(session_id != NULL);
 
-  struct HSCookie *cookie = hs_types_new_cookie();
+  struct HSCookie *cookie = hs_types_cookie_new();
   cookie->name  = strdup(HS_DEFAULT_SESSION_COOKIE_NAME);
   cookie->value = strdup(session_id);
   _test_with_values(cookie, route);
 
-  cookie        = hs_types_new_cookie();
+  cookie        = hs_types_cookie_new();
   cookie->name  = strdup(HS_DEFAULT_SESSION_COOKIE_NAME);
   cookie->value = strdup(session_id);
   _test_with_values(cookie, route);

@@ -2,6 +2,7 @@
 #define __HS_TYPES_H__
 
 #include "hs_constants.h"
+#include "hs_types_cookie.h"
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -16,26 +17,6 @@ struct HSKeyValueArray
   struct HSKeyValue **pairs;
   size_t            count;
   size_t            capacity;
-};
-
-struct HSCookie
-{
-  char                  *name;
-  char                  *value;
-  char                  *expires;
-  int                   max_age;
-  bool                  secure;
-  bool                  http_only;
-  char                  *domain;
-  char                  *path;
-  enum HSCookieSameSite same_site;
-};
-
-struct HSCookies
-{
-  struct HSCookie **cookies;
-  size_t          count;
-  size_t          capacity;
 };
 
 struct HSHttpRequestPayload;
@@ -224,40 +205,6 @@ void hs_types_route_flow_state_add_data(struct HSRouteFlowState *, char * /* key
  * If not found, null will be returned.
  */
 void *hs_types_route_flow_state_get_data_by_key(struct HSRouteFlowState *, char *);
-
-/**
- * Creates and returns a new cookie struct.
- */
-struct HSCookie *hs_types_new_cookie(void);
-
-/**
- * Frees all memory used by the provided struct, including
- * any internal member/struct.
- */
-void hs_types_release_cookie(struct HSCookie *);
-
-/**
- * Creates and returns a new cookies struct.
- */
-struct HSCookies *hs_types_new_cookies(size_t /* capacity */);
-
-/**
- * Frees all memory used by the provided struct, including
- * any internal member/struct.
- */
-void hs_types_release_cookies(struct HSCookies *);
-
-/**
- * Adds the cookie to the cookies structure.
- * If needed, a new internal array will be allocated with enough capacity.
- */
-bool hs_types_cookies_add(struct HSCookies *, struct HSCookie *);
-
-/**
- * Searches the cookie by name and returns the first one.
- * If not found, null will be returned.
- */
-struct HSCookie *hs_types_coookies_get_by_name(struct HSCookies *, char *);
 
 /**
  * Creates and returns a new key value array struct.

@@ -6,7 +6,9 @@ void _test_set_cookies(struct HSCookies *cookies)
 {
   for (size_t index = 0; index < 3; index++)
   {
-    struct HSCookie *cookie = hs_types_new_cookie();
+    struct HSCookie *cookie = hs_types_cookie_new();
+    cookie->name  = stringfn_new_empty_string();
+    cookie->value = stringfn_new_empty_string();
     hs_types_cookies_add(cookies, cookie);
   }
 }

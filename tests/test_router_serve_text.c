@@ -27,7 +27,7 @@ enum HSServeFlowResponse _test_serve(struct HSRoute *route, struct HSServeFlowPa
   hs_types_key_value_array_add(params->response->headers, strdup("header1"), strdup("value1"));
   hs_types_key_value_array_add(params->response->headers, strdup("header2"), strdup("value2"));
   hs_types_key_value_array_add(params->response->headers, strdup("header3"), strdup("value3"));
-  struct HSCookie *cookie = hs_types_new_cookie();
+  struct HSCookie *cookie = hs_types_cookie_new();
   cookie->name      = strdup("c1");
   cookie->value     = strdup("v1");
   cookie->expires   = strdup("1 1 1980");
@@ -38,12 +38,12 @@ enum HSServeFlowResponse _test_serve(struct HSRoute *route, struct HSServeFlowPa
   cookie->path      = strdup("/somepath");
   cookie->same_site = HS_COOKIE_SAME_SITE_NONE;
   hs_types_cookies_add(params->response->cookies, cookie);
-  cookie            = hs_types_new_cookie();
+  cookie            = hs_types_cookie_new();
   cookie->name      = strdup("c2");
   cookie->value     = strdup("v2");
   cookie->same_site = HS_COOKIE_SAME_SITE_STRICT;
   hs_types_cookies_add(params->response->cookies, cookie);
-  cookie        = hs_types_new_cookie();
+  cookie        = hs_types_cookie_new();
   cookie->name  = strdup("c3");
   cookie->value = strdup("v3");
   hs_types_cookies_add(params->response->cookies, cookie);

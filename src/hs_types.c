@@ -5,7 +5,6 @@
 #include <stdlib.h>
 
 #define HS_TYPES_DEFAULT_HEADERS_CAPACITY                          50
-#define HS_TYPES_DEFAULT_COOKIES_CAPACITY                          10
 #define HS_TYPES_DEFAULT_POST_RESPONSE_CALLBACKS_CAPACITY          10
 #define HS_TYPES_DEFAULT_ROUTE_FLOW_STATE_STRING_PAIRS_CAPACITY    20
 #define HS_TYPES_DEFAULT_ROUTE_FLOW_STATE_DATA_CAPACITY            20
@@ -68,7 +67,7 @@ struct HSHttpRequest *hs_types_new_http_request()
   request->connection     = HS_CONNECTION_TYPE_UNKNOWN;
   request->user_agent     = NULL;
   request->authorization  = NULL;
-  request->cookies        = hs_types_new_cookies(HS_TYPES_DEFAULT_COOKIES_CAPACITY);
+  request->cookies        = hs_types_cookies_new();
   request->headers        = hs_types_new_key_value_array(HS_TYPES_DEFAULT_HEADERS_CAPACITY);
   request->payload        = NULL;
 
@@ -89,7 +88,7 @@ void hs_types_release_http_request(struct HSHttpRequest *request)
   hs_io_free(request->user_agent);
   hs_io_free(request->authorization);
 
-  hs_types_release_cookies(request->cookies);
+  hs_types_cookies_release(request->cookies);
 
   hs_types_release_key_value_array(request->headers);
 
@@ -109,7 +108,7 @@ struct HSHttpResponse *hs_types_new_http_response()
   struct HSHttpResponse *response = malloc(sizeof(struct HSHttpResponse));
 
   response->code           = HS_HTTP_RESPONSE_CODE_OK;
-  response->cookies        = hs_types_new_cookies(HS_TYPES_DEFAULT_COOKIES_CAPACITY);
+  response->cookies        = hs_types_cookies_new();
   response->headers        = hs_types_new_key_value_array(HS_TYPES_DEFAULT_HEADERS_CAPACITY);
   response->mime_type      = HS_MIME_TYPE_NONE;
   response->content_string = NULL;
@@ -128,7 +127,7 @@ void hs_types_release_http_response(struct HSHttpResponse *response)
 
   hs_io_free(response->content_string);
   hs_io_free(response->content_file);
-  hs_types_release_cookies(response->cookies);
+  hs_types_cookies_release(response->cookies);
   hs_types_release_key_value_array(response->headers);
 
   hs_io_free(response);
@@ -323,120 +322,6 @@ void *hs_types_route_flow_state_get_data_by_key(struct HSRouteFlowState *state, 
     if (state->data_keys[index] != NULL && stringfn_equal(state->data_keys[index], key))
     {
       return(state->data[index]);
-    }
-  }
-
-  return(NULL);
-}
-
-struct HSCookie *hs_types_new_cookie()
-{
-  struct HSCookie *cookie = malloc(sizeof(struct HSCookie));
-
-  cookie->name      = NULL;
-  cookie->value     = NULL;
-  cookie->expires   = NULL;
-  cookie->max_age   = -1;
-  cookie->secure    = false;
-  cookie->http_only = false;
-  cookie->domain    = NULL;
-  cookie->path      = NULL;
-  cookie->same_site = HS_COOKIE_SAME_SITE_LAX;
-
-  return(cookie);
-}
-
-
-void hs_types_release_cookie(struct HSCookie *cookie)
-{
-  if (cookie == NULL)
-  {
-    return;
-  }
-
-  hs_io_free(cookie->name);
-  hs_io_free(cookie->value);
-  hs_io_free(cookie->expires);
-  hs_io_free(cookie->domain);
-  hs_io_free(cookie->path);
-
-  hs_io_free(cookie);
-}
-
-struct HSCookies *hs_types_new_cookies(size_t capacity)
-{
-  struct HSCookies *cookies = malloc(sizeof(struct HSCookies));
-
-  cookies->count    = 0;
-  cookies->capacity = capacity;
-
-  cookies->cookies = malloc(sizeof(struct HSCookie *) * cookies->capacity);
-
-  return(cookies);
-}
-
-
-void hs_types_release_cookies(struct HSCookies *cookies)
-{
-  if (cookies == NULL)
-  {
-    return;
-  }
-
-  if (cookies->count)
-  {
-    for (size_t index = 0; index < cookies->count; index++)
-    {
-      struct HSCookie *cookie = cookies->cookies[index];
-      hs_types_release_cookie(cookie);
-    }
-  }
-  hs_io_free(cookies->cookies);
-
-  hs_io_free(cookies);
-}
-
-
-bool hs_types_cookies_add(struct HSCookies *cookies, struct HSCookie *cookie)
-{
-  if (cookies == NULL || cookie == NULL)
-  {
-    return(false);
-  }
-
-  if (cookies->count >= cookies->capacity)
-  {
-    struct HSCookie **old_cookies = cookies->cookies;
-    cookies->capacity = cookies->capacity * 2;
-    cookies->cookies  = malloc(sizeof(struct HSCookie *) * cookies->capacity);
-
-    for (size_t index = 0; index < cookies->count; index++)
-    {
-      cookies->cookies[index] = old_cookies[index];
-    }
-
-    hs_io_free(old_cookies);
-  }
-
-  cookies->cookies[cookies->count] = cookie;
-  cookies->count++;
-
-  return(true);
-}
-
-struct HSCookie *hs_types_coookies_get_by_name(struct HSCookies *cookies, char *name)
-{
-  if (cookies == NULL || name == NULL || !cookies->count)
-  {
-    return(NULL);
-  }
-
-  for (size_t index = 0; index < cookies->count; index++)
-  {
-    struct HSCookie *cookie = cookies->cookies[index];
-    if (stringfn_equal(cookie->name, name))
-    {
-      return(cookie);
     }
   }
 

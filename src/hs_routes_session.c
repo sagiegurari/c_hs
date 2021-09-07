@@ -265,7 +265,7 @@ struct HSCookie *hs_routes_session_new_cookie(char *name, char *session_id)
     return(NULL);
   }
 
-  struct HSCookie *cookie = hs_types_new_cookie();
+  struct HSCookie *cookie = hs_types_cookie_new();
   cookie->name      = name;
   cookie->value     = session_id;
   cookie->secure    = true;
@@ -288,7 +288,7 @@ enum HSServeFlowResponse _hs_routes_session_route_serve(struct HSRoute *route, s
   struct HSSessionRouteContext *context = (struct HSSessionRouteContext *)route->extension;
 
   // find the cookie which stores the session ID
-  struct HSCookie *cookie = hs_types_coookies_get_by_name(params->request->cookies, context->cookie_name);
+  struct HSCookie *cookie = hs_types_cookies_get_by_name(params->request->cookies, context->cookie_name);
 
   char            *session_id = NULL;
   if (cookie != NULL)
