@@ -2,3 +2,5 @@
 temp/
 **/*.log
 /core
+/sessions
+
