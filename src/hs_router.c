@@ -452,6 +452,13 @@ bool _hs_router_serve(struct HSRouter *router, struct HSServeFlowParams *params,
 
   string_buffer_release(header_buffer);
 
+  // if there is still payload left to read, no matter what we sent to the header
+  // we will still close the connection instead of reading all that payload for nothing
+  if (params->request->content_length && !hs_types_http_request_payload_is_loaded(params->request))
+  {
+    close_connection = true;
+  }
+
   if (close_connection)
   {
     hs_io_close(params->socket);

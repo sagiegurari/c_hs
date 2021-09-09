@@ -11,6 +11,7 @@
 * Support multiple post response callbacks
 * New route flow state which can be used to store data as part of the request handling flow
 * Renaming common routes to enable internal refactoring
+* Close the socket if payload exists but not read after response is sent.
 
 ### v0.2.3 (2021-08-24)
 
