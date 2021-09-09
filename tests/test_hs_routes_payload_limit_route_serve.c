@@ -1,6 +1,4 @@
 #include "test.h"
-#include <stdlib.h>
-#include <string.h>
 
 
 void test_impl()

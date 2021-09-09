@@ -319,6 +319,11 @@ void _hs_types_array_pair_remove_by_key(struct Vector *vector, char *key, bool r
   }
 
   size_t count = vector_size(vector);
+  if (!count)
+  {
+    return;
+  }
+
   for (size_t index = count - 1; ; index--)
   {
     struct HSArrayPair *pair = (struct HSArrayPair *)vector_get(vector, index);
