@@ -20,7 +20,7 @@ void test_impl()
 
   for (size_t index = 0; index < 5; index++)
   {
-    hs_types_key_value_array_add(response->headers, stringfn_new_empty_string(), stringfn_new_empty_string());
+    hs_types_array_string_pair_add(response->headers, stringfn_new_empty_string(), stringfn_new_empty_string());
   }
 
   response->content_string = stringfn_new_empty_string();

@@ -17,13 +17,13 @@ void test_impl()
                                               "test1=value1\n"
                                               "test2=value2\n"
                                               "test3=value3\n\n");
-  assert_num_equal(session->string_pairs->count, 3);
-  assert_string_equal(session->string_pairs->pairs[0]->key, "test1");
-  assert_string_equal(session->string_pairs->pairs[0]->value, "value1");
-  assert_string_equal(session->string_pairs->pairs[1]->key, "test2");
-  assert_string_equal(session->string_pairs->pairs[1]->value, "value2");
-  assert_string_equal(session->string_pairs->pairs[2]->key, "test3");
-  assert_string_equal(session->string_pairs->pairs[2]->value, "value3");
+  assert_num_equal(hs_types_array_string_pair_count(session->string_pairs), 3);
+  assert_string_equal(hs_types_array_string_pair_get_key(session->string_pairs, 0), "test1");
+  assert_string_equal(hs_types_array_string_pair_get_value(session->string_pairs, 0), "value1");
+  assert_string_equal(hs_types_array_string_pair_get_key(session->string_pairs, 1), "test2");
+  assert_string_equal(hs_types_array_string_pair_get_value(session->string_pairs, 1), "value2");
+  assert_string_equal(hs_types_array_string_pair_get_key(session->string_pairs, 2), "test3");
+  assert_string_equal(hs_types_array_string_pair_get_value(session->string_pairs, 2), "value3");
   hs_routes_session_release_session(session);
 
   session = hs_routes_session_new_session();
@@ -37,13 +37,13 @@ void test_impl()
                                               "[bad2]\n"
                                               "k1=v1\n\n"
                                               );
-  assert_num_equal(session->string_pairs->count, 3);
-  assert_string_equal(session->string_pairs->pairs[0]->key, "test1");
-  assert_string_equal(session->string_pairs->pairs[0]->value, "value1");
-  assert_string_equal(session->string_pairs->pairs[1]->key, "test2");
-  assert_string_equal(session->string_pairs->pairs[1]->value, "value2");
-  assert_string_equal(session->string_pairs->pairs[2]->key, "test3");
-  assert_string_equal(session->string_pairs->pairs[2]->value, "value3");
+  assert_num_equal(hs_types_array_string_pair_count(session->string_pairs), 3);
+  assert_string_equal(hs_types_array_string_pair_get_key(session->string_pairs, 0), "test1");
+  assert_string_equal(hs_types_array_string_pair_get_value(session->string_pairs, 0), "value1");
+  assert_string_equal(hs_types_array_string_pair_get_key(session->string_pairs, 1), "test2");
+  assert_string_equal(hs_types_array_string_pair_get_value(session->string_pairs, 1), "value2");
+  assert_string_equal(hs_types_array_string_pair_get_key(session->string_pairs, 2), "test3");
+  assert_string_equal(hs_types_array_string_pair_get_value(session->string_pairs, 2), "value3");
   hs_routes_session_release_session(session);
 } /* test_impl */
 

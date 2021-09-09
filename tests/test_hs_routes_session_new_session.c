@@ -10,7 +10,7 @@ void test_impl()
   hs_routes_session_release_session(session);
 
   session = hs_routes_session_new_session();
-  hs_types_key_value_array_add(session->string_pairs, strdup("key"), strdup("value"));
+  hs_types_array_string_pair_add(session->string_pairs, strdup("key"), strdup("value"));
   hs_routes_session_release_session(session);
 } /* test_impl */
 

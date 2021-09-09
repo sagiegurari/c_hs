@@ -2,22 +2,10 @@
 #define __HS_TYPES_H__
 
 #include "hs_constants.h"
+#include "hs_types_array.h"
 #include "hs_types_cookie.h"
 #include <stdbool.h>
 #include <stddef.h>
-
-struct HSKeyValue
-{
-  char *key;
-  char *value;
-};
-
-struct HSKeyValueArray
-{
-  struct HSKeyValue **pairs;
-  size_t            count;
-  size_t            capacity;
-};
 
 struct HSHttpRequestPayload;
 
@@ -31,13 +19,9 @@ struct HSRouterFlowState
 struct HSRouteFlowState
 {
   // string key/value pairs (all values will be freed at end of request)
-  struct HSKeyValueArray *string_pairs;
+  struct HSArrayStringPair *string_pairs;
   // data array (values are not freed at end of request and must be manually freed via post response callback)
-  void                   **data;
-  // The key for each data item used to identify the data element (will be freed at the end of the flow)
-  char                   **data_keys;
-  size_t                 data_count;
-  size_t                 data_capacity;
+  struct HSArrayDataPair   *data_pairs;
 };
 
 struct HSHttpRequest
@@ -55,24 +39,24 @@ struct HSHttpRequest
   enum HSConnectionType       connection;
   struct HSCookies            *cookies;
   // all headers
-  struct HSKeyValueArray      *headers;
+  struct HSArrayStringPair    *headers;
   struct HSHttpRequestPayload *payload;
 };
 
 struct HSHttpResponse
 {
   // The status code
-  enum HSHttpResponseCode code;
+  enum HSHttpResponseCode  code;
   // Any cookies we want to set/delete
-  struct HSCookies        *cookies;
+  struct HSCookies         *cookies;
   // Any extra headers to return
-  struct HSKeyValueArray  *headers;
+  struct HSArrayStringPair *headers;
   // The content type header value, if the enum doesn't contain a relevant value
   // use the HS_MIME_TYPE_NONE and add the actual value manually to the headers array.
-  enum HSMimeType         mime_type;
+  enum HSMimeType          mime_type;
   // The content to return (one of the following)
-  char                    *content_string;
-  char                    *content_file;
+  char                     *content_string;
+  char                     *content_file;
 };
 
 struct HSPostResponseCallback
@@ -186,59 +170,13 @@ void hs_types_release_router_flow_state(struct HSRouterFlowState *);
 /**
  * Creates and returns a new state struct.
  */
-struct HSRouteFlowState *hs_types_new_route_flow_state(size_t /* data capacity */);
+struct HSRouteFlowState *hs_types_new_route_flow_state();
 
 /**
  * Frees all memory used by the provided struct, including
  * any internal member/struct.
  */
 void hs_types_release_route_flow_state(struct HSRouteFlowState *);
-
-/**
- * Adds additional data items to the state.
- * The data is not freed at the end of the request.
- */
-void hs_types_route_flow_state_add_data(struct HSRouteFlowState *, char * /* key */, void * /* data */);
-
-/**
- * Searches the data element by key and returns the first one.
- * If not found, null will be returned.
- */
-void *hs_types_route_flow_state_get_data_by_key(struct HSRouteFlowState *, char *);
-
-/**
- * Creates and returns a new key value array struct.
- */
-struct HSKeyValueArray *hs_types_new_key_value_array(size_t /* capacity */);
-
-/**
- * Frees all memory used by the provided struct, including
- * any internal member/struct.
- */
-void hs_types_release_key_value_array(struct HSKeyValueArray *);
-
-/**
- * Searches the array and returns the first value for the given key.
- * If not found or array/key are null, null will be returned.
- */
-char *hs_types_key_value_array_get_by_key(struct HSKeyValueArray *, char *);
-
-/**
- * Adds the key/value pair to the array.
- * If needed, a new internal pairs array will be allocated with enough capacity.
- */
-bool hs_types_key_value_array_add(struct HSKeyValueArray *, char * /* key */, char * /* value */);
-
-/**
- * Creates and returns a new key value pair struct.
- */
-struct HSKeyValue *hs_types_new_key_value(char * /* key */, char * /* value */);
-
-/**
- * Frees all memory used by the provided struct, including
- * any internal member/struct.
- */
-void hs_types_release_key_value(struct HSKeyValue *);
 
 /**
  * Internal function.

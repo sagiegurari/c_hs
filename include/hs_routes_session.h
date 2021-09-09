@@ -8,8 +8,8 @@
 
 struct HSSession
 {
-  char                   *id;
-  struct HSKeyValueArray *string_pairs;
+  char                     *id;
+  struct HSArrayStringPair *string_pairs;
 };
 
 /**

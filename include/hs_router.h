@@ -51,7 +51,7 @@ struct HSRoute *hs_router_as_route(struct HSRouter *);
  * status line, headers and set cookie headers.
  * This is an internal function.
  */
-struct StringBuffer *hs_router_write_common_response_header(enum HSHttpResponseCode, struct HSKeyValueArray *, struct HSCookies *, bool /* close_connection */);
+struct StringBuffer *hs_router_write_common_response_header(enum HSHttpResponseCode, struct HSArrayStringPair *, struct HSCookies *, bool /* close_connection */);
 
 /**
  * Internal function.

@@ -7,8 +7,7 @@
 #include <string.h>
 #include <time.h>
 
-#define HS_ROUTES_SESSION_INI_SECTION_NAME         "session"
-#define HS_ROUTES_SESSION_STRING_PAIRS_CAPACITY    20
+#define HS_ROUTES_SESSION_INI_SECTION_NAME    "session"
 
 enum HSServeFlowResponse _hs_routes_session_route_serve(struct HSRoute *, struct HSServeFlowParams *);
 void _hs_routes_session_route_release(struct HSRoute *);
@@ -89,7 +88,7 @@ struct HSSession *hs_routes_session_new_session()
   struct HSSession *session = malloc(sizeof(struct HSSession));
 
   session->id           = NULL;
-  session->string_pairs = hs_types_new_key_value_array(HS_ROUTES_SESSION_STRING_PAIRS_CAPACITY);
+  session->string_pairs = hs_types_array_string_pair_new();
 
   return(session);
 }
@@ -103,7 +102,7 @@ void hs_routes_session_release_session(struct HSSession *session)
   }
 
   hs_io_free(session->id);
-  hs_types_release_key_value_array(session->string_pairs);
+  hs_types_array_string_pair_release(session->string_pairs);
 
   hs_io_free(session);
 }
@@ -138,23 +137,24 @@ char *hs_routes_session_route_session_to_string(struct HSSession *session)
     return(NULL);
   }
 
-  if (!session->string_pairs->count)
+  size_t count = hs_types_array_string_pair_count(session->string_pairs);
+  if (!count)
   {
     return(strdup(""));
   }
 
-  struct IniKeyValue **key_value_pairs = malloc(sizeof(struct IniKeyValue *) * session->string_pairs->count);
-  for (size_t index = 0; index < session->string_pairs->count; index++)
+  struct IniKeyValue **key_value_pairs = malloc(sizeof(struct IniKeyValue *) * count);
+  for (size_t index = 0; index < count; index++)
   {
     key_value_pairs[index]        = malloc(sizeof(struct IniKeyValue));
-    key_value_pairs[index]->key   = strdup(session->string_pairs->pairs[index]->key);
-    key_value_pairs[index]->value = strdup(session->string_pairs->pairs[index]->value);
+    key_value_pairs[index]->key   = strdup(hs_types_array_string_pair_get_key(session->string_pairs, index));
+    key_value_pairs[index]->value = strdup(hs_types_array_string_pair_get_value(session->string_pairs, index));
   }
 
   struct IniSection *section = malloc(sizeof(struct IniSection));
   section->name            = strdup(HS_ROUTES_SESSION_INI_SECTION_NAME);
   section->key_value_pairs = key_value_pairs;
-  section->count           = session->string_pairs->count;
+  section->count           = count;
   struct IniSection **sections = malloc(sizeof(struct IniSection *));
   sections[0] = section;
 
@@ -196,7 +196,7 @@ void hs_routes_session_route_session_from_string(struct HSSession *session, char
           struct IniKeyValue *ini_key_value = section->key_value_pairs[pair_index];
           if (ini_key_value != NULL && ini_key_value->key != NULL && ini_key_value->value != NULL)
           {
-            hs_types_key_value_array_add(session->string_pairs, strdup(ini_key_value->key), strdup(ini_key_value->value));
+            hs_types_array_string_pair_add(session->string_pairs, strdup(ini_key_value->key), strdup(ini_key_value->value));
           }
         }
 
@@ -327,7 +327,7 @@ enum HSServeFlowResponse _hs_routes_session_route_serve(struct HSRoute *route, s
   }
 
   // add session to route data
-  hs_types_route_flow_state_add_data(params->route_state, strdup(context->session_name), session);
+  hs_types_array_data_pair_add(params->route_state->data_pairs, strdup(context->session_name), session);
 
   // setup post response callback to write the session back to storage
   struct HSSessionCallbackContext *callback_context = malloc(sizeof(struct HSSessionCallbackContext));
@@ -380,7 +380,7 @@ void _hs_routes_session_callback_run(struct HSPostResponseCallback *callback)
     return;
   }
 
-  void *data = hs_types_route_flow_state_get_data_by_key(context->route_state, context->route_context->session_name);
+  void *data = hs_types_array_data_pair_get_by_key(context->route_state->data_pairs, context->route_context->session_name);
   if (data == NULL)
   {
     return;

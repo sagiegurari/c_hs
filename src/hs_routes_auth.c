@@ -73,7 +73,7 @@ enum HSServeFlowResponse _hs_routes_basic_auth_serve(struct HSRoute *route, stru
   char *realm = string_buffer_to_string(buffer);
 
   params->response->code = HS_HTTP_RESPONSE_CODE_UNAUTHORIZED;
-  hs_types_key_value_array_add(params->response->headers, strdup("WWW-Authenticate"), realm);
+  hs_types_array_string_pair_add(params->response->headers, strdup("WWW-Authenticate"), realm);
   params->response->content_string = strdup("Unauthenticated");
 
   return(HS_SERVE_FLOW_RESPONSE_DONE);

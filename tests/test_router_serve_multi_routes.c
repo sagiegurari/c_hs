@@ -17,21 +17,21 @@ enum HSServeFlowResponse _test_serve(struct HSRoute *route, struct HSServeFlowPa
 
   params->response->code = HS_HTTP_RESPONSE_CODE_OK;
 
-  struct HSSession *session = (struct HSSession *)hs_types_route_flow_state_get_data_by_key(params->route_state, HS_DEFAULT_SESSION_STATE_NAME);
+  struct HSSession *session = (struct HSSession *)hs_types_array_data_pair_get_by_key(params->route_state->data_pairs, HS_DEFAULT_SESSION_STATE_NAME);
   assert_true(session != NULL);
   assert_true(session->id != NULL);
   if (global_session_id == NULL)
   {
     global_session_id = strdup(session->id);
-    hs_types_key_value_array_add(session->string_pairs, strdup("counter"), stringfn_format("%d", global_counter));
+    hs_types_array_string_pair_add(session->string_pairs, strdup("counter"), stringfn_format("%d", global_counter));
   }
   else
   {
     assert_string_equal(global_session_id, session->id);
-    assert_num_equal(atoi(hs_types_key_value_array_get_by_key(session->string_pairs, "counter")), global_counter);
-    hs_io_free(session->string_pairs->pairs[0]->value);
+    assert_num_equal(atoi(hs_types_array_string_pair_get_by_key(session->string_pairs, "counter")), global_counter);
+    hs_types_array_string_pair_remove_by_key(session->string_pairs, "counter");
     global_counter++;
-    session->string_pairs->pairs[0]->value = stringfn_format("%d", global_counter);
+    hs_types_array_string_pair_add(session->string_pairs, strdup("counter"), stringfn_format("%d", global_counter));
   }
 
   return(HS_SERVE_FLOW_RESPONSE_DONE);

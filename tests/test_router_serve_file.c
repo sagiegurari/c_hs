@@ -13,9 +13,9 @@ enum HSServeFlowResponse _test_serve(struct HSRoute *route, struct HSServeFlowPa
   assert_true(params != NULL);
 
   params->response->code = HS_HTTP_RESPONSE_CODE_NOT_FOUND;
-  hs_types_key_value_array_add(params->response->headers, strdup("header1"), strdup("value1"));
-  hs_types_key_value_array_add(params->response->headers, strdup("header2"), strdup("value2"));
-  hs_types_key_value_array_add(params->response->headers, strdup("header3"), strdup("value3"));
+  hs_types_array_string_pair_add(params->response->headers, strdup("header1"), strdup("value1"));
+  hs_types_array_string_pair_add(params->response->headers, strdup("header2"), strdup("value2"));
+  hs_types_array_string_pair_add(params->response->headers, strdup("header3"), strdup("value3"));
   struct HSCookie *cookie = hs_types_cookie_new();
   cookie->name      = strdup("c1");
   cookie->value     = strdup("v1");

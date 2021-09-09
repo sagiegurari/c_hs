@@ -37,25 +37,25 @@ void test_impl()
   assert_num_equal(request->content_length, 11);
   assert_true(request->payload != NULL);
 
-  assert_num_equal(request->headers->count, 6);
+  assert_num_equal(hs_types_array_string_pair_count(request->headers), 6);
   size_t index = 0;
-  assert_string_equal(request->headers->pairs[index]->key, "host");
-  assert_string_equal(request->headers->pairs[index]->value, "MyHost");
+  assert_string_equal(hs_types_array_string_pair_get_key(request->headers, index), "host");
+  assert_string_equal(hs_types_array_string_pair_get_value(request->headers, index), "MyHost");
   index++;
-  assert_string_equal(request->headers->pairs[index]->key, "user-agent");
-  assert_string_equal(request->headers->pairs[index]->value, "MyBrowser");
+  assert_string_equal(hs_types_array_string_pair_get_key(request->headers, index), "user-agent");
+  assert_string_equal(hs_types_array_string_pair_get_value(request->headers, index), "MyBrowser");
   index++;
-  assert_string_equal(request->headers->pairs[index]->key, "authorization");
-  assert_string_equal(request->headers->pairs[index]->value, "Basic 123");
+  assert_string_equal(hs_types_array_string_pair_get_key(request->headers, index), "authorization");
+  assert_string_equal(hs_types_array_string_pair_get_value(request->headers, index), "Basic 123");
   index++;
-  assert_string_equal(request->headers->pairs[index]->key, "connection");
-  assert_string_equal(request->headers->pairs[index]->value, "close");
+  assert_string_equal(hs_types_array_string_pair_get_key(request->headers, index), "connection");
+  assert_string_equal(hs_types_array_string_pair_get_value(request->headers, index), "close");
   index++;
-  assert_string_equal(request->headers->pairs[index]->key, "content-length");
-  assert_string_equal(request->headers->pairs[index]->value, "11");
+  assert_string_equal(hs_types_array_string_pair_get_key(request->headers, index), "content-length");
+  assert_string_equal(hs_types_array_string_pair_get_value(request->headers, index), "11");
   index++;
-  assert_string_equal(request->headers->pairs[index]->key, "content-type");
-  assert_string_equal(request->headers->pairs[index]->value, "application/x-www-form-urlencoded");
+  assert_string_equal(hs_types_array_string_pair_get_key(request->headers, index), "content-type");
+  assert_string_equal(hs_types_array_string_pair_get_value(request->headers, index), "application/x-www-form-urlencoded");
 
   hs_types_release_http_request(request);
   close(socket);

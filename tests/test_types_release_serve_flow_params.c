@@ -14,11 +14,21 @@ void _test_set_cookies(struct HSCookies *cookies)
 }
 
 
-void _test_set_headers(struct HSKeyValueArray *headers)
+void _test_set_strings(struct HSArrayStringPair *array)
 {
   for (size_t index = 0; index < 5; index++)
   {
-    bool added = hs_types_key_value_array_add(headers, stringfn_new_empty_string(), stringfn_new_empty_string());
+    bool added = hs_types_array_string_pair_add(array, stringfn_new_empty_string(), stringfn_new_empty_string());
+    assert_true(added);
+  }
+}
+
+
+void _test_set_data(struct HSArrayDataPair *array)
+{
+  for (size_t index = 0; index < 5; index++)
+  {
+    bool added = hs_types_array_data_pair_add(array, stringfn_new_empty_string(), "test");
     assert_true(added);
   }
 }
@@ -41,8 +51,10 @@ void test_impl()
   _test_set_cookies(params->request->cookies);
   _test_set_cookies(params->response->cookies);
 
-  _test_set_headers(params->request->headers);
-  _test_set_headers(params->response->headers);
+  _test_set_strings(params->request->headers);
+  _test_set_strings(params->response->headers);
+  _test_set_strings(params->route_state->string_pairs);
+  _test_set_data(params->route_state->data_pairs);
 
   params->request->domain        = stringfn_new_empty_string();
   params->request->resource      = stringfn_new_empty_string();

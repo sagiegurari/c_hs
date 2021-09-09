@@ -3,12 +3,10 @@
 #include "hs_types.h"
 #include "string_buffer.h"
 #include "stringfn.h"
-#include "vector.h"
 #include <stdlib.h>
 #include <string.h>
 
 struct HSHttpRequest *_hs_parser_create_request_from_path(char *url_or_resource, bool force_protocol);
-void _hs_parser_convert_vector_to_key_value_pair(struct HSKeyValueArray *, struct Vector *);
 
 struct HSHttpRequest *hs_parser_create_request_from_resource(char *resource)
 {
@@ -45,7 +43,8 @@ struct HSHttpRequest *hs_parser_parse_request_line(char *line)
   return(request);
 }
 
-struct HSKeyValue *hs_parser_parse_header(char *line)
+
+char **hs_parser_parse_header(char *line)
 {
   if (line == NULL)
   {
@@ -82,10 +81,12 @@ struct HSKeyValue *hs_parser_parse_header(char *line)
     value = stringfn_substring(line, (int)end_index + 2, 0);
   }
 
-  struct HSKeyValue *header = hs_types_new_key_value(key, value);
+  char **header = malloc(sizeof(char *) * 2);
+  header[0] = key;
+  header[1] = value;
 
   return(header);
-}
+} /* hs_parser_parse_header */
 
 
 bool hs_parser_parse_cookie_header(struct HSCookies *cookies, char *cookie_line)
@@ -166,42 +167,39 @@ bool hs_parser_parse_cookie_header(struct HSCookies *cookies, char *cookie_line)
 } /* hs_parser_parse_cookie_header */
 
 
-void hs_parser_set_header(struct HSHttpRequest *request, struct HSKeyValue *header)
+void hs_parser_set_header(struct HSHttpRequest *request, char *key, char *value)
 {
-  if (request == NULL || header == NULL || header->key == NULL)
+  if (request == NULL || key == NULL || value == NULL)
   {
     return;
   }
 
-  if (header->value != NULL)
+  if (stringfn_equal(key, "cookie"))
   {
-    if (stringfn_equal(header->key, "cookie"))
+    hs_parser_parse_cookie_header(request->cookies, value);
+  }
+  else if (stringfn_equal(key, "content-length"))
+  {
+    request->content_length = (size_t)atoi(value);
+  }
+  else if (stringfn_equal(key, "connection"))
+  {
+    if (stringfn_equal(value, "close"))
     {
-      hs_parser_parse_cookie_header(request->cookies, header->value);
+      request->connection = HS_CONNECTION_TYPE_CLOSE;
     }
-    else if (stringfn_equal(header->key, "content-length"))
+    else if (stringfn_starts_with(value, "keep-alive"))
     {
-      request->content_length = (size_t)atoi(header->value);
+      request->connection = HS_CONNECTION_TYPE_KEEP_ALIVE;
     }
-    else if (stringfn_equal(header->key, "connection"))
-    {
-      if (stringfn_equal(header->value, "close"))
-      {
-        request->connection = HS_CONNECTION_TYPE_CLOSE;
-      }
-      else if (stringfn_starts_with(header->value, "keep-alive"))
-      {
-        request->connection = HS_CONNECTION_TYPE_KEEP_ALIVE;
-      }
-    }
-    else if (stringfn_equal(header->key, "user-agent"))
-    {
-      request->user_agent = strdup(header->value);
-    }
-    else if (stringfn_equal(header->key, "authorization"))
-    {
-      request->authorization = strdup(header->value);
-    }
+  }
+  else if (stringfn_equal(key, "user-agent"))
+  {
+    request->user_agent = strdup(value);
+  }
+  else if (stringfn_equal(key, "authorization"))
+  {
+    request->authorization = strdup(value);
   }
 }
 
@@ -224,25 +222,22 @@ struct HSHttpRequest *hs_parser_parse_request(int socket)
   struct HSHttpRequest *request = hs_parser_parse_request_line(line);
   hs_io_free(line);
 
-  struct Vector *header_vector = vector_new();
   do
   {
     line = hs_io_read_line(socket, work_buffer);
     if (line != NULL)
     {
-      struct HSKeyValue *header = hs_parser_parse_header(line);
+      char **header = hs_parser_parse_header(line);
       hs_io_free(line);
 
       if (header != NULL)
       {
-        vector_push(header_vector, header);
-
-        hs_parser_set_header(request, header);
+        hs_types_array_string_pair_add(request->headers, header[0], header[1]);
+        hs_parser_set_header(request, header[0], header[1]);
+        hs_io_free(header);
       }
     }
   } while (line != NULL);
-
-  _hs_parser_convert_vector_to_key_value_pair(request->headers, header_vector);
 
   struct HSIOHttpRequestPayload *io_payload = hs_io_new_http_request_payload(socket, work_buffer);
   request->payload = hs_types_new_http_request_payload(io_payload);
@@ -296,7 +291,7 @@ enum HSHttpMethod hs_parser_parse_method(char *method_string)
   return(HS_HTTP_METHOD_UNKNOWN);
 }   /* _hs_parser_parse_method */
 
-struct HSKeyValueArray *hs_parser_parse_query_string(char *query_string)
+struct HSArrayStringPair *hs_parser_parse_query_string(char *query_string)
 {
   if (query_string == NULL)
   {
@@ -309,12 +304,12 @@ struct HSKeyValueArray *hs_parser_parse_query_string(char *query_string)
     return(NULL);
   }
 
-  struct Vector       *pairs  = vector_new();
-  struct StringBuffer *buffer = string_buffer_new();
+  struct StringBuffer      *buffer = string_buffer_new();
+  struct HSArrayStringPair *array  = hs_types_array_string_pair_new();
 
-  char                *key         = NULL;
-  char                *value       = NULL;
-  bool                look_for_key = true;
+  char                     *key         = NULL;
+  char                     *value       = NULL;
+  bool                     look_for_key = true;
   for (size_t index = 0; index < length; index++)
   {
     char character = query_string[index];
@@ -326,7 +321,7 @@ struct HSKeyValueArray *hs_parser_parse_query_string(char *query_string)
         key = string_buffer_to_string(buffer);
         string_buffer_clear(buffer);
 
-        vector_push(pairs, hs_types_new_key_value(key, NULL));
+        hs_types_array_string_pair_add(array, key, NULL);
 
         key = NULL;
       }
@@ -351,7 +346,7 @@ struct HSKeyValueArray *hs_parser_parse_query_string(char *query_string)
           string_buffer_clear(buffer);
         }
 
-        vector_push(pairs, hs_types_new_key_value(key, value));
+        hs_types_array_string_pair_add(array, key, value);
 
         key          = NULL;
         value        = NULL;
@@ -369,7 +364,7 @@ struct HSKeyValueArray *hs_parser_parse_query_string(char *query_string)
     if (!string_buffer_is_empty(buffer))
     {
       key = string_buffer_to_string(buffer);
-      vector_push(pairs, hs_types_new_key_value(key, NULL));
+      hs_types_array_string_pair_add(array, key, NULL);
     }
   }
   else
@@ -379,14 +374,10 @@ struct HSKeyValueArray *hs_parser_parse_query_string(char *query_string)
       value = string_buffer_to_string(buffer);
     }
 
-    vector_push(pairs, hs_types_new_key_value(key, value));
+    hs_types_array_string_pair_add(array, key, value);
   }
 
   string_buffer_release(buffer);
-
-  size_t                 capacity = vector_size(pairs);
-  struct HSKeyValueArray *array   = hs_types_new_key_value_array(capacity);
-  _hs_parser_convert_vector_to_key_value_pair(array, pairs);
 
   return(array);
 } /* hs_parser_parse_query_string */
@@ -567,37 +558,4 @@ struct HSHttpRequest *_hs_parser_create_request_from_path(char *url_or_resource,
 
   return(request);
 }   /* _hs_parser_create_request_from_path */
-
-
-void _hs_parser_convert_vector_to_key_value_pair(struct HSKeyValueArray *array, struct Vector *vector)
-{
-  if (vector == NULL)
-  {
-    return;
-  }
-
-  if (array == NULL)
-  {
-    vector_release(vector);
-    return;
-  }
-
-  array->count = vector_size(vector);
-  if (array->count)
-  {
-    if (array->count > array->capacity)
-    {
-      hs_io_free(array->pairs);
-      array->capacity = array->count;
-      array->pairs    = malloc(sizeof(struct HSKeyValue *) * array->capacity);
-    }
-
-    for (size_t index = 0; index < array->count; index++)
-    {
-      array->pairs[index] = vector_get(vector, index);
-    }
-  }
-
-  vector_release(vector);
-}
 

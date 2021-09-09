@@ -29,7 +29,7 @@ enum HSServeFlowResponse _hs_routes_powered_by_serve(struct HSRoute *route, stru
 
   char *value = (char *)route->extension;
 
-  hs_types_key_value_array_add(params->response->headers, strdup("X-Powered-By"), strdup(value));
+  hs_types_array_string_pair_add(params->response->headers, strdup("X-Powered-By"), strdup(value));
 
   return(HS_SERVE_FLOW_RESPONSE_CONTINUE);
 }

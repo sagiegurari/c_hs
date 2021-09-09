@@ -193,7 +193,7 @@ struct HSRoute *hs_router_as_route(struct HSRouter *router)
   return(route);
 }
 
-struct StringBuffer *hs_router_write_common_response_header(enum HSHttpResponseCode code, struct HSKeyValueArray *headers, struct HSCookies *cookies, bool close_connection)
+struct StringBuffer *hs_router_write_common_response_header(enum HSHttpResponseCode code, struct HSArrayStringPair *headers, struct HSCookies *cookies, bool close_connection)
 {
   struct StringBuffer *buffer = string_buffer_new();
 
@@ -205,26 +205,28 @@ struct StringBuffer *hs_router_write_common_response_header(enum HSHttpResponseC
   string_buffer_append_string(buffer, "\r\n");
 
   // write headers (may contain set cookie headers)
-  if (headers != NULL && headers->count)
+  size_t count = hs_types_array_string_pair_count(headers);
+  if (headers != NULL && count)
   {
-    for (size_t index = 0; index < headers->count; index++)
+    for (size_t index = 0; index < count; index++)
     {
-      struct HSKeyValue *header = (struct HSKeyValue *)headers->pairs[index];
+      char *key   = hs_types_array_string_pair_get_key(headers, index);
+      char *value = hs_types_array_string_pair_get_value(headers, index);
 
-      if (header != NULL && header->key != NULL && header->value != NULL)
+      if (key != NULL && value != NULL)
       {
-        string_buffer_append_string(buffer, header->key);
+        string_buffer_append_string(buffer, key);
         string_buffer_append_string(buffer, ": ");
-        string_buffer_append_string(buffer, header->value);
+        string_buffer_append_string(buffer, value);
         string_buffer_append_string(buffer, "\r\n");
       }
     }
   }
 
   // write set cookie headers
-  if (cookies != NULL)
+  count = hs_types_cookies_count(cookies);
+  if (cookies != NULL && count)
   {
-    size_t count = hs_types_cookies_count(cookies);
     for (size_t index = 0; index < count; index++)
     {
       struct HSCookie *cookie = hs_types_cookies_get(cookies, index);

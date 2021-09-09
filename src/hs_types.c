@@ -4,11 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define HS_TYPES_DEFAULT_HEADERS_CAPACITY                          50
-#define HS_TYPES_DEFAULT_POST_RESPONSE_CALLBACKS_CAPACITY          10
-#define HS_TYPES_DEFAULT_ROUTE_FLOW_STATE_STRING_PAIRS_CAPACITY    20
-#define HS_TYPES_DEFAULT_ROUTE_FLOW_STATE_DATA_CAPACITY            20
-
 struct HSHttpRequestPayload
 {
   bool                          loaded;
@@ -29,8 +24,8 @@ struct HSServeFlowParams *hs_types_new_serve_flow_params_pre_populated(struct HS
   params->request      = request;
   params->response     = hs_types_new_http_response();
   params->socket       = 0;
-  params->callbacks    = hs_types_new_post_response_callbacks(HS_TYPES_DEFAULT_POST_RESPONSE_CALLBACKS_CAPACITY);
-  params->route_state  = hs_types_new_route_flow_state(HS_TYPES_DEFAULT_ROUTE_FLOW_STATE_DATA_CAPACITY);
+  params->callbacks    = hs_types_new_post_response_callbacks(1);
+  params->route_state  = hs_types_new_route_flow_state(1);
   params->router_state = hs_types_new_router_flow_state();
 
   return(params);
@@ -68,7 +63,7 @@ struct HSHttpRequest *hs_types_new_http_request()
   request->user_agent     = NULL;
   request->authorization  = NULL;
   request->cookies        = hs_types_cookies_new();
-  request->headers        = hs_types_new_key_value_array(HS_TYPES_DEFAULT_HEADERS_CAPACITY);
+  request->headers        = hs_types_array_string_pair_new();
   request->payload        = NULL;
 
   return(request);
@@ -90,7 +85,7 @@ void hs_types_release_http_request(struct HSHttpRequest *request)
 
   hs_types_cookies_release(request->cookies);
 
-  hs_types_release_key_value_array(request->headers);
+  hs_types_array_string_pair_release(request->headers);
 
   if (request->payload != NULL)
   {
@@ -109,7 +104,7 @@ struct HSHttpResponse *hs_types_new_http_response()
 
   response->code           = HS_HTTP_RESPONSE_CODE_OK;
   response->cookies        = hs_types_cookies_new();
-  response->headers        = hs_types_new_key_value_array(HS_TYPES_DEFAULT_HEADERS_CAPACITY);
+  response->headers        = hs_types_array_string_pair_new();
   response->mime_type      = HS_MIME_TYPE_NONE;
   response->content_string = NULL;
   response->content_file   = NULL;
@@ -128,7 +123,7 @@ void hs_types_release_http_response(struct HSHttpResponse *response)
   hs_io_free(response->content_string);
   hs_io_free(response->content_file);
   hs_types_cookies_release(response->cookies);
-  hs_types_release_key_value_array(response->headers);
+  hs_types_array_string_pair_release(response->headers);
 
   hs_io_free(response);
 }
@@ -244,16 +239,12 @@ void hs_types_release_router_flow_state(struct HSRouterFlowState *state)
   hs_io_free(state);
 }
 
-struct HSRouteFlowState *hs_types_new_route_flow_state(size_t capacity)
+struct HSRouteFlowState *hs_types_new_route_flow_state()
 {
   struct HSRouteFlowState *state = malloc(sizeof(struct HSRouteFlowState));
 
-  state->string_pairs = hs_types_new_key_value_array(HS_TYPES_DEFAULT_ROUTE_FLOW_STATE_STRING_PAIRS_CAPACITY);
-
-  state->data_capacity = capacity;
-  state->data_count    = 0;
-  state->data          = malloc(sizeof(void *) * state->data_capacity);
-  state->data_keys     = malloc(sizeof(char *) * state->data_capacity);
+  state->string_pairs = hs_types_array_string_pair_new();
+  state->data_pairs   = hs_types_array_data_pair_new();
 
   return(state);
 }
@@ -266,178 +257,10 @@ void hs_types_release_route_flow_state(struct HSRouteFlowState *state)
     return;
   }
 
-  hs_types_release_key_value_array(state->string_pairs);
-  hs_io_free(state->data);
-
-  for (size_t index = 0; index < state->data_count; index++)
-  {
-    hs_io_free(state->data_keys[index]);
-  }
-  hs_io_free(state->data_keys);
+  hs_types_array_string_pair_release(state->string_pairs);
+  hs_types_array_data_pair_release(state->data_pairs);
 
   hs_io_free(state);
-}
-
-
-void hs_types_route_flow_state_add_data(struct HSRouteFlowState *state, char *key, void *data)
-{
-  if (state == NULL || key == NULL || data == NULL)
-  {
-    return;
-  }
-
-  if (state->data_count >= state->data_capacity)
-  {
-    void **old_data      = state->data;
-    char **old_data_keys = state->data_keys;
-    state->data_capacity = state->data_capacity * 2;
-    state->data          = malloc(sizeof(void *) * state->data_capacity);
-    state->data_keys     = malloc(sizeof(char *) * state->data_capacity);
-
-    for (size_t index = 0; index < state->data_count; index++)
-    {
-      state->data[index]      = old_data[index];
-      state->data_keys[index] = old_data_keys[index];
-    }
-
-    hs_io_free(old_data);
-    hs_io_free(old_data_keys);
-  }
-
-  state->data[state->data_count]      = data;
-  state->data_keys[state->data_count] = key;
-  state->data_count++;
-}
-
-
-void *hs_types_route_flow_state_get_data_by_key(struct HSRouteFlowState *state, char *key)
-{
-  if (state == NULL || key == NULL)
-  {
-    return(NULL);
-  }
-
-  for (size_t index = 0; index < state->data_count; index++)
-  {
-    if (state->data_keys[index] != NULL && stringfn_equal(state->data_keys[index], key))
-    {
-      return(state->data[index]);
-    }
-  }
-
-  return(NULL);
-}
-
-struct HSKeyValueArray *hs_types_new_key_value_array(size_t capacity)
-{
-  struct HSKeyValueArray *array = malloc(sizeof(struct HSKeyValueArray));
-
-  array->count    = 0;
-  array->capacity = capacity;
-
-  array->pairs = malloc(sizeof(struct HSKeyValue *) * array->capacity);
-
-  return(array);
-}
-
-
-void hs_types_release_key_value_array(struct HSKeyValueArray *array)
-{
-  if (array == NULL)
-  {
-    return;
-  }
-
-  if (array->count)
-  {
-    for (size_t index = 0; index < array->count; index++)
-    {
-      struct HSKeyValue *key_value = array->pairs[index];
-      hs_types_release_key_value(key_value);
-    }
-  }
-
-  hs_io_free(array->pairs);
-
-  hs_io_free(array);
-}
-
-
-char *hs_types_key_value_array_get_by_key(struct HSKeyValueArray *array, char *key)
-{
-  if (array == NULL || key == NULL || !array->count)
-  {
-    return(NULL);
-  }
-
-  for (size_t index = 0; index < array->count; index++)
-  {
-    struct HSKeyValue *pair = array->pairs[index];
-
-    if (pair != NULL && stringfn_equal(pair->key, key))
-    {
-      return(pair->value);
-    }
-  }
-
-  return(NULL);
-}
-
-
-bool hs_types_key_value_array_add(struct HSKeyValueArray *array, char *key, char *value)
-{
-  if (array == NULL || key == NULL)
-  {
-    return(false);
-  }
-
-  struct HSKeyValue *key_value = hs_types_new_key_value(key, value);
-  if (key_value == NULL)
-  {
-    return(false);
-  }
-
-  if (array->count >= array->capacity)
-  {
-    struct HSKeyValue **old_pairs = array->pairs;
-    array->capacity = array->capacity * 2;
-    array->pairs    = malloc(sizeof(struct HSKeyValue *) * array->capacity);
-
-    for (size_t index = 0; index < array->count; index++)
-    {
-      array->pairs[index] = old_pairs[index];
-    }
-
-    hs_io_free(old_pairs);
-  }
-
-  array->pairs[array->count] = key_value;
-  array->count++;
-
-  return(true);
-}
-
-struct HSKeyValue *hs_types_new_key_value(char *key, char *value)
-{
-  struct HSKeyValue *key_value = malloc(sizeof(struct HSKeyValue));
-
-  key_value->key   = key;
-  key_value->value = value;
-
-  return(key_value);
-}
-
-
-void hs_types_release_key_value(struct HSKeyValue *key_value)
-{
-  if (key_value == NULL)
-  {
-    return;
-  }
-
-  hs_io_free(key_value->key);
-  hs_io_free(key_value->value);
-  hs_io_free(key_value);
 }
 
 struct HSHttpRequestPayload *hs_types_new_http_request_payload(void *io_payload)

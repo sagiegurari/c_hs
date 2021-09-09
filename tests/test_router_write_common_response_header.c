@@ -10,32 +10,32 @@
 
 void test_impl()
 {
-  struct HSKeyValueArray *headers = NULL;
-  struct HSCookies       *cookies = NULL;
-  struct StringBuffer    *buffer  = hs_router_write_common_response_header(HS_HTTP_RESPONSE_CODE_NOT_FOUND, headers, cookies, false);
-  char                   *text    = string_buffer_to_string(buffer);
+  struct HSArrayStringPair *headers = NULL;
+  struct HSCookies         *cookies = NULL;
+  struct StringBuffer      *buffer  = hs_router_write_common_response_header(HS_HTTP_RESPONSE_CODE_NOT_FOUND, headers, cookies, false);
+  char                     *text    = string_buffer_to_string(buffer);
 
   string_buffer_release(buffer);
   assert_string_equal(text, "HTTP/1.1 404 404\r\nConnection: keep-alive\r\n");
   hs_io_free(text);
-  hs_types_release_key_value_array(headers);
+  hs_types_array_string_pair_release(headers);
   hs_types_cookies_release(cookies);
 
-  headers = hs_types_new_key_value_array(50);
+  headers = hs_types_array_string_pair_new();
   cookies = hs_types_cookies_new();
   buffer  = hs_router_write_common_response_header(HS_HTTP_RESPONSE_CODE_OK, headers, cookies, true);
   text    = string_buffer_to_string(buffer);
   string_buffer_release(buffer);
   assert_string_equal(text, "HTTP/1.1 200 200\r\nConnection: close\r\n");
   hs_io_free(text);
-  hs_types_release_key_value_array(headers);
+  hs_types_array_string_pair_release(headers);
   hs_types_cookies_release(cookies);
 
-  headers = hs_types_new_key_value_array(1);
+  headers = hs_types_array_string_pair_new();
   cookies = hs_types_cookies_new();
-  hs_types_key_value_array_add(headers, strdup("header1"), strdup("value1"));
-  hs_types_key_value_array_add(headers, strdup("header2"), strdup("value2"));
-  hs_types_key_value_array_add(headers, strdup("header3"), strdup("value3"));
+  hs_types_array_string_pair_add(headers, strdup("header1"), strdup("value1"));
+  hs_types_array_string_pair_add(headers, strdup("header2"), strdup("value2"));
+  hs_types_array_string_pair_add(headers, strdup("header3"), strdup("value3"));
   struct HSCookie *cookie = hs_types_cookie_new();
   cookie->name      = strdup("c1");
   cookie->value     = strdup("v1");
@@ -68,7 +68,7 @@ void test_impl()
                       "Set-Cookie: c3=v3; SameSite=Lax\r\n"
                       "Connection: close\r\n");
   hs_io_free(text);
-  hs_types_release_key_value_array(headers);
+  hs_types_array_string_pair_release(headers);
   hs_types_cookies_release(cookies);
 } /* test_impl */
 

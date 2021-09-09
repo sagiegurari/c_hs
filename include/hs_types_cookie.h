@@ -49,7 +49,6 @@ size_t hs_types_cookies_count(struct HSCookies *);
 
 /**
  * Adds the cookie to the cookies structure.
- * If needed, a new internal array will be allocated with enough capacity.
  */
 bool hs_types_cookies_add(struct HSCookies *, struct HSCookie *);
 

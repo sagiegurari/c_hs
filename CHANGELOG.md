@@ -6,7 +6,7 @@
 * 404 route supports all child paths by default.
 * New session route (HTTP session).
 * Refactor router flow invocation to enable non response routes to modify final HTTP response.
-* New simplified api for add/remove/get headers and cookies
+* New simplified api for add/remove/get headers, cookies and state.
 * New powered-by route
 * Support multiple post response callbacks
 * New route flow state which can be used to store data as part of the request handling flow
