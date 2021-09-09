@@ -386,16 +386,23 @@ bool _hs_router_serve(struct HSRouter *router, struct HSServeFlowParams *params,
                                                                               params->response->cookies,
                                                                               close_connection);
 
-  if (params->response->mime_type == HS_MIME_TYPE_NONE && params->response->content_file != NULL)
+  // check if route has set the header directly
+  char *content_type_header = hs_types_array_string_pair_get_by_key(params->response->headers, "Content-Type");
+  if (content_type_header == NULL)
   {
-    params->response->mime_type = hs_constants_file_extension_to_mime_type(params->response->content_file);
-  }
-  const char *mime_type = hs_constants_mime_type_to_string(params->response->mime_type);
-  if (mime_type != NULL)
-  {
-    string_buffer_append_string(header_buffer, "Content-Type: ");
-    string_buffer_append_string(header_buffer, (char *)mime_type);
-    string_buffer_append_string(header_buffer, "\r\n");
+    // no header set, mime type is unknown but response is a file, attempt to get mime type from file name/extension
+    if (params->response->mime_type == HS_MIME_TYPE_NONE && params->response->content_file != NULL)
+    {
+      params->response->mime_type = hs_constants_file_extension_to_mime_type(params->response->content_file);
+    }
+
+    const char *mime_type = hs_constants_mime_type_to_string(params->response->mime_type);
+    if (mime_type != NULL)
+    {
+      string_buffer_append_string(header_buffer, "Content-Type: ");
+      string_buffer_append_string(header_buffer, (char *)mime_type);
+      string_buffer_append_string(header_buffer, "\r\n");
+    }
   }
 
   bool has_content = true;
