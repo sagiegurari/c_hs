@@ -44,6 +44,12 @@ int main(int argc, char *argv[])
   struct HSRoute *powered_by_route = hs_routes_powered_by_route_new(NULL);
   hs_router_add_route(server->router, powered_by_route);
 
+  // let's make sure PUT/POST have their content-length header set
+  hs_router_add_route(server->router, hs_routes_error_411_length_required_route_new());
+
+  // Set a max on payload size
+  hs_router_add_route(server->router, hs_routes_payload_limit_route_new(1024 * 1024 * 2));
+
   // This route will server as our top domain route and will return
   // a custom HTML that we are building in runtime (we can also point to a file).
   struct HSRoute *home_route = hs_route_new();
@@ -84,7 +90,7 @@ int main(int argc, char *argv[])
   hs_router_add_route(server->router, fs_route);
 
   // Any request that doesn't map to what we support, should get a 404
-  struct HSRoute *not_found_error_route = hs_routes_error_404_route_new();
+  struct HSRoute *not_found_error_route = hs_routes_error_404_not_found_route_new();
   hs_router_add_route(server->router, not_found_error_route);
 
   // start listening and serving content.

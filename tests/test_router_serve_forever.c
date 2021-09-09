@@ -124,7 +124,7 @@ void test_impl()
 
   router = hs_router_new();
   hs_router_add_route(router, route);
-  route = hs_routes_error_404_route_new();
+  route = hs_routes_error_404_not_found_route_new();
   hs_router_add_route(router, route);
 
   char *filename = "./test_router_serve_forever.txt";

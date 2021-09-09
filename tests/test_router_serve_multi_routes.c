@@ -94,6 +94,8 @@ void test_impl()
 {
   struct HSRouter *router = hs_router_new();
 
+  hs_router_add_route(router, hs_routes_error_411_length_required_route_new());
+  hs_router_add_route(router, hs_routes_payload_limit_route_new(1024));
   hs_router_add_route(router, hs_routes_session_route_new_default());
   hs_router_add_route(router, hs_routes_powered_by_route_new(NULL));
 
@@ -122,7 +124,7 @@ void test_impl()
 
   _test_with_values(router, route, false, true, false, NULL);
 
-  hs_router_add_route(router, hs_routes_error_404_route_new());
+  hs_router_add_route(router, hs_routes_error_404_not_found_route_new());
 
   _test_with_values(router, route, false, false, false, "HTTP/1.1 404 404\r\n"
                     "X-Powered-By: CHS\r\n"
