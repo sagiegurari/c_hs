@@ -4,6 +4,7 @@
 
 * Enhancement: New options for the hs_routes_fs_file_route_new_with_options function
 * Enhancement: New hs_routes_fs_directory_route_new_with_media_support function
+* Enhancement: Added additional mime types
 
 ### v0.3.0 (2021-09-09)
 

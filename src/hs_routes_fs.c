@@ -319,6 +319,8 @@ char *_hs_routes_directory_default_renderer_with_media_support(char *name, char 
   case HS_MIME_TYPE_IMAGE_SVG:
   case HS_MIME_TYPE_IMAGE_WEBP:
   case HS_MIME_TYPE_IMAGE_X_ICON:
+  case HS_MIME_TYPE_IMAGE_TIFF:
+  case HS_MIME_TYPE_IMAGE_X_MS_BMP:
     string_buffer_append_string(buffer, "<img src=\"");
     string_buffer_append_string(buffer, href);
     string_buffer_append_string(buffer, "\" alt=\"");
@@ -327,7 +329,12 @@ char *_hs_routes_directory_default_renderer_with_media_support(char *name, char 
     break;
 
   case HS_MIME_TYPE_VIDEO_WEBM:
-  case HS_MIME_TYPE_VIDEO_OGG:
+  case HS_MIME_TYPE_VIDEO_3GPP:
+  case HS_MIME_TYPE_VIDEO_MP2T:
+  case HS_MIME_TYPE_VIDEO_MP4:
+  case HS_MIME_TYPE_VIDEO_MPEG:
+  case HS_MIME_TYPE_VIDEO_QUICKTIME:
+  case HS_MIME_TYPE_VIDEO_X_FLV:
     string_buffer_append_string(buffer, "<video src=\"");
     string_buffer_append_string(buffer, href);
     string_buffer_append_string(buffer, "\" alt=\"");
