@@ -114,14 +114,15 @@ enum HSMimeType
   HS_MIME_TYPE_IMAGE_PNG                = 11,
   HS_MIME_TYPE_IMAGE_SVG                = 12,
   HS_MIME_TYPE_IMAGE_WEBP               = 13,
-  HS_MIME_TYPE_AUDIO_WAV                = 14,
-  HS_MIME_TYPE_AUDIO_WEBM               = 15,
-  HS_MIME_TYPE_VIDEO_WEBM               = 16,
+  HS_MIME_TYPE_IMAGE_X_ICON             = 14,
+  HS_MIME_TYPE_AUDIO_WAV                = 15,
+  HS_MIME_TYPE_AUDIO_WEBM               = 16,
   HS_MIME_TYPE_AUDIO_OGG                = 17,
-  HS_MIME_TYPE_VIDEO_OGG                = 18,
-  HS_MIME_TYPE_APPLICATION_OGG          = 19,
-  HS_MIME_TYPE_APPLICATION_ATOM         = 20,
-  HS_MIME_TYPE_APPLICATION_RSS          = 21,
+  HS_MIME_TYPE_VIDEO_WEBM               = 18,
+  HS_MIME_TYPE_VIDEO_OGG                = 19,
+  HS_MIME_TYPE_APPLICATION_OGG          = 20,
+  HS_MIME_TYPE_APPLICATION_ATOM         = 21,
+  HS_MIME_TYPE_APPLICATION_RSS          = 22,
 };
 
 enum HSConnectionType

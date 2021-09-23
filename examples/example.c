@@ -72,7 +72,8 @@ int main(int argc, char *argv[])
 
   // Adding directory route that will handle any request that maps
   // into a directory location in our file system.
-  struct HSRoute *fs_directory_route = hs_routes_fs_directory_route_new(".");
+  // The media support means we will have img/video tags for relevant files
+  struct HSRoute *fs_directory_route = hs_routes_fs_directory_route_new_with_media_support(".");
   fs_directory_route->is_parent_path = true; // enable to listen to all request sub paths
   hs_router_add_route(fs_router, fs_directory_route);
 

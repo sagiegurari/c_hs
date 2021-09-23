@@ -49,17 +49,20 @@ const char *hs_constants_mime_type_to_string(enum HSMimeType mime_type)
   case HS_MIME_TYPE_IMAGE_WEBP:
     return("image/webp");
 
+  case HS_MIME_TYPE_IMAGE_X_ICON:
+    return("image/x-icon");
+
   case HS_MIME_TYPE_AUDIO_WAV:
     return("audio/wave");
 
   case HS_MIME_TYPE_AUDIO_WEBM:
     return("audio/webm");
 
-  case HS_MIME_TYPE_VIDEO_WEBM:
-    return("video/webm");
-
   case HS_MIME_TYPE_AUDIO_OGG:
     return("audio/ogg");
+
+  case HS_MIME_TYPE_VIDEO_WEBM:
+    return("video/webm");
 
   case HS_MIME_TYPE_VIDEO_OGG:
     return("video/ogg");
@@ -161,6 +164,11 @@ enum HSMimeType hs_constants_file_extension_to_mime_type(char *path)
   if (stringfn_ends_with(path, ".webp"))
   {
     return(HS_MIME_TYPE_IMAGE_WEBP);
+  }
+
+  if (stringfn_ends_with(path, ".ico"))
+  {
+    return(HS_MIME_TYPE_IMAGE_X_ICON);
   }
 
   if (stringfn_ends_with(path, ".webm"))
