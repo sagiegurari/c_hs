@@ -1,6 +1,6 @@
 ## CHANGELOG
 
-### v0.4.0
+### v0.4.0 (2021-09-24)
 
 * Fix: Incorrect handling of binary files
 * Enhancement: New options for the hs_routes_fs_file_route_new_with_options function
