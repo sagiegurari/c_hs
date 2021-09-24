@@ -7,18 +7,16 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#define TEST_FILE    "../../examples/files/test.png"
-
 enum HSServeFlowResponse _test_serve(struct HSRoute *route, struct HSServeFlowParams *params)
 {
   assert_true(route != NULL);
   assert_true(params != NULL);
-  assert_true(fsio_file_exists(TEST_FILE));
+  assert_true(fsio_file_exists(TEST_BINARY_FILE));
 
   params->response->code      = HS_HTTP_RESPONSE_CODE_OK;
   params->response->mime_type = HS_MIME_TYPE_IMAGE_PNG;
 
-  params->response->content_file = strdup(TEST_FILE);
+  params->response->content_file = strdup(TEST_BINARY_FILE);
 
   return(HS_SERVE_FLOW_RESPONSE_DONE);
 } /* _test_serve */
@@ -43,6 +41,7 @@ void test_impl()
   char *filename = "./test_router_serve_file.png";
 
   fsio_create_empty_file(filename);
+  test_generate_binary_file();
   int                      socket = open(filename, O_WRONLY);
 
   struct HSServeFlowParams *params = hs_types_new_serve_flow_params_pre_populated(request);
@@ -54,13 +53,13 @@ void test_impl()
   close(socket);
 
   char                *content     = fsio_read_binary_file(filename);
-  char                *png_content = fsio_read_binary_file(TEST_FILE);
+  char                *png_content = fsio_read_binary_file(TEST_BINARY_FILE);
 
   struct StringBuffer *buffer = string_buffer_new();
   string_buffer_append_string(buffer, "HTTP/1.1 200 200\r\n"
                               "Connection: close\r\n"
                               "Content-Type: image/png\r\n"
-                              "Content-Length: 1293\r\n"
+                              "Content-Length: 500\r\n"
                               "\r\n");
   string_buffer_append_string(buffer, png_content);
   char *expected_content = string_buffer_to_string(buffer);
@@ -72,6 +71,7 @@ void test_impl()
   hs_io_free(expected_content);
   hs_io_free(content);
   fsio_remove(filename);
+  fsio_remove(TEST_BINARY_FILE);
   hs_types_release_serve_flow_params(params);
   hs_router_release(router);
 } /* test_impl */

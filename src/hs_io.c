@@ -170,9 +170,9 @@ bool hs_io_read_and_write_to_file(int socket, FILE *fp, size_t length)
 
     if (size > 0)
     {
-      left            = left - (size_t)size;
-      io_buffer[size] = 0;
-      if (fputs(io_buffer, fp) < 0)
+      left = left - (size_t)size;
+      size_t written = fwrite(io_buffer, 1, (size_t)size, fp);
+      if (written < (size_t)size)
       {
         return(false);
       }

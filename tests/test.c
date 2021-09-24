@@ -1,4 +1,5 @@
 #include "test.h"
+#include <fsio.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -47,5 +48,18 @@ void assert_string_equal(char *value1, char *value2)
     printf("Assert Failed, value: %s not equals to value: %s", value1, value2);
     test_fail();
   }
+}
+
+
+void test_generate_binary_file()
+{
+  char content[500];
+
+  for (int index = 0; index < 500; index++)
+  {
+    content[index] = index - 100;
+  }
+
+  fsio_write_binary_file(TEST_BINARY_FILE, content, 500);
 }
 
