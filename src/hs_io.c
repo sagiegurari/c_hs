@@ -183,7 +183,7 @@ bool hs_io_read_and_write_to_file(int socket, FILE *fp, size_t length)
 }
 
 
-bool hs_io_write_string_to_socket(int socket, char *content)
+bool hs_io_write_string_to_socket(int socket, char *content, size_t length)
 {
   if (!socket || content == NULL)
   {
@@ -191,7 +191,7 @@ bool hs_io_write_string_to_socket(int socket, char *content)
   }
 
   char   *ptr = content;
-  size_t left = strlen(ptr);
+  size_t left = length;
   if (!left)
   {
     return(true);
@@ -223,7 +223,7 @@ bool hs_io_write_file_to_socket(int socket, char *filename)
     return(false);
   }
 
-  FILE *fp = fopen(filename, "r");
+  FILE *fp = fopen(filename, "rb");
 
   if (fp == NULL)
   {
@@ -248,7 +248,7 @@ bool hs_io_write_file_to_socket(int socket, char *filename)
 
     buffer[read] = '\0';
 
-    done = hs_io_write_string_to_socket(socket, buffer);
+    done = hs_io_write_string_to_socket(socket, buffer, read);
   } while (done);
 
   if (done)

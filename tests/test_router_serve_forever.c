@@ -93,7 +93,7 @@ bool _test_should_stop(struct HSRouter *router, int socket, int counter, void *c
     test_fail();
   }
 
-  bool done = hs_io_write_string_to_socket(socket, request);
+  bool done = hs_io_write_string_to_socket(socket, request, strlen(request));
 
   assert_true(done);
   lseek(socket, strlen(request) * -1, SEEK_END);

@@ -441,15 +441,16 @@ bool _hs_router_serve(struct HSRouter *router, struct HSServeFlowParams *params,
     string_buffer_append_string(header_buffer, "Content-Length: 0\r\n\r\n");
   }
 
-  char *header_string = string_buffer_to_string(header_buffer);
-  hs_io_write_string_to_socket(params->socket, header_string);
+  char   *header_string = string_buffer_to_string(header_buffer);
+  size_t length         = string_buffer_get_content_size(header_buffer);
+  hs_io_write_string_to_socket(params->socket, header_string, length);
   hs_io_free(header_string);
 
   if (has_content)
   {
     if (params->response->content_string != NULL)
     {
-      hs_io_write_string_to_socket(params->socket, params->response->content_string);
+      hs_io_write_string_to_socket(params->socket, params->response->content_string, strlen(params->response->content_string));
     }
     else
     {

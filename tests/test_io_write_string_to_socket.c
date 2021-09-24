@@ -9,7 +9,7 @@
 
 void test_impl()
 {
-  bool done = hs_io_write_string_to_socket(0, "test");
+  bool done = hs_io_write_string_to_socket(0, "test", 4);
 
   assert_true(!done);
 
@@ -27,7 +27,7 @@ void test_impl()
   fsio_create_empty_file(filename);
   int socket = open(filename, O_WRONLY);
 
-  done = hs_io_write_string_to_socket(socket, raw);
+  done = hs_io_write_string_to_socket(socket, raw, strlen(raw));
   close(socket);
   assert_true(done);
 

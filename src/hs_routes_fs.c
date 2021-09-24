@@ -308,6 +308,7 @@ char *_hs_routes_directory_default_renderer_with_media_support(char *name, char 
   string_buffer_append_string(buffer, href);
   string_buffer_append_string(buffer, "\">");
 
+  // handle some of the supported mime types
   enum HSMimeType mime_type = hs_constants_file_extension_to_mime_type(name);
   switch (mime_type)
   {

@@ -20,6 +20,7 @@
  * See the various header files for the complete API.
  */
 
+enum HSServeFlowResponse _log_route_serve(struct HSRoute *, struct HSServeFlowParams *);
 enum HSServeFlowResponse _home_route_serve(struct HSRoute *, struct HSServeFlowParams *);
 bool _fs_basic_auth(char *, void *);
 
@@ -40,6 +41,12 @@ int main(int argc, char *argv[])
   }
   struct sockaddr_in address = hs_server_init_ipv4_address(port);
 
+  // print every request
+  struct HSRoute *log_route = hs_route_new();
+  hs_route_set_all_methods(log_route, true);
+  log_route->serve = _log_route_serve;
+  hs_router_add_route(server->router, log_route);
+
   // add powered by response header to all responses
   struct HSRoute *powered_by_route = hs_routes_powered_by_route_new(NULL);
   hs_router_add_route(server->router, powered_by_route);
@@ -59,6 +66,9 @@ int main(int argc, char *argv[])
 
   // Lets add this route to our main server router
   hs_router_add_route(server->router, home_route);
+
+  // Add favicon route
+  hs_router_add_route(server->router, hs_routes_favicon_route_new(strdup("./favicon.ico"), 1 * 365 * 24 * 60 * 60));
 
   // For all routes under /fs/ we will create a new sub router
   // which will serve all requests for that path and child paths
@@ -105,6 +115,18 @@ int main(int argc, char *argv[])
   return(0);
 } /* main */
 
+
+enum HSServeFlowResponse _log_route_serve(struct HSRoute *route, struct HSServeFlowParams *params)
+{
+  if (route == NULL)
+  {
+    return(HS_SERVE_FLOW_RESPONSE_DONE);
+  }
+
+  printf("Request: %s\n", params->request->resource);
+
+  return(HS_SERVE_FLOW_RESPONSE_CONTINUE);
+}
 
 enum HSServeFlowResponse _home_route_serve(struct HSRoute *route, struct HSServeFlowParams *params)
 {

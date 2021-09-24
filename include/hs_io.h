@@ -55,7 +55,7 @@ bool hs_io_read_and_write_to_file(int /* socket */, FILE *, size_t /* length */)
  * Writes the entire string to the socket.
  * In case of any error, false will be returned.
  */
-bool hs_io_write_string_to_socket(int /* socket */, char *);
+bool hs_io_write_string_to_socket(int /* socket */, char *, size_t);
 
 /**
  * Writes the entire file content to the socket.

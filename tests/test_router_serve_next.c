@@ -34,7 +34,7 @@ enum HSServeFlowResponse _test_serve(struct HSRoute *route, struct HSServeFlowPa
 
 void _test_with_values(struct HSRouter *router, int socket, char *request)
 {
-  bool done = hs_io_write_string_to_socket(socket, request);
+  bool done = hs_io_write_string_to_socket(socket, request, strlen(request));
 
   assert_true(done);
   lseek(socket, strlen(request) * -1, SEEK_END);

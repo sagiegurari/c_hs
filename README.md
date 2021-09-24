@@ -54,6 +54,7 @@ It does however provide support for many core capabilities.
  * See the various header files for the complete API.
  */
 
+enum HSServeFlowResponse _log_route_serve(struct HSRoute *, struct HSServeFlowParams *);
 enum HSServeFlowResponse _home_route_serve(struct HSRoute *, struct HSServeFlowParams *);
 bool _fs_basic_auth(char *, void *);
 
@@ -73,6 +74,12 @@ int main(int argc, char *argv[])
     port = atoi(argv[1]);
   }
   struct sockaddr_in address = hs_server_init_ipv4_address(port);
+
+  // print every request
+  struct HSRoute *log_route = hs_route_new();
+  hs_route_set_all_methods(log_route, true);
+  log_route->serve = _log_route_serve;
+  hs_router_add_route(server->router, log_route);
 
   // add powered by response header to all responses
   struct HSRoute *powered_by_route = hs_routes_powered_by_route_new(NULL);
@@ -94,6 +101,9 @@ int main(int argc, char *argv[])
   // Lets add this route to our main server router
   hs_router_add_route(server->router, home_route);
 
+  // Add favicon route
+  hs_router_add_route(server->router, hs_routes_favicon_route_new(strdup("./favicon.ico"), 1 * 365 * 24 * 60 * 60));
+
   // For all routes under /fs/ we will create a new sub router
   // which will serve all requests for that path and child paths
   // The sub routes in this fs router, will 'listen' to paths without
@@ -106,7 +116,8 @@ int main(int argc, char *argv[])
 
   // Adding directory route that will handle any request that maps
   // into a directory location in our file system.
-  struct HSRoute *fs_directory_route = hs_routes_fs_directory_route_new(".");
+  // The media support means we will have img/video tags for relevant files
+  struct HSRoute *fs_directory_route = hs_routes_fs_directory_route_new_with_media_support(".");
   fs_directory_route->is_parent_path = true; // enable to listen to all request sub paths
   hs_router_add_route(fs_router, fs_directory_route);
 
@@ -138,6 +149,18 @@ int main(int argc, char *argv[])
   return(0);
 } /* main */
 
+
+enum HSServeFlowResponse _log_route_serve(struct HSRoute *route, struct HSServeFlowParams *params)
+{
+  if (route == NULL)
+  {
+    return(HS_SERVE_FLOW_RESPONSE_DONE);
+  }
+
+  printf("Request: %s\n", params->request->resource);
+
+  return(HS_SERVE_FLOW_RESPONSE_CONTINUE);
+}
 
 enum HSServeFlowResponse _home_route_serve(struct HSRoute *route, struct HSServeFlowParams *params)
 {
