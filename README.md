@@ -45,7 +45,6 @@ It does however provide support for many core capabilities.
  *
  * This example only shows basic capabilities and there are some more that
  * are available such as:
- * - Redirection
  * - File based response
  * - Post request/connection callbacks
  * - Custom headers support
@@ -55,7 +54,6 @@ It does however provide support for many core capabilities.
  */
 
 enum HSServeFlowResponse _log_route_serve(struct HSRoute *, struct HSServeFlowParams *);
-enum HSServeFlowResponse _home_route_serve(struct HSRoute *, struct HSServeFlowParams *);
 bool _fs_basic_auth(char *, void *);
 
 enum LookingFor
@@ -125,11 +123,17 @@ int main(int argc, char *argv[])
   hs_router_add_route(server->router, hs_routes_payload_limit_route_new(1024 * 1024 * 2));
 
   // This route will server as our top domain route and will return
-  // a custom HTML that we are building in runtime (we can also point to a file).
-  struct HSRoute *home_route = hs_route_new();
-  home_route->path   = strdup("/");
-  home_route->is_get = true;
-  home_route->serve  = _home_route_serve;
+  // a custom static HTML (we can also point to a file).
+  struct HSRoute *home_route = hs_routes_static_html_route_new(strdup("<html>\n"
+                                                                      "<head>\n"
+                                                                      "<title>Example Home Page</title>\n"
+                                                                      "</head>\n"
+                                                                      "<body>\n"
+                                                                      "<h1>Welcome To The Example Home Page</h1>\n"
+                                                                      "<a href=\"/fs/\">Go To File System</a>\n"
+                                                                      "</body>\n"
+                                                                      "</html>"));
+  home_route->path = strdup("/");
 
   // Lets add this route to our main server router
   hs_router_add_route(server->router, home_route);
@@ -167,6 +171,10 @@ int main(int argc, char *argv[])
   fs_route->path = strdup("/fs/");
   hs_router_add_route(server->router, fs_route);
 
+  // Redirect /fs to /fs/
+  struct HSRoute *fs_redirect_route = hs_routes_redirection_route_new(strdup("/fs"), strdup("/fs/"));
+  hs_router_add_route(server->router, fs_redirect_route);
+
   // Any request that doesn't map to what we support, should get a 404
   struct HSRoute *not_found_error_route = hs_routes_error_404_not_found_route_new();
   hs_router_add_route(server->router, not_found_error_route);
@@ -193,28 +201,6 @@ enum HSServeFlowResponse _log_route_serve(struct HSRoute *route, struct HSServeF
   printf("Request: %s\n", params->request->resource);
 
   return(HS_SERVE_FLOW_RESPONSE_CONTINUE);
-}
-
-enum HSServeFlowResponse _home_route_serve(struct HSRoute *route, struct HSServeFlowParams *params)
-{
-  if (route == NULL)
-  {
-    return(HS_SERVE_FLOW_RESPONSE_DONE);
-  }
-
-  params->response->code           = HS_HTTP_RESPONSE_CODE_OK;
-  params->response->mime_type      = HS_MIME_TYPE_TEXT_HTML;
-  params->response->content_string = strdup("<html>\n"
-                                            "<head>\n"
-                                            "<title>Example Home Page</title>\n"
-                                            "</head>\n"
-                                            "<body>\n"
-                                            "<h1>Welcome To The Example Home Page</h1>\n"
-                                            "<a href=\"/fs/\">Go To File System</a>\n"
-                                            "</body>\n"
-                                            "</html>");
-
-  return(HS_SERVE_FLOW_RESPONSE_DONE);
 }
 
 

@@ -1,9 +1,11 @@
 ## CHANGELOG
 
-### v0.4.1
+### v0.5.0
 
-* Fix: relative href values in FS directory route
-* Enhancement: enable FS file route to close connections to enable multi connection support on single threaded servers
+* Fix: Relative href values in FS directory route
+* Enhancement: Enable FS file route to close connections to enable multi connection support on single threaded servers
+* Enhancement: New redirection route
+* Enhancement: New static content routes
 
 ### v0.4.0 (2021-09-24)
 
