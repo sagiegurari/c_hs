@@ -13,6 +13,7 @@ struct HSRoutesFileServeContext
 {
   char *base_directory;
   enum HSMimeType (*get_mime_type)(char *, enum HSMimeType);
+  bool close_connection;
 };
 
 
@@ -34,10 +35,10 @@ char *_hs_routes_directory_default_renderer_with_media_support(char *, char *, v
 
 struct HSRoute *hs_routes_fs_file_route_new(char *base_directory)
 {
-  return(hs_routes_fs_file_route_new_with_options(base_directory, NULL));
+  return(hs_routes_fs_file_route_new_with_options(base_directory, NULL, true));
 }
 
-struct HSRoute *hs_routes_fs_file_route_new_with_options(char *base_directory, enum HSMimeType (*get_mime_type)(char *, enum HSMimeType))
+struct HSRoute *hs_routes_fs_file_route_new_with_options(char *base_directory, enum HSMimeType (*get_mime_type)(char *, enum HSMimeType), bool close_connection)
 {
   struct HSRoute *route = hs_route_new();
 
@@ -45,9 +46,10 @@ struct HSRoute *hs_routes_fs_file_route_new_with_options(char *base_directory, e
   route->is_get = true;
 
   struct HSRoutesFileServeContext *context = malloc(sizeof(struct HSRoutesFileServeContext));
-  context->base_directory = base_directory;
-  context->get_mime_type  = get_mime_type;
-  route->extension        = context;
+  context->base_directory   = base_directory;
+  context->get_mime_type    = get_mime_type;
+  context->close_connection = close_connection;
+  route->extension          = context;
 
   route->release = hs_routes_common_extension_release;
 
@@ -139,8 +141,14 @@ enum HSServeFlowResponse _hs_routes_file_serve(struct HSRoute *route, struct HSS
     params->response->mime_type = context->get_mime_type(path, params->response->mime_type);
   }
 
+  // force close connection to enable new file request on other connections for single threaded servers
+  if (context->close_connection)
+  {
+    params->request->connection = HS_CONNECTION_TYPE_CLOSE;
+  }
+
   return(HS_SERVE_FLOW_RESPONSE_DONE);
-}
+} /* _hs_routes_file_serve */
 
 
 enum HSServeFlowResponse _hs_routes_directory_serve(struct HSRoute *route, struct HSServeFlowParams *params)

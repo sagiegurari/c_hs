@@ -3,6 +3,7 @@
 ### v0.4.1
 
 * Fix: relative href values in FS directory route
+* Enhancement: enable FS file route to close connections to enable multi connection support on single threaded servers
 
 ### v0.4.0 (2021-09-24)
 

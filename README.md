@@ -58,6 +58,13 @@ enum HSServeFlowResponse _log_route_serve(struct HSRoute *, struct HSServeFlowPa
 enum HSServeFlowResponse _home_route_serve(struct HSRoute *, struct HSServeFlowParams *);
 bool _fs_basic_auth(char *, void *);
 
+enum LookingFor
+{
+  LOOKING_FOR_FLAG,
+  LOOKING_FOR_PORT,
+  LOOKING_FOR_BASE_DIR
+};
+
 
 int main(int argc, char *argv[])
 {
@@ -68,10 +75,36 @@ int main(int argc, char *argv[])
   server->accept_recv_timeout_seconds  = 60;
   server->request_recv_timeout_seconds = 30;
 
-  int port = 8080;
+  char *base_dir = ".";
+  int  port      = 8080;
   if (argc > 1)
   {
-    port = atoi(argv[1]);
+    enum LookingFor looking_for = LOOKING_FOR_FLAG;
+    for (int index = 1; index < argc; index++)
+    {
+      switch (looking_for)
+      {
+      case LOOKING_FOR_FLAG:
+        if (!strcmp(argv[index], "--port"))
+        {
+          looking_for = LOOKING_FOR_PORT;
+        }
+        else if (!strcmp(argv[index], "--dir"))
+        {
+          looking_for = LOOKING_FOR_BASE_DIR;
+        }
+        break;
+
+      case LOOKING_FOR_BASE_DIR:
+        looking_for = LOOKING_FOR_FLAG;
+        base_dir    = argv[index];
+        break;
+
+      case LOOKING_FOR_PORT:
+        looking_for = LOOKING_FOR_FLAG;
+        port        = atoi(argv[index]);
+      }
+    }
   }
   struct sockaddr_in address = hs_server_init_ipv4_address(port);
 
@@ -117,13 +150,13 @@ int main(int argc, char *argv[])
   // Adding directory route that will handle any request that maps
   // into a directory location in our file system.
   // The media support means we will have img/video tags for relevant files
-  struct HSRoute *fs_directory_route = hs_routes_fs_directory_route_new_with_media_support(".");
+  struct HSRoute *fs_directory_route = hs_routes_fs_directory_route_new_with_media_support(base_dir);
   fs_directory_route->is_parent_path = true; // enable to listen to all request sub paths
   hs_router_add_route(fs_router, fs_directory_route);
 
   // Adding file route that will handle any request that maps
   // into a file location on our file system.
-  struct HSRoute *fs_file_route = hs_routes_fs_file_route_new(".");
+  struct HSRoute *fs_file_route = hs_routes_fs_file_route_new(base_dir);
   fs_file_route->is_parent_path = true;
   hs_router_add_route(fs_router, fs_file_route);
 

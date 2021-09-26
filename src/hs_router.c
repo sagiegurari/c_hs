@@ -365,11 +365,6 @@ bool _hs_router_serve(struct HSRouter *router, struct HSServeFlowParams *params,
     return(false);
   }
 
-  // if close or unknown, add the close response header
-  bool close_connection = !router->support_keep_alive
-                          || params->request->connection == HS_CONNECTION_TYPE_CLOSE
-                          || params->request->connection == HS_CONNECTION_TYPE_UNKNOWN;
-
   if (route->serve == NULL)
   {
     return(false);
@@ -380,6 +375,11 @@ bool _hs_router_serve(struct HSRouter *router, struct HSServeFlowParams *params,
   {
     return(params->router_state->done);
   }
+
+  // if close or unknown, add the close response header
+  bool close_connection = !router->support_keep_alive
+                          || params->request->connection == HS_CONNECTION_TYPE_CLOSE
+                          || params->request->connection == HS_CONNECTION_TYPE_UNKNOWN;
 
   struct StringBuffer *header_buffer = hs_router_write_common_response_header(params->response->code,
                                                                               params->response->headers,

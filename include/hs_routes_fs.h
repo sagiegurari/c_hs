@@ -13,7 +13,7 @@ struct HSRoute *hs_routes_fs_file_route_new(char * /* base directory */);
  * Returns the file content with the relevant mime type.
  * It will ignore non file paths or paths that do not exist.
  */
-struct HSRoute *hs_routes_fs_file_route_new_with_options(char * /* base directory */, enum HSMimeType (*get_mime_type)(char * /* file */, enum HSMimeType /* detected mime type */));
+struct HSRoute *hs_routes_fs_file_route_new_with_options(char * /* base directory */, enum HSMimeType (*get_mime_type)(char * /* file */, enum HSMimeType /* detected mime type */), bool /* close connection */);
 
 /**
  * Returns the directory content.
