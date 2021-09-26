@@ -1,5 +1,9 @@
 ## CHANGELOG
 
+### v0.5.1 (2021-09-26)
+
+* Fix: Mime type detection by file name now handles multi case file names.
+
 ### v0.5.0 (2021-09-26)
 
 * Fix: Relative href values in FS directory route
