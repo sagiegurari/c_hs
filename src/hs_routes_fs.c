@@ -224,14 +224,19 @@ enum HSServeFlowResponse _hs_routes_directory_serve(struct HSRoute *route, struc
 
       if (!filter_out)
       {
+        char *href          = fsio_join_paths(params->request->resource, entry->d_name);
+        char *href_relative = href + 1;
+
         if (is_directory)
         {
-          _hs_routes_directory_render_entry(dir_buffer, context->render_directory_entry, entry->d_name, entry_path, context->context);
+          _hs_routes_directory_render_entry(dir_buffer, context->render_directory_entry, entry->d_name, href_relative, context->context);
         }
         else if (fsio_file_exists(entry_path))
         {
-          _hs_routes_directory_render_entry(files_buffer, context->render_file_entry, entry->d_name, entry_path, context->context);
+          _hs_routes_directory_render_entry(files_buffer, context->render_file_entry, entry->d_name, href_relative, context->context);
         }
+
+        hs_io_free(href);
       }
 
       hs_io_free(entry_path);

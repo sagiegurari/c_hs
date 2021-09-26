@@ -1,5 +1,9 @@
 ## CHANGELOG
 
+### v0.4.1
+
+* Fix: Fix relative href values in FS directory route
+
 ### v0.4.0 (2021-09-24)
 
 * Fix: Incorrect handling of binary files
