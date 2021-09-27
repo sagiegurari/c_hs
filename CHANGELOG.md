@@ -1,5 +1,11 @@
 ## CHANGELOG
 
+### v0.6.0
+
+* Enhancement: New security headers route.
+* Enhancement: Move auth routes to security namespace.
+* Fix: directory route now returns mime type.
+
 ### v0.5.1 (2021-09-26)
 
 * Fix: Mime type detection by file name now handles multi case file names.

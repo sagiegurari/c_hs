@@ -271,6 +271,7 @@ enum HSServeFlowResponse _hs_routes_directory_serve(struct HSRoute *route, struc
 
   params->response->code           = HS_HTTP_RESPONSE_CODE_OK;
   params->response->content_string = html;
+  params->response->mime_type      = HS_MIME_TYPE_TEXT_HTML;
 
   return(HS_SERVE_FLOW_RESPONSE_DONE);
 } /* _hs_routes_directory_serve */

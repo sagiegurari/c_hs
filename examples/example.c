@@ -82,6 +82,10 @@ int main(int argc, char *argv[])
   struct HSRoute *powered_by_route = hs_routes_powered_by_route_new(NULL);
   hs_router_add_route(server->router, powered_by_route);
 
+  // add common security headers to all responses
+  struct HSRoute *security_headers = hs_routes_security_headers_route_new(NULL);
+  hs_router_add_route(server->router, security_headers);
+
   // let's make sure PUT/POST have their content-length header set
   hs_router_add_route(server->router, hs_routes_error_411_length_required_route_new());
 
@@ -114,7 +118,7 @@ int main(int argc, char *argv[])
   struct HSRouter *fs_router = hs_router_new();
 
   // Protect FS access via basic auth
-  struct HSRoute *basic_auth_route = hg_routes_auth_basic_new("My Realm", _fs_basic_auth, NULL);
+  struct HSRoute *basic_auth_route = hs_routes_security_basic_auth_route_new("My Realm", _fs_basic_auth, NULL);
   hs_router_add_route(fs_router, basic_auth_route);
 
   // Adding directory route that will handle any request that maps
