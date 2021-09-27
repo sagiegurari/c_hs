@@ -35,5 +35,10 @@ struct HSRoute *hs_routes_fs_directory_route_new_with_media_support(char * /* ba
  */
 struct HSRoute *hs_routes_fs_directory_route_new_with_options(char * /* base directory */, char * /* additional_head_content */, bool (*filter)(char * /* name */, bool /* is directory */), char * (*render_directory_entry)(char * /* name */, char * /* href */, void * /* context */), char * (*render_file_entry)(char * /* name */, char * /* href */, void * /* context */), void *context);
 
+/**
+ * The render_file_entry used by the directory with media support route as standalone function.
+ */
+char *hs_routes_fs_directory_route_render_file_entry_with_media_support(char * /* name */, char * /* href */, void * /* context */);
+
 #endif
 

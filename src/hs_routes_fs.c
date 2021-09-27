@@ -31,7 +31,6 @@ enum HSServeFlowResponse _hs_routes_file_serve(struct HSRoute *, struct HSServeF
 enum HSServeFlowResponse _hs_routes_directory_serve(struct HSRoute *, struct HSServeFlowParams *);
 void _hs_routes_directory_render_entry(struct StringBuffer *, char * (*render)(char *, char *, void *), char *, char *, void *);
 void _hs_routes_directory_default_renderer(struct StringBuffer *, char *, char *);
-char *_hs_routes_directory_default_renderer_with_media_support(char *, char *, void *);
 
 struct HSRoute *hs_routes_fs_file_route_new(char *base_directory)
 {
@@ -72,11 +71,11 @@ struct HSRoute *hs_routes_fs_directory_route_new_with_media_support(char *base_d
 {
   return(hs_routes_fs_directory_route_new_with_options(
            base_directory,
-           NULL,                                                     // additional head content
-           NULL,                                                     // filter
-           NULL,                                                     // render directory
-           _hs_routes_directory_default_renderer_with_media_support, // render file
-           NULL                                                      // context
+           NULL,                                                              // additional head content
+           NULL,                                                              // filter
+           NULL,                                                              // render directory
+           hs_routes_fs_directory_route_render_file_entry_with_media_support, // render file
+           NULL                                                               // context
            ));
 }
 
@@ -105,6 +104,69 @@ struct HSRoute *hs_routes_fs_directory_route_new_with_options(char *base_directo
 
   return(route);
 }
+
+
+char *hs_routes_fs_directory_route_render_file_entry_with_media_support(char *name, char *href, void *context)
+{
+  if (context != NULL)
+  {
+    // context not supported
+    return(NULL);
+  }
+
+  struct StringBuffer *buffer = string_buffer_new();
+
+  string_buffer_append_string(buffer, "<a class=\"entry\" href=\"");
+  string_buffer_append_string(buffer, href);
+  string_buffer_append_string(buffer, "\">");
+
+  // handle some of the supported mime types
+  enum HSMimeType mime_type = hs_constants_file_extension_to_mime_type(name);
+  switch (mime_type)
+  {
+  case HS_MIME_TYPE_IMAGE_APNG:
+  case HS_MIME_TYPE_IMAGE_AVIF:
+  case HS_MIME_TYPE_IMAGE_GIF:
+  case HS_MIME_TYPE_IMAGE_JPEG:
+  case HS_MIME_TYPE_IMAGE_PNG:
+  case HS_MIME_TYPE_IMAGE_SVG:
+  case HS_MIME_TYPE_IMAGE_WEBP:
+  case HS_MIME_TYPE_IMAGE_X_ICON:
+  case HS_MIME_TYPE_IMAGE_TIFF:
+  case HS_MIME_TYPE_IMAGE_X_MS_BMP:
+    string_buffer_append_string(buffer, "<img src=\"");
+    string_buffer_append_string(buffer, href);
+    string_buffer_append_string(buffer, "\" alt=\"");
+    string_buffer_append_string(buffer, name);
+    string_buffer_append_string(buffer, "\" class=\"entry-image\"></img>");
+    break;
+
+  case HS_MIME_TYPE_VIDEO_WEBM:
+  case HS_MIME_TYPE_VIDEO_3GPP:
+  case HS_MIME_TYPE_VIDEO_MP2T:
+  case HS_MIME_TYPE_VIDEO_MP4:
+  case HS_MIME_TYPE_VIDEO_MPEG:
+  case HS_MIME_TYPE_VIDEO_QUICKTIME:
+  case HS_MIME_TYPE_VIDEO_X_FLV:
+    string_buffer_append_string(buffer, "<video src=\"");
+    string_buffer_append_string(buffer, href);
+    string_buffer_append_string(buffer, "\" alt=\"");
+    string_buffer_append_string(buffer, name);
+    string_buffer_append_string(buffer, "\" class=\"entry-video\" autoplay=\"false\" controls loop=\"false\" preload=\"none\"></video>");
+    break;
+
+  default:
+    string_buffer_append_string(buffer, name);
+    break;
+  }
+
+  string_buffer_append_string(buffer, "</a><br>\n");
+
+  char *html = string_buffer_to_string(buffer);
+  string_buffer_release(buffer);
+
+  return(html);
+} /* hs_routes_fs_directory_route_render_file_entry_with_media_support */
 
 enum HSServeFlowResponse _hs_routes_file_serve(struct HSRoute *route, struct HSServeFlowParams *params)
 {
@@ -306,67 +368,4 @@ void _hs_routes_directory_default_renderer(struct StringBuffer *buffer, char *na
   string_buffer_append_string(buffer, name);
   string_buffer_append_string(buffer, "</a><br>\n");
 }
-
-
-char *_hs_routes_directory_default_renderer_with_media_support(char *name, char *href, void *context)
-{
-  if (context != NULL)
-  {
-    // context not supported
-    return(NULL);
-  }
-
-  struct StringBuffer *buffer = string_buffer_new();
-
-  string_buffer_append_string(buffer, "<a class=\"entry\" href=\"");
-  string_buffer_append_string(buffer, href);
-  string_buffer_append_string(buffer, "\">");
-
-  // handle some of the supported mime types
-  enum HSMimeType mime_type = hs_constants_file_extension_to_mime_type(name);
-  switch (mime_type)
-  {
-  case HS_MIME_TYPE_IMAGE_APNG:
-  case HS_MIME_TYPE_IMAGE_AVIF:
-  case HS_MIME_TYPE_IMAGE_GIF:
-  case HS_MIME_TYPE_IMAGE_JPEG:
-  case HS_MIME_TYPE_IMAGE_PNG:
-  case HS_MIME_TYPE_IMAGE_SVG:
-  case HS_MIME_TYPE_IMAGE_WEBP:
-  case HS_MIME_TYPE_IMAGE_X_ICON:
-  case HS_MIME_TYPE_IMAGE_TIFF:
-  case HS_MIME_TYPE_IMAGE_X_MS_BMP:
-    string_buffer_append_string(buffer, "<img src=\"");
-    string_buffer_append_string(buffer, href);
-    string_buffer_append_string(buffer, "\" alt=\"");
-    string_buffer_append_string(buffer, name);
-    string_buffer_append_string(buffer, "\" class=\"entry-image\"></img>");
-    break;
-
-  case HS_MIME_TYPE_VIDEO_WEBM:
-  case HS_MIME_TYPE_VIDEO_3GPP:
-  case HS_MIME_TYPE_VIDEO_MP2T:
-  case HS_MIME_TYPE_VIDEO_MP4:
-  case HS_MIME_TYPE_VIDEO_MPEG:
-  case HS_MIME_TYPE_VIDEO_QUICKTIME:
-  case HS_MIME_TYPE_VIDEO_X_FLV:
-    string_buffer_append_string(buffer, "<video src=\"");
-    string_buffer_append_string(buffer, href);
-    string_buffer_append_string(buffer, "\" alt=\"");
-    string_buffer_append_string(buffer, name);
-    string_buffer_append_string(buffer, "\" class=\"entry-video\" autoplay=\"false\" controls loop=\"false\" preload=\"none\"></video>");
-    break;
-
-  default:
-    string_buffer_append_string(buffer, name);
-    break;
-  }
-
-  string_buffer_append_string(buffer, "</a><br>\n");
-
-  char *html = string_buffer_to_string(buffer);
-  string_buffer_release(buffer);
-
-  return(html);
-} /* _hs_routes_directory_default_renderer_with_media_support */
 
