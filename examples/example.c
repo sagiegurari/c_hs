@@ -124,13 +124,13 @@ int main(int argc, char *argv[])
   // Adding directory route that will handle any request that maps
   // into a directory location in our file system.
   // The media support means we will have img/video tags for relevant files
-  struct HSRoute *fs_directory_route = hs_routes_fs_directory_route_new_with_media_support(base_dir);
+  struct HSRoute *fs_directory_route = hs_routes_fs_directory_route_new_with_media_support(strdup(base_dir));
   fs_directory_route->is_parent_path = true; // enable to listen to all request sub paths
   hs_router_add_route(fs_router, fs_directory_route);
 
   // Adding file route that will handle any request that maps
   // into a file location on our file system.
-  struct HSRoute *fs_file_route = hs_routes_fs_file_route_new(base_dir);
+  struct HSRoute *fs_file_route = hs_routes_fs_file_route_new(strdup(base_dir));
   fs_file_route->is_parent_path = true;
   hs_router_add_route(fs_router, fs_file_route);
 

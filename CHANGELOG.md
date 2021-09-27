@@ -7,6 +7,7 @@
 * Fix: directory route now returns mime type.
 * Fix: memory leak in basic auth route.
 * Enhancement: Realm will be released with the basic auth route release
+* Enhancement: Make additional params of fs routes released with route
 
 ### v0.5.1 (2021-09-26)
 
