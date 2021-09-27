@@ -6,6 +6,7 @@
 * Enhancement: Move auth routes to security namespace.
 * Fix: directory route now returns mime type.
 * Fix: memory leak in basic auth route.
+* Enhancement: Realm will be released with the basic auth route release
 
 ### v0.5.1 (2021-09-26)
 

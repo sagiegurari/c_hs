@@ -13,9 +13,10 @@ struct HSRoutesBasicAuthContext
   void *context;
 };
 
-enum HSServeFlowResponse               _hs_routes_security_headers_route_serve(struct HSRoute *, struct HSServeFlowParams *);
+enum HSServeFlowResponse _hs_routes_security_headers_route_serve(struct HSRoute *, struct HSServeFlowParams *);
 void _hs_routes_security_headers_route_release(struct HSRoute *);
-enum HSServeFlowResponse               _hs_routes_security_basic_auth_route_serve(struct HSRoute *, struct HSServeFlowParams *);
+enum HSServeFlowResponse _hs_routes_security_basic_auth_route_serve(struct HSRoute *, struct HSServeFlowParams *);
+void              _hs_routes_security_basic_auth_route_release(struct HSRoute *);
 
 struct HSRoutesSecurityResponseHeaders *hs_routes_security_headers_response_headers_new()
 {
@@ -64,7 +65,7 @@ struct HSRoute *hs_routes_security_basic_auth_route_new(char *realm, bool (*auth
   context->context = auth_context;
   route->extension = context;
   route->serve     = _hs_routes_security_basic_auth_route_serve;
-  route->release   = hs_routes_common_extension_release;
+  route->release   = _hs_routes_security_basic_auth_route_release;
 
   return(route);
 }
@@ -210,4 +211,18 @@ enum HSServeFlowResponse _hs_routes_security_basic_auth_route_serve(struct HSRou
 
   return(HS_SERVE_FLOW_RESPONSE_DONE);
 } /* _hs_routes_basic_auth_serve */
+
+
+void              _hs_routes_security_basic_auth_route_release(struct HSRoute *route)
+{
+  if (route == NULL || route->extension == NULL)
+  {
+    return;
+  }
+
+  struct HSRoutesBasicAuthContext *context = (struct HSRoutesBasicAuthContext *)route->extension;
+
+  hs_io_free(context->realm);
+  hs_io_free(context);
+}
 

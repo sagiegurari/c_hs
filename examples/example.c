@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
   struct HSRouter *fs_router = hs_router_new();
 
   // Protect FS access via basic auth
-  struct HSRoute *basic_auth_route = hs_routes_security_basic_auth_route_new("My Realm", _fs_basic_auth, NULL);
+  struct HSRoute *basic_auth_route = hs_routes_security_basic_auth_route_new(strdup("My Realm"), _fs_basic_auth, NULL);
   hs_router_add_route(fs_router, basic_auth_route);
 
   // Adding directory route that will handle any request that maps

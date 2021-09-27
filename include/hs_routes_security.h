@@ -26,7 +26,7 @@ struct HSRoute *hs_routes_security_headers_route_new(struct HSRoutesSecurityResp
 
 /**
  * Returns a new basic auth route.
- * None of the input parameters will be released when the route is released.
+ * Only the realm value will be released when the route is released.
  */
 struct HSRoute *hs_routes_security_basic_auth_route_new(char * /* realm */, bool (*auth)(char * /* base64 auth value */, void * /* context */), void * /* context */);
 
