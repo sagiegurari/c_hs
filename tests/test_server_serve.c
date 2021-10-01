@@ -81,7 +81,7 @@ void test_impl()
 
   if (pid)
   {
-    struct HSServer *server     = hs_server_new();
+    struct HSServer *server     = hs_server_new_single_thread();
     struct HSRouter *sub_router = hs_router_new();
     struct HSRoute  *route      = hs_route_new();
 

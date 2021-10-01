@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 {
   // This is our main server
   // It has a built in router
-  struct HSServer *server = hs_server_new();
+  struct HSServer *server = hs_server_new_single_thread();
 
   server->accept_recv_timeout_seconds  = 60;
   server->request_recv_timeout_seconds = 30;

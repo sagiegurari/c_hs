@@ -8,6 +8,7 @@
 * Fix: memory leak in basic auth route.
 * Enhancement: Realm will be released with the basic auth route release
 * Enhancement: Make additional params of fs routes released with route
+* Enhancement: Refactor server to enable custom connection handling (preparation for multi threaded support)
 
 ### v0.5.1 (2021-09-26)
 
