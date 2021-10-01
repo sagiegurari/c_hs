@@ -57,7 +57,7 @@ void test_impl()
   route->is_get = true;
   hs_router_add_route(router, route);
 
-  struct HSHttpRequest *request = hs_types_new_http_request();
+  struct HSHttpRequest *request = hs_types_http_request_new();
   request->resource   = strdup("/test");
   request->method     = HS_HTTP_METHOD_GET;
   request->connection = HS_CONNECTION_TYPE_CLOSE;
@@ -65,10 +65,12 @@ void test_impl()
   char *filename = "./test_router_serve_file.txt";
 
   fsio_create_empty_file(filename);
-  int                      socket = open(filename, O_WRONLY);
+  int                            socket = open(filename, O_WRONLY);
 
-  struct HSServeFlowParams *params = hs_types_new_serve_flow_params_pre_populated(request);
-  params->socket = socket;
+  struct HSServeFlowParams       *params           = hs_types_serve_flow_params_new_pre_populated(request);
+  struct HSServerConnectionState *connection_state = hs_types_server_connection_state_new();
+  connection_state->socket = socket;
+  params->connection_state = connection_state;
 
   bool done = hs_router_serve(router, params);
   assert_true(done);
@@ -94,7 +96,8 @@ void test_impl()
   hs_io_free(content);
   fsio_remove(filename);
   fsio_remove("./test_router_serve_file.out.txt");
-  hs_types_release_serve_flow_params(params);
+  hs_types_serve_flow_params_release(params);
+  hs_types_server_connection_state_release(connection_state);
   hs_router_release(router);
 } /* test_impl */
 

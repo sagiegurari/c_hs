@@ -76,54 +76,59 @@ void hs_router_add_route(struct HSRouter *router, struct HSRoute *route)
 }
 
 
-bool hs_router_serve_forever(struct HSRouter *router, int socket, void *context, bool (*should_stop)(struct HSRouter *, int, int, void *))
+bool hs_router_serve_forever(struct HSRouter *router, int socket, void *context, bool (*should_stop)(struct HSRouter *, int, size_t, void *))
 {
   if (router == NULL || !socket)
   {
     return(false);
   }
 
-  bool can_continue    = true;
-  int  request_counter = 0;
+  struct HSServerConnectionState *connection_state = hs_types_server_connection_state_new();
+  connection_state->socket = socket;
+
+  bool can_continue = true;
   if (should_stop != NULL)
   {
-    can_continue = !should_stop(router, socket, request_counter, context);
+    can_continue = !should_stop(router, socket, connection_state->request_counter, context);
   }
+
 
   while (can_continue)
   {
-    can_continue = hs_router_serve_next(router, socket);
+    can_continue = hs_router_serve_next(router, connection_state);
     if (can_continue && should_stop != NULL)
     {
-      request_counter++;
-      can_continue = !should_stop(router, socket, request_counter, context);
+      connection_state->request_counter++;
+      can_continue = !should_stop(router, socket, connection_state->request_counter, context);
     }
   }
+
+  hs_types_server_connection_state_release(connection_state);
 
   return(true);
 }
 
 
-bool hs_router_serve_next(struct HSRouter *router, int socket)
+bool hs_router_serve_next(struct HSRouter *router, struct HSServerConnectionState *connection_state)
 {
-  if (router == NULL || !socket)
+  if (router == NULL || connection_state == NULL || !connection_state->socket)
   {
     return(false);
   }
 
-  struct HSHttpRequest *request = hs_parser_parse_request(socket);
+  struct HSHttpRequest *request = hs_parser_parse_request(connection_state->socket);
   if (request == NULL)
   {
     return(false);
   }
 
-  struct HSServeFlowParams *params = hs_types_new_serve_flow_params_pre_populated(request);
-  params->socket = socket;
+  struct HSServeFlowParams *params = hs_types_serve_flow_params_new_pre_populated(request);
+  params->connection_state = connection_state;
 
   bool done         = hs_router_serve(router, params);
   bool can_continue = done && !params->router_state->closed_connection;
 
-  hs_types_release_serve_flow_params(params);
+  hs_types_serve_flow_params_release(params);
 
   return(can_continue);
 }
@@ -135,7 +140,8 @@ bool hs_router_serve(struct HSRouter *router, struct HSServeFlowParams *params)
      || params == NULL
      || params->request == NULL
      || params->response == NULL
-     || !params->socket
+     || params->connection_state == NULL
+     || !params->connection_state->socket
      || params->request->resource == NULL
      || params->router_state == NULL)
   {
@@ -342,7 +348,8 @@ bool _hs_router_serve(struct HSRouter *router, struct HSServeFlowParams *params,
   if (  router == NULL
      || params->request == NULL
      || params->response == NULL
-     || !params->socket
+     || params->connection_state == NULL
+     || !params->connection_state->socket
      || params->request->resource == NULL
      || params->router_state == NULL
      || params->router_state->closed_connection)
@@ -443,18 +450,18 @@ bool _hs_router_serve(struct HSRouter *router, struct HSServeFlowParams *params,
 
   char   *header_string = string_buffer_to_string(header_buffer);
   size_t length         = string_buffer_get_content_size(header_buffer);
-  hs_io_write_string_to_socket(params->socket, header_string, length);
+  hs_io_write_string_to_socket(params->connection_state->socket, header_string, length);
   hs_io_free(header_string);
 
   if (has_content)
   {
     if (params->response->content_string != NULL)
     {
-      hs_io_write_string_to_socket(params->socket, params->response->content_string, strlen(params->response->content_string));
+      hs_io_write_string_to_socket(params->connection_state->socket, params->response->content_string, strlen(params->response->content_string));
     }
     else
     {
-      hs_io_write_file_to_socket(params->socket, params->response->content_file);
+      hs_io_write_file_to_socket(params->connection_state->socket, params->response->content_file);
     }
   }
 
@@ -469,8 +476,8 @@ bool _hs_router_serve(struct HSRouter *router, struct HSServeFlowParams *params,
 
   if (close_connection)
   {
-    hs_io_close(params->socket);
-    params->socket                          = 0;
+    hs_io_close(params->connection_state->socket);
+    params->connection_state->socket        = 0;
     params->router_state->closed_connection = true;
   }
 
@@ -482,7 +489,8 @@ enum HSServeFlowResponse _hs_router_as_route_serve(struct HSRoute *route, struct
   if (  route == NULL
      || params->request == NULL
      || params->response == NULL
-     || !params->socket
+     || params->connection_state == NULL
+     || !params->connection_state->socket
      || params->request->resource == NULL
      || params->router_state == NULL
      || params->router_state->closed_connection)

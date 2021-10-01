@@ -4,11 +4,11 @@
 
 void test_impl()
 {
-  struct HSHttpResponse *response = hs_types_new_http_response();
+  struct HSHttpResponse *response = hs_types_http_response_new();
 
-  hs_types_release_http_response(response);
+  hs_types_http_response_release(response);
 
-  response = hs_types_new_http_response();
+  response = hs_types_http_response_new();
 
   for (size_t index = 0; index < 3; index++)
   {
@@ -26,7 +26,7 @@ void test_impl()
   response->content_string = stringfn_new_empty_string();
   response->content_file   = stringfn_new_empty_string();
 
-  hs_types_release_http_response(response);
+  hs_types_http_response_release(response);
 }
 
 

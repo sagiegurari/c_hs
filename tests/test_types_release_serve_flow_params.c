@@ -42,11 +42,11 @@ void _test_release_callback(struct HSPostResponseCallback *callback)
 
 void test_impl()
 {
-  struct HSServeFlowParams *params = hs_types_new_serve_flow_params();
+  struct HSServeFlowParams *params = hs_types_serve_flow_params_new();
 
-  hs_types_release_serve_flow_params(params);
+  hs_types_serve_flow_params_release(params);
 
-  params = hs_types_new_serve_flow_params();
+  params = hs_types_serve_flow_params_new();
 
   _test_set_cookies(params->request->cookies);
   _test_set_cookies(params->response->cookies);
@@ -61,19 +61,19 @@ void test_impl()
   params->request->query_string  = stringfn_new_empty_string();
   params->request->user_agent    = stringfn_new_empty_string();
   params->request->authorization = stringfn_new_empty_string();
-  params->request->payload       = hs_types_new_http_request_payload(NULL);
+  params->request->payload       = hs_types_http_request_new_payload(NULL);
 
   params->response->content_string = stringfn_new_empty_string();
   params->response->content_file   = stringfn_new_empty_string();
 
-  struct HSPostResponseCallback *callback = hs_types_new_post_response_callback();
+  struct HSPostResponseCallback *callback = hs_types_post_response_callback_new();
   callback->context = stringfn_new_empty_string();
   callback->release = _test_release_callback;
   hs_types_post_response_callbacks_add(params->callbacks, callback);
 
   params->router_state->base_path = stringfn_new_empty_string();
 
-  hs_types_release_serve_flow_params(params);
+  hs_types_serve_flow_params_release(params);
 }
 
 

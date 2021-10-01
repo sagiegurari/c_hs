@@ -36,23 +36,26 @@ void _test_with_values(struct HSRouter *router, char *request_path, char *expect
 {
   char                 *filename = "./test_router_as_route.txt";
 
-  struct HSHttpRequest *request = hs_types_new_http_request();
+  struct HSHttpRequest *request = hs_types_http_request_new();
 
   request->resource = strdup(request_path);
   request->method   = HS_HTTP_METHOD_GET;
   fsio_remove(filename);
   assert_true(!fsio_path_exists(filename));
   fsio_create_empty_file(filename);
-  int                      socket = open(filename, O_WRONLY);
+  int                            socket = open(filename, O_WRONLY);
 
-  struct HSServeFlowParams *params = hs_types_new_serve_flow_params_pre_populated(request);
-  params->socket = socket;
+  struct HSServerConnectionState *connection_state = hs_types_server_connection_state_new();
+  connection_state->socket = socket;
+  struct HSServeFlowParams       *params = hs_types_serve_flow_params_new_pre_populated(request);
+  params->connection_state = connection_state;
 
   bool done = hs_router_serve(router, params);
   assert_true(done);
   close(socket);
   assert_string_equal(request->resource, request_path);
-  hs_types_release_serve_flow_params(params);
+  hs_types_serve_flow_params_release(params);
+  hs_types_server_connection_state_release(connection_state);
 
   char *content = fsio_read_text_file(filename);
   fsio_remove(filename);

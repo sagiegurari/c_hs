@@ -10,17 +10,17 @@ void _test_release(struct HSPostResponseCallback *callback)
 
 void test_impl()
 {
-  struct HSPostResponseCallbacks *callbacks = hs_types_new_post_response_callbacks(1);
+  struct HSPostResponseCallbacks *callbacks = hs_types_post_response_callbacks_new(1);
 
   for (size_t index = 0; index < 10; index++)
   {
-    struct HSPostResponseCallback *callback = hs_types_new_post_response_callback();
+    struct HSPostResponseCallback *callback = hs_types_post_response_callback_new();
     callback->context = stringfn_new_empty_string();
     callback->release = _test_release;
     hs_types_post_response_callbacks_add(callbacks, callback);
   }
 
-  hs_types_release_post_response_callbacks(callbacks);
+  hs_types_post_response_callbacks_release(callbacks);
 }
 
 

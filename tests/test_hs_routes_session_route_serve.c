@@ -12,7 +12,7 @@ char *_test_with_values(struct HSCookie *cookie, struct HSRoute *route)
     route         = hs_routes_session_route_new_default();
     release_route = true;
   }
-  struct HSServeFlowParams *params = hs_types_new_serve_flow_params();
+  struct HSServeFlowParams *params = hs_types_serve_flow_params_new();
 
   if (cookie != NULL)
   {
@@ -41,7 +41,7 @@ char *_test_with_values(struct HSCookie *cookie, struct HSRoute *route)
 
   callback->run(callback);
 
-  hs_types_release_serve_flow_params(params);
+  hs_types_serve_flow_params_release(params);
   if (release_route)
   {
     hs_route_release_route(route);

@@ -57,7 +57,7 @@ void test_impl()
   assert_string_equal(hs_types_array_string_pair_get_key(request->headers, index), "content-type");
   assert_string_equal(hs_types_array_string_pair_get_value(request->headers, index), "application/x-www-form-urlencoded");
 
-  hs_types_release_http_request(request);
+  hs_types_http_request_release(request);
   close(socket);
   fsio_remove(filename);
 } /* test_impl */

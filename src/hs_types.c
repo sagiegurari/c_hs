@@ -10,45 +10,45 @@ struct HSHttpRequestPayload
   struct HSIOHttpRequestPayload *payload;
 };
 
-struct HSServeFlowParams *hs_types_new_serve_flow_params()
+struct HSServeFlowParams *hs_types_serve_flow_params_new()
 {
-  struct HSHttpRequest *request = hs_types_new_http_request();
+  struct HSHttpRequest *request = hs_types_http_request_new();
 
-  return(hs_types_new_serve_flow_params_pre_populated(request));
+  return(hs_types_serve_flow_params_new_pre_populated(request));
 }
 
-struct HSServeFlowParams *hs_types_new_serve_flow_params_pre_populated(struct HSHttpRequest *request)
+struct HSServeFlowParams *hs_types_serve_flow_params_new_pre_populated(struct HSHttpRequest *request)
 {
   struct HSServeFlowParams *params = malloc(sizeof(struct HSServeFlowParams));
 
-  params->request      = request;
-  params->response     = hs_types_new_http_response();
-  params->socket       = 0;
-  params->callbacks    = hs_types_new_post_response_callbacks(1);
-  params->route_state  = hs_types_new_route_flow_state(1);
-  params->router_state = hs_types_new_router_flow_state();
+  params->request          = request;
+  params->response         = hs_types_http_response_new();
+  params->callbacks        = hs_types_post_response_callbacks_new(1);
+  params->route_state      = hs_types_route_flow_state_new(1);
+  params->router_state     = hs_types_router_flow_state_new();
+  params->connection_state = NULL;
 
   return(params);
 }
 
 
-void hs_types_release_serve_flow_params(struct HSServeFlowParams *params)
+void hs_types_serve_flow_params_release(struct HSServeFlowParams *params)
 {
   if (params == NULL)
   {
     return;
   }
 
-  hs_types_release_http_request(params->request);
-  hs_types_release_http_response(params->response);
-  hs_types_release_post_response_callbacks(params->callbacks);
-  hs_types_release_route_flow_state(params->route_state);
-  hs_types_release_router_flow_state(params->router_state);
+  hs_types_http_request_release(params->request);
+  hs_types_http_response_release(params->response);
+  hs_types_post_response_callbacks_release(params->callbacks);
+  hs_types_route_flow_state_release(params->route_state);
+  hs_types_router_flow_state_release(params->router_state);
 
   hs_io_free(params);
 }
 
-struct HSHttpRequest *hs_types_new_http_request()
+struct HSHttpRequest *hs_types_http_request_new()
 {
   struct HSHttpRequest *request = malloc(sizeof(struct HSHttpRequest));
 
@@ -70,7 +70,7 @@ struct HSHttpRequest *hs_types_new_http_request()
 }
 
 
-void hs_types_release_http_request(struct HSHttpRequest *request)
+void hs_types_http_request_release(struct HSHttpRequest *request)
 {
   if (request == NULL)
   {
@@ -98,7 +98,7 @@ void hs_types_release_http_request(struct HSHttpRequest *request)
 }
 
 
-struct HSHttpResponse *hs_types_new_http_response()
+struct HSHttpResponse *hs_types_http_response_new()
 {
   struct HSHttpResponse *response = malloc(sizeof(struct HSHttpResponse));
 
@@ -113,7 +113,7 @@ struct HSHttpResponse *hs_types_new_http_response()
 }
 
 
-void hs_types_release_http_response(struct HSHttpResponse *response)
+void hs_types_http_response_release(struct HSHttpResponse *response)
 {
   if (response == NULL)
   {
@@ -128,7 +128,7 @@ void hs_types_release_http_response(struct HSHttpResponse *response)
   hs_io_free(response);
 }
 
-struct HSPostResponseCallback *hs_types_new_post_response_callback()
+struct HSPostResponseCallback *hs_types_post_response_callback_new()
 {
   struct HSPostResponseCallback *callback = malloc(sizeof(struct HSPostResponseCallback));
 
@@ -140,7 +140,7 @@ struct HSPostResponseCallback *hs_types_new_post_response_callback()
 }
 
 
-void hs_types_release_post_response_callback(struct HSPostResponseCallback *callback)
+void hs_types_post_response_callback_release(struct HSPostResponseCallback *callback)
 {
   if (callback == NULL)
   {
@@ -155,7 +155,7 @@ void hs_types_release_post_response_callback(struct HSPostResponseCallback *call
   hs_io_free(callback);
 }
 
-struct HSPostResponseCallbacks *hs_types_new_post_response_callbacks(size_t capacity)
+struct HSPostResponseCallbacks *hs_types_post_response_callbacks_new(size_t capacity)
 {
   struct HSPostResponseCallbacks *callbacks = malloc(sizeof(struct HSPostResponseCallbacks));
 
@@ -168,7 +168,7 @@ struct HSPostResponseCallbacks *hs_types_new_post_response_callbacks(size_t capa
 }
 
 
-void hs_types_release_post_response_callbacks(struct HSPostResponseCallbacks *callbacks)
+void hs_types_post_response_callbacks_release(struct HSPostResponseCallbacks *callbacks)
 {
   if (callbacks == NULL)
   {
@@ -180,7 +180,7 @@ void hs_types_release_post_response_callbacks(struct HSPostResponseCallbacks *ca
     for (size_t index = 0; index < callbacks->count; index++)
     {
       struct HSPostResponseCallback *callback = callbacks->callbacks[index];
-      hs_types_release_post_response_callback(callback);
+      hs_types_post_response_callback_release(callback);
     }
   }
   hs_io_free(callbacks->callbacks);
@@ -216,7 +216,7 @@ bool hs_types_post_response_callbacks_add(struct HSPostResponseCallbacks *callba
   return(true);
 }
 
-struct HSRouterFlowState *hs_types_new_router_flow_state()
+struct HSRouterFlowState *hs_types_router_flow_state_new()
 {
   struct HSRouterFlowState *state = malloc(sizeof(struct HSRouterFlowState));
 
@@ -228,7 +228,7 @@ struct HSRouterFlowState *hs_types_new_router_flow_state()
 }
 
 
-void hs_types_release_router_flow_state(struct HSRouterFlowState *state)
+void hs_types_router_flow_state_release(struct HSRouterFlowState *state)
 {
   if (state == NULL)
   {
@@ -239,7 +239,7 @@ void hs_types_release_router_flow_state(struct HSRouterFlowState *state)
   hs_io_free(state);
 }
 
-struct HSRouteFlowState *hs_types_new_route_flow_state()
+struct HSRouteFlowState *hs_types_route_flow_state_new()
 {
   struct HSRouteFlowState *state = malloc(sizeof(struct HSRouteFlowState));
 
@@ -250,7 +250,7 @@ struct HSRouteFlowState *hs_types_new_route_flow_state()
 }
 
 
-void hs_types_release_route_flow_state(struct HSRouteFlowState *state)
+void hs_types_route_flow_state_release(struct HSRouteFlowState *state)
 {
   if (state == NULL)
   {
@@ -263,7 +263,23 @@ void hs_types_release_route_flow_state(struct HSRouteFlowState *state)
   hs_io_free(state);
 }
 
-struct HSHttpRequestPayload *hs_types_new_http_request_payload(void *io_payload)
+struct HSServerConnectionState *hs_types_server_connection_state_new()
+{
+  struct HSServerConnectionState *state = malloc(sizeof(struct HSServerConnectionState));
+
+  state->socket          = 0;
+  state->request_counter = 0;
+
+  return(state);
+}
+
+
+void hs_types_server_connection_state_release(struct HSServerConnectionState *state)
+{
+  hs_io_free(state);
+}
+
+struct HSHttpRequestPayload *hs_types_http_request_new_payload(void *io_payload)
 {
   struct HSIOHttpRequestPayload *io_payload_struct = (struct HSIOHttpRequestPayload *)io_payload;
 

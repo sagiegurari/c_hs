@@ -5,7 +5,7 @@
 
 void test_impl()
 {
-  struct HSServeFlowParams *params = hs_types_new_serve_flow_params();
+  struct HSServeFlowParams *params = hs_types_serve_flow_params_new();
 
   test_generate_binary_file();
 
@@ -24,7 +24,7 @@ void test_impl()
   assert_num_equal(response, HS_SERVE_FLOW_RESPONSE_CONTINUE);
   hs_route_release_route(route);
 
-  hs_types_release_serve_flow_params(params);
+  hs_types_serve_flow_params_release(params);
 } /* test_impl */
 
 

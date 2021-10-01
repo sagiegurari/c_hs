@@ -43,12 +43,14 @@ void _test_with_values(struct HSRouter *router, struct HSRoute *route, bool is_g
   route->is_get  = is_get;
   route->is_post = is_post;
 
-  char                     *filename = "./test_router_serve_multi_routes.txt";
+  char                           *filename = "./test_router_serve_multi_routes.txt";
   fsio_create_empty_file(filename);
-  int                      socket = open(filename, O_WRONLY);
+  int                            socket = open(filename, O_WRONLY);
 
-  struct HSServeFlowParams *params = hs_types_new_serve_flow_params();
-  params->socket            = socket;
+  struct HSServerConnectionState *connection_state = hs_types_server_connection_state_new();
+  connection_state->socket = socket;
+  struct HSServeFlowParams       *params = hs_types_serve_flow_params_new();
+  params->connection_state  = connection_state;
   params->request->resource = strdup("/test");
   params->request->method   = HS_HTTP_METHOD_GET;
 
@@ -86,7 +88,8 @@ void _test_with_values(struct HSRouter *router, struct HSRoute *route, bool is_g
   }
 
   fsio_remove(filename);
-  hs_types_release_serve_flow_params(params);
+  hs_types_serve_flow_params_release(params);
+  hs_types_server_connection_state_release(connection_state);
 } /* _test_with_values */
 
 

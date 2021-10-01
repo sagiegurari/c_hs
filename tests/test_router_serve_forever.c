@@ -38,7 +38,7 @@ enum HSServeFlowResponse _test_serve(struct HSRoute *route, struct HSServeFlowPa
 }
 
 
-bool _test_should_stop(struct HSRouter *router, int socket, int counter, void *context)
+bool _test_should_stop(struct HSRouter *router, int socket, size_t counter, void *context)
 {
   if (router == NULL || !socket || context == NULL)
   {

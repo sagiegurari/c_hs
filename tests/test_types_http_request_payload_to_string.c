@@ -35,7 +35,7 @@ void test_impl()
   content = hs_types_http_request_payload_to_string(request);
   assert_true(content == NULL);
 
-  hs_types_release_http_request(request);
+  hs_types_http_request_release(request);
   close(socket);
   fsio_remove(filename);
 }

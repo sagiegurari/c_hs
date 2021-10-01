@@ -3,7 +3,7 @@
 
 void test_impl()
 {
-  struct HSServeFlowParams *params = hs_types_new_serve_flow_params();
+  struct HSServeFlowParams *params = hs_types_serve_flow_params_new();
 
   struct HSRoute           *route = hs_routes_powered_by_route_new(NULL);
 
@@ -22,7 +22,7 @@ void test_impl()
   assert_string_equal(hs_types_array_string_pair_get_by_key(params->response->headers, "X-Powered-By"), "test");
   hs_route_release_route(route);
 
-  hs_types_release_serve_flow_params(params);
+  hs_types_serve_flow_params_release(params);
 } /* test_impl */
 
 

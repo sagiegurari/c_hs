@@ -334,7 +334,7 @@ enum HSServeFlowResponse _hs_routes_session_route_serve(struct HSRoute *route, s
   callback_context->session_id    = session_id;
   callback_context->route_context = context;
   callback_context->route_state   = params->route_state;
-  struct HSPostResponseCallback *callback = hs_types_new_post_response_callback();
+  struct HSPostResponseCallback *callback = hs_types_post_response_callback_new();
   callback->run     = _hs_routes_session_callback_run;
   callback->release = _hs_routes_session_callback_release;
   callback->context = callback_context;

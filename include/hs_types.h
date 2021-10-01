@@ -73,17 +73,24 @@ struct HSPostResponseCallbacks
   size_t                        capacity;
 };
 
+struct HSServerConnectionState
+{
+  int    socket;
+  size_t request_counter;
+};
+
 struct HSServeFlowParams
 {
   struct HSHttpRequest           *request;
   struct HSHttpResponse          *response;
-  int                            socket;
   // Optional callbacks after response is written
   struct HSPostResponseCallbacks *callbacks;
-  // state, can be used by the routes to store data in the context of the request
+  // route state, can be used by the routes to store data in the context of the request
   struct HSRouteFlowState        *route_state;
-  // state, used internally by the router
+  // router state, used internally by the router
   struct HSRouterFlowState       *router_state;
+  // connection state, can be used to check connection tracking info
+  struct HSServerConnectionState *connection_state;
 };
 
 enum HSServeFlowResponse
@@ -95,60 +102,60 @@ enum HSServeFlowResponse
 /**
  * Creates and returns a new struct.
  */
-struct HSServeFlowParams *hs_types_new_serve_flow_params(void);
+struct HSServeFlowParams *hs_types_serve_flow_params_new(void);
 
 /**
  * Creates and returns a new struct.
  */
-struct HSServeFlowParams *hs_types_new_serve_flow_params_pre_populated(struct HSHttpRequest *);
+struct HSServeFlowParams *hs_types_serve_flow_params_new_pre_populated(struct HSHttpRequest *);
 
 /**
  * Frees all internal memory and struct.
  */
-void hs_types_release_serve_flow_params(struct HSServeFlowParams *);
+void hs_types_serve_flow_params_release(struct HSServeFlowParams *);
 
 /**
  * Creates and returns a new http request struct.
  */
-struct HSHttpRequest *hs_types_new_http_request(void);
+struct HSHttpRequest *hs_types_http_request_new(void);
 
 /**
  * Frees all memory used by the provided struct, including
  * any internal member/struct.
  */
-void hs_types_release_http_request(struct HSHttpRequest *);
+void hs_types_http_request_release(struct HSHttpRequest *);
 
 /**
  * Creates and returns a new http response struct.
  */
-struct HSHttpResponse *hs_types_new_http_response(void);
+struct HSHttpResponse *hs_types_http_response_new(void);
 
 /**
  * Frees all memory used by the provided struct, including
  * any internal member/struct.
  */
-void hs_types_release_http_response(struct HSHttpResponse *);
+void hs_types_http_response_release(struct HSHttpResponse *);
 
 /**
  * Creates and returns the new struct.
  */
-struct HSPostResponseCallback *hs_types_new_post_response_callback(void);
+struct HSPostResponseCallback *hs_types_post_response_callback_new(void);
 
 /**
  * Releases the struct memory, not including the context.
  * Optional release function (if defined) will be invoked.
  */
-void hs_types_release_post_response_callback(struct HSPostResponseCallback *);
+void hs_types_post_response_callback_release(struct HSPostResponseCallback *);
 
 /**
  * Creates and returns the new struct.
  */
-struct HSPostResponseCallbacks *hs_types_new_post_response_callbacks(size_t /* capacity */);
+struct HSPostResponseCallbacks *hs_types_post_response_callbacks_new(size_t /* capacity */);
 
 /**
  * Releases the struct memory, including all sub callbacks.
  */
-void hs_types_release_post_response_callbacks(struct HSPostResponseCallbacks *);
+void hs_types_post_response_callbacks_release(struct HSPostResponseCallbacks *);
 
 /**
  * Adds additional callback.
@@ -159,29 +166,40 @@ bool hs_types_post_response_callbacks_add(struct HSPostResponseCallbacks *, stru
 /**
  * Creates and returns a new state struct.
  */
-struct HSRouterFlowState *hs_types_new_router_flow_state(void);
+struct HSRouterFlowState *hs_types_router_flow_state_new(void);
 
 /**
  * Frees all memory used by the provided struct, including
  * any internal member/struct.
  */
-void hs_types_release_router_flow_state(struct HSRouterFlowState *);
+void hs_types_router_flow_state_release(struct HSRouterFlowState *);
 
 /**
  * Creates and returns a new state struct.
  */
-struct HSRouteFlowState *hs_types_new_route_flow_state();
+struct HSRouteFlowState *hs_types_route_flow_state_new();
 
 /**
  * Frees all memory used by the provided struct, including
  * any internal member/struct.
  */
-void hs_types_release_route_flow_state(struct HSRouteFlowState *);
+void hs_types_route_flow_state_release(struct HSRouteFlowState *);
+
+/**
+ * Creates and returns a new state struct.
+ */
+struct HSServerConnectionState *hs_types_server_connection_state_new();
+
+/**
+ * Frees all memory used by the provided struct, including
+ * any internal member/struct.
+ */
+void hs_types_server_connection_state_release(struct HSServerConnectionState *);
 
 /**
  * Internal function.
  */
-struct HSHttpRequestPayload *hs_types_new_http_request_payload(void *);
+struct HSHttpRequestPayload *hs_types_http_request_new_payload(void *);
 
 /**
  * Returns true if we already loaded the payload content, making this struct

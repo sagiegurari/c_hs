@@ -10,7 +10,7 @@ struct HSServerInternal;
 struct HSServerConnectionHandler
 {
   void (*init)(struct HSServerConnectionHandler *);
-  void (*on_connection)(struct HSServer *, int /* socket */, void * /* context */, bool (*should_stop_server)(struct HSServer *, void * /* context */), bool (*should_stop_for_connection)(struct HSRouter *, int /* socket */, int /* request counter */, void * /* context */));
+  void (*on_connection)(struct HSServer *, int /* socket */, void * /* context */, bool (*should_stop_server)(struct HSServer *, void * /* context */), bool (*should_stop_for_connection)(struct HSRouter *, int /* socket */, size_t /* request counter */, void * /* context */));
   void (*stop_connections)(struct HSServerConnectionHandler *);
   void (*release)(struct HSServerConnectionHandler *);
   void *extension;
@@ -53,7 +53,7 @@ void hs_server_release(struct HSServer *);
  * Once stop is requested via callback, the socket will be closed and this
  * function can be invoked again.
  */
-bool hs_server_serve(struct HSServer *, struct sockaddr_in, void * /* context */, bool (*should_stop_server)(struct HSServer *, void * /* context */), bool (*should_stop_for_connection)(struct HSRouter *, int /* socket */, int /* request counter */, void * /* context */));
+bool hs_server_serve(struct HSServer *, struct sockaddr_in, void * /* context */, bool (*should_stop_server)(struct HSServer *, void * /* context */), bool (*should_stop_for_connection)(struct HSRouter *, int /* socket */, size_t /* request counter */, void * /* context */));
 
 /**
  * Returns new connection handler.

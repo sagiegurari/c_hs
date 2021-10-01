@@ -32,14 +32,14 @@ enum HSServeFlowResponse _test_serve(struct HSRoute *route, struct HSServeFlowPa
 }
 
 
-void _test_with_values(struct HSRouter *router, int socket, char *request)
+void _test_with_values(struct HSRouter *router, struct HSServerConnectionState *state, char *request)
 {
-  bool done = hs_io_write_string_to_socket(socket, request, strlen(request));
+  bool done = hs_io_write_string_to_socket(state->socket, request, strlen(request));
 
   assert_true(done);
-  lseek(socket, strlen(request) * -1, SEEK_END);
+  lseek(state->socket, strlen(request) * -1, SEEK_END);
 
-  done = hs_router_serve_next(router, socket);
+  done = hs_router_serve_next(router, state);
   assert_true(done);
 }
 
@@ -69,36 +69,40 @@ void test_impl()
   route = hs_routes_error_404_not_found_route_new();
   hs_router_add_route(router, route);
 
-  char *filename = "./test_router_serve_next.txt";
+  char                           *filename = "./test_router_serve_next.txt";
   fsio_create_empty_file(filename);
-  int  socket = open(filename, O_RDWR);
+  int                            socket = open(filename, O_RDWR);
 
-  _test_with_values(router, socket, "GET /test HTTP/1.0\r\n"
+  struct HSServerConnectionState *connection_state = hs_types_server_connection_state_new();
+  connection_state->socket = socket;
+
+  _test_with_values(router, connection_state, "GET /test HTTP/1.0\r\n"
                     "Connection: keep-alive\r\n"
                     "Content-Length: 0\r\n"
                     "\r\n");
 
-  _test_with_values(router, socket, "GET /admin HTTP/1.0\r\n"
+  _test_with_values(router, connection_state, "GET /admin HTTP/1.0\r\n"
                     "Connection: keep-alive\r\n"
                     "Content-Length: 0\r\n"
                     "\r\n");
 
-  _test_with_values(router, socket, "GET /admin/ HTTP/1.0\r\n"
+  _test_with_values(router, connection_state, "GET /admin/ HTTP/1.0\r\n"
                     "Connection: keep-alive\r\n"
                     "Content-Length: 0\r\n"
                     "\r\n");
 
-  _test_with_values(router, socket, "GET /admin/gohome HTTP/1.0\r\n"
+  _test_with_values(router, connection_state, "GET /admin/gohome HTTP/1.0\r\n"
                     "Connection: keep-alive\r\n"
                     "Content-Length: 0\r\n"
                     "\r\n");
 
-  _test_with_values(router, socket, "GET /admin/index.html HTTP/1.0\r\n"
+  _test_with_values(router, connection_state, "GET /admin/index.html HTTP/1.0\r\n"
                     "Connection: keep-alive\r\n"
                     "Content-Length: 0\r\n"
                     "\r\n");
 
   close(socket);
+  hs_types_server_connection_state_release(connection_state);
 
   char *content = fsio_read_text_file(filename);
   fsio_remove(filename);

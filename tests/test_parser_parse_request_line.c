@@ -12,7 +12,7 @@ void test_impl()
   assert_num_equal(request->method, HS_HTTP_METHOD_POST);
   assert_true(request->query_string == NULL);
 
-  hs_types_release_http_request(request);
+  hs_types_http_request_release(request);
 
   request = hs_parser_parse_request_line("GET /testget HTTP/1.0");
 
@@ -23,7 +23,7 @@ void test_impl()
   assert_num_equal(request->method, HS_HTTP_METHOD_GET);
   assert_true(request->query_string == NULL);
 
-  hs_types_release_http_request(request);
+  hs_types_http_request_release(request);
 
   request = hs_parser_parse_request_line("GET /testget HTTP/1.0 a");
   assert_true(request == NULL);

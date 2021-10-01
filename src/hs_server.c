@@ -12,7 +12,7 @@ struct HSServerInternal
 };
 
 bool _hs_server_set_recv_timeout_in_seconds(int, long);
-void _hs_server_single_thread_on_connection(struct HSServer *, int, void *, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, int, int, void *));
+void _hs_server_single_thread_on_connection(struct HSServer *, int, void *, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, int, size_t, void *));
 
 struct HSServer *hs_server_new()
 {
@@ -56,7 +56,7 @@ void hs_server_release(struct HSServer *server)
 }
 
 
-bool hs_server_serve(struct HSServer *server, struct sockaddr_in address, void *context, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, int, int, void *))
+bool hs_server_serve(struct HSServer *server, struct sockaddr_in address, void *context, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, int, size_t, void *))
 {
   if (  server == NULL
      || server->internal == NULL
@@ -221,7 +221,7 @@ bool _hs_server_set_recv_timeout_in_seconds(int socket, long recv_timeout_second
 }
 
 
-void _hs_server_single_thread_on_connection(struct HSServer *server, int socket, void *context, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, int, int, void *))
+void _hs_server_single_thread_on_connection(struct HSServer *server, int socket, void *context, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, int, size_t, void *))
 {
   if (  server == NULL
      || server->router == NULL

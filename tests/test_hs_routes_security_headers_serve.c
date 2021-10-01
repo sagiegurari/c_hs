@@ -5,7 +5,7 @@
 
 void test_impl()
 {
-  struct HSServeFlowParams *params  = hs_types_new_serve_flow_params();
+  struct HSServeFlowParams *params  = hs_types_serve_flow_params_new();
   struct HSRoute           *route   = hs_routes_security_headers_route_new(NULL);
   enum HSServeFlowResponse response = route->serve(route, params);
 
@@ -15,10 +15,10 @@ void test_impl()
   assert_string_equal(hs_types_array_string_pair_get_by_key(params->response->headers, "Referrer-Policy"), "same-origin");
   assert_true(hs_types_array_string_pair_get_by_key(params->response->headers, "Content-Policy") == NULL);
   assert_true(hs_types_array_string_pair_get_by_key(params->response->headers, "Permissions-Policy") == NULL);
-  hs_types_release_serve_flow_params(params);
+  hs_types_serve_flow_params_release(params);
   hs_route_release_route(route);
 
-  params = hs_types_new_serve_flow_params();
+  params = hs_types_serve_flow_params_new();
   struct HSRoutesSecurityResponseHeaders *headers = hs_routes_security_headers_response_headers_new();
   headers->x_frame_options         = HS_X_FRAME_OPTIONS_RESPONSE_HEADER_SAMEORIGIN;
   headers->x_content_type_options  = HS_X_CONTENT_TYPE_OPTIONS_RESPONSE_HEADER_NONE;
@@ -33,7 +33,7 @@ void test_impl()
   assert_string_equal(hs_types_array_string_pair_get_by_key(params->response->headers, "Referrer-Policy"), "origin-when-cross-origin");
   assert_string_equal(hs_types_array_string_pair_get_by_key(params->response->headers, "Content-Security-Policy"), "test content policy");
   assert_string_equal(hs_types_array_string_pair_get_by_key(params->response->headers, "Permissions-Policy"), "test permission policy");
-  hs_types_release_serve_flow_params(params);
+  hs_types_serve_flow_params_release(params);
   hs_route_release_route(route);
 } /* test_impl */
 

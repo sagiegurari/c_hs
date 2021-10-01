@@ -4,7 +4,7 @@
 void test_impl()
 {
   struct HSRoute       *route   = hs_route_new();
-  struct HSHttpRequest *request = hs_types_new_http_request();
+  struct HSHttpRequest *request = hs_types_http_request_new();
 
   assert_true(!hs_route_is_supported_path(route, request));
 
@@ -68,7 +68,7 @@ void test_impl()
   route->path       = NULL;
   request->resource = NULL;
   hs_route_release_route(route);
-  hs_types_release_http_request(request);
+  hs_types_http_request_release(request);
 } /* test_impl */
 
 

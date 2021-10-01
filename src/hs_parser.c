@@ -240,7 +240,7 @@ struct HSHttpRequest *hs_parser_parse_request(int socket)
   } while (line != NULL);
 
   struct HSIOHttpRequestPayload *io_payload = hs_io_new_http_request_payload(socket, work_buffer);
-  request->payload = hs_types_new_http_request_payload(io_payload);
+  request->payload = hs_types_http_request_new_payload(io_payload);
 
   return(request);
 }   /* hs_parser_parse_request */
@@ -548,7 +548,7 @@ struct HSHttpRequest *_hs_parser_create_request_from_path(char *url_or_resource,
     hs_io_free(url_clone);
   }
 
-  struct HSHttpRequest *request = hs_types_new_http_request();
+  struct HSHttpRequest *request = hs_types_http_request_new();
   request->method       = HS_HTTP_METHOD_UNKNOWN;
   request->domain       = domain;
   request->port         = port;
