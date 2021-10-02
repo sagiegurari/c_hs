@@ -92,6 +92,10 @@ int main(int argc, char *argv[])
   // Set a max on payload size
   hs_router_add_route(server->router, hs_routes_payload_limit_route_new(1024 * 1024 * 2));
 
+  // Rate limit per connection
+  hs_router_add_route(server->router, hs_routes_ratelimit_max_connection_requests_route_new(10));
+  hs_router_add_route(server->router, hs_routes_ratelimit_max_connection_time_route_new(60 * 5));
+
   // This route will server as our top domain route and will return
   // a custom static HTML (we can also point to a file).
   struct HSRoute *home_route = hs_routes_static_html_route_new(strdup("<html>\n"

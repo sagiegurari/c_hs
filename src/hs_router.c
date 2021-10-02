@@ -92,13 +92,12 @@ bool hs_router_serve_forever(struct HSRouter *router, int socket, void *context,
     can_continue = !should_stop(router, socket, connection_state->request_counter, context);
   }
 
-
   while (can_continue)
   {
+    connection_state->request_counter++;
     can_continue = hs_router_serve_next(router, connection_state);
     if (can_continue && should_stop != NULL)
     {
-      connection_state->request_counter++;
       can_continue = !should_stop(router, socket, connection_state->request_counter, context);
     }
   }

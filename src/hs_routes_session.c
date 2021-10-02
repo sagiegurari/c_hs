@@ -1,5 +1,6 @@
 #include "fsio.h"
 #include "hs_io.h"
+#include "hs_routes_common.h"
 #include "hs_routes_session.h"
 #include "ini.h"
 #include "stringfn.h"
@@ -48,9 +49,7 @@ struct HSRoute *hs_routes_session_route_new(char *cookie_name, char *session_nam
     return(NULL);
   }
 
-  struct HSRoute *route = hs_route_new();
-  route->is_parent_path = true;
-  hs_route_set_all_methods(route, true);
+  struct HSRoute               *route = hs_routes_common_serve_all_route_new();
 
   struct HSSessionRouteContext *context = malloc(sizeof(struct HSSessionRouteContext));
   context->cookie_name        = cookie_name;

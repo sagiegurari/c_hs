@@ -38,9 +38,7 @@ struct HSRoute *hs_routes_security_headers_route_new(struct HSRoutesSecurityResp
     headers = hs_routes_security_headers_response_headers_new();
   }
 
-  struct HSRoute *route = hs_route_new();
-  route->is_parent_path = true;
-  hs_route_set_all_methods(route, true);
+  struct HSRoute *route = hs_routes_common_serve_all_route_new();
   route->serve     = _hs_routes_security_headers_route_serve;
   route->release   = _hs_routes_security_headers_route_release;
   route->extension = headers;
@@ -55,9 +53,7 @@ struct HSRoute *hs_routes_security_basic_auth_route_new(char *realm, bool (*auth
     return(NULL);
   }
 
-  struct HSRoute *route = hs_route_new();
-  hs_route_set_all_methods(route, true);
-  route->is_parent_path = true;
+  struct HSRoute                  *route = hs_routes_common_serve_all_route_new();
 
   struct HSRoutesBasicAuthContext *context = malloc(sizeof(struct HSRoutesBasicAuthContext));
   context->realm   = realm;

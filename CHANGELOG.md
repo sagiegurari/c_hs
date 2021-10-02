@@ -10,6 +10,7 @@
 * Enhancement: Make additional params of fs routes released with route
 * Enhancement: Refactor server to enable custom connection handling (preparation for multi threaded support)
 * Enhancement: Flow params now contains connection state which holds shared data (such as request counter) for all requests on same connection
+* Enhancement: New rate limiting routes
 
 ### v0.5.1 (2021-09-26)
 

@@ -1,3 +1,4 @@
+#include "hs_routes_common.h"
 #include "hs_routes_powered_by.h"
 #include <string.h>
 
@@ -5,10 +6,7 @@ enum HSServeFlowResponse _hs_routes_powered_by_serve(struct HSRoute *, struct HS
 
 struct HSRoute           *hs_routes_powered_by_route_new(char *powered_by)
 {
-  struct HSRoute *route = hs_route_new();
-
-  hs_route_set_all_methods(route, true);
-  route->is_parent_path = true;
+  struct HSRoute *route = hs_routes_common_serve_all_route_new();
 
   route->extension = powered_by;
   if (route->extension == NULL)

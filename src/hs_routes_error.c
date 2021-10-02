@@ -1,3 +1,4 @@
+#include "hs_routes_common.h"
 #include "hs_routes_error.h"
 
 enum HSServeFlowResponse _hs_routes_404_not_found_serve(struct HSRoute *, struct HSServeFlowParams *);
@@ -5,11 +6,9 @@ enum HSServeFlowResponse _hs_routes_411_length_required_serve(struct HSRoute *, 
 
 struct HSRoute           *hs_routes_error_404_not_found_route_new()
 {
-  struct HSRoute *route = hs_route_new();
+  struct HSRoute *route = hs_routes_common_serve_all_route_new();
 
   route->serve = _hs_routes_404_not_found_serve;
-  hs_route_set_all_methods(route, true);
-  route->is_parent_path = true;
 
   return(route);
 }

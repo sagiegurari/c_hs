@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
 {
   // This is our main server
   // It has a built in router
-  struct HSServer *server = hs_server_new();
+  struct HSServer *server = hs_server_new_single_thread();
 
   server->accept_recv_timeout_seconds  = 60;
   server->request_recv_timeout_seconds = 30;
@@ -126,6 +126,10 @@ int main(int argc, char *argv[])
   // Set a max on payload size
   hs_router_add_route(server->router, hs_routes_payload_limit_route_new(1024 * 1024 * 2));
 
+  // Rate limit per connection
+  hs_router_add_route(server->router, hs_routes_ratelimit_max_connection_requests_route_new(10));
+  hs_router_add_route(server->router, hs_routes_ratelimit_max_connection_time_route_new(60 * 5));
+
   // This route will server as our top domain route and will return
   // a custom static HTML (we can also point to a file).
   struct HSRoute *home_route = hs_routes_static_html_route_new(strdup("<html>\n"
@@ -152,19 +156,19 @@ int main(int argc, char *argv[])
   struct HSRouter *fs_router = hs_router_new();
 
   // Protect FS access via basic auth
-  struct HSRoute *basic_auth_route = hs_routes_security_basic_auth_route_new("My Realm", _fs_basic_auth, NULL);
+  struct HSRoute *basic_auth_route = hs_routes_security_basic_auth_route_new(strdup("My Realm"), _fs_basic_auth, NULL);
   hs_router_add_route(fs_router, basic_auth_route);
 
   // Adding directory route that will handle any request that maps
   // into a directory location in our file system.
   // The media support means we will have img/video tags for relevant files
-  struct HSRoute *fs_directory_route = hs_routes_fs_directory_route_new_with_media_support(base_dir);
+  struct HSRoute *fs_directory_route = hs_routes_fs_directory_route_new_with_media_support(strdup(base_dir));
   fs_directory_route->is_parent_path = true; // enable to listen to all request sub paths
   hs_router_add_route(fs_router, fs_directory_route);
 
   // Adding file route that will handle any request that maps
   // into a file location on our file system.
-  struct HSRoute *fs_file_route = hs_routes_fs_file_route_new(base_dir);
+  struct HSRoute *fs_file_route = hs_routes_fs_file_route_new(strdup(base_dir));
   fs_file_route->is_parent_path = true;
   hs_router_add_route(fs_router, fs_file_route);
 

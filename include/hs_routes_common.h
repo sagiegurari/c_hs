@@ -9,5 +9,11 @@
  */
 void hs_routes_common_extension_release(struct HSRoute *);
 
+/**
+ * Returns a route that is setup to serve all methods and all paths.
+ * This utility is good for middlewares that modify requests/responses.
+ */
+struct HSRoute *hs_routes_common_serve_all_route_new();
+
 #endif
 

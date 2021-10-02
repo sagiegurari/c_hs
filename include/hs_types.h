@@ -6,6 +6,7 @@
 #include "hs_types_cookie.h"
 #include <stdbool.h>
 #include <stddef.h>
+#include <time.h>
 
 struct HSHttpRequestPayload;
 
@@ -77,6 +78,7 @@ struct HSServerConnectionState
 {
   int    socket;
   size_t request_counter;
+  time_t creation_time;
 };
 
 struct HSServeFlowParams

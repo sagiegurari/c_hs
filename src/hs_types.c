@@ -269,6 +269,7 @@ struct HSServerConnectionState *hs_types_server_connection_state_new()
 
   state->socket          = 0;
   state->request_counter = 0;
+  state->creation_time   = time(NULL);
 
   return(state);
 }

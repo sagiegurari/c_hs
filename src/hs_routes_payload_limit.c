@@ -1,4 +1,5 @@
 #include "hs_io.h"
+#include "hs_routes_common.h"
 #include "hs_routes_payload_limit.h"
 #include <stdlib.h>
 
@@ -7,14 +8,11 @@ void _hs_routes_payload_limit_release(struct HSRoute *);
 
 struct HSRoute *hs_routes_payload_limit_route_new(size_t size_limit)
 {
-  struct HSRoute *route = hs_route_new();
+  struct HSRoute *route = hs_routes_common_serve_all_route_new();
 
   // 0 means, no limit
   if (size_limit)
   {
-    hs_route_set_all_methods(route, true);
-    route->is_parent_path = true;
-
     size_t *ptr = malloc(sizeof(size_t));
     *ptr             = size_limit;
     route->extension = ptr;
