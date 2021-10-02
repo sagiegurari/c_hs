@@ -1,6 +1,6 @@
 ## CHANGELOG
 
-### v0.6.0
+### v0.6.0 (2021-10-02)
 
 * Enhancement: New security headers route.
 * Enhancement: Move auth routes to security namespace.
