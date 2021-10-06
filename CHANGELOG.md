@@ -1,5 +1,9 @@
 ## CHANGELOG
 
+### v0.6.1 (2021-10-06)
+
+* Route callbacks are called in the reverse order of entry
+
 ### v0.6.0 (2021-10-02)
 
 * Enhancement: New security headers route.

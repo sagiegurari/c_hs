@@ -543,9 +543,10 @@ void _hs_router_run_callbacks(struct HSPostResponseCallbacks *callbacks)
     return;
   }
 
-  for (size_t index = 0; index < callbacks->count; index++)
+  // run in the reverse order (first route callback is called last)
+  for (size_t index = callbacks->count; index > 0; index--)
   {
-    struct HSPostResponseCallback *callback = callbacks->callbacks[index];
+    struct HSPostResponseCallback *callback = callbacks->callbacks[index - 1];
     if (callback != NULL && callback->run != NULL)
     {
       callback->run(callback);
