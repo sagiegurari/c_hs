@@ -1,5 +1,9 @@
 ## CHANGELOG
 
+### v0.6.2 (2021-10-06)
+
+* Fix: routes inside multiple routers callbacks would be called multiple times
+
 ### v0.6.1 (2021-10-06)
 
 * Route callbacks are called in the reverse order of entry

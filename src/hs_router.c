@@ -14,6 +14,7 @@ struct HSRouter
 };
 
 
+bool _hs_router_find_route_and_serve(struct HSRouter *, struct HSServeFlowParams *);
 bool _hs_router_serve(struct HSRouter *, struct HSServeFlowParams *, struct HSRoute *);
 enum HSServeFlowResponse _hs_router_as_route_serve(struct HSRoute *, struct HSServeFlowParams *);
 void                           _hs_router_as_route_release(struct HSRoute *);
@@ -159,18 +160,7 @@ bool hs_router_serve(struct HSRouter *router, struct HSServeFlowParams *params)
     return(false);
   }
 
-  size_t count = vector_size(router->routes);
-  bool   done  = false;
-  for (size_t index = 0; index < count; index++)
-  {
-    struct HSRoute *route = (struct HSRoute *)vector_get(router->routes, index);
-
-    if (_hs_router_serve(router, params, route))
-    {
-      done = true;
-      break;
-    }
-  }
+  bool done = _hs_router_find_route_and_serve(router, params);
 
   _hs_router_run_callbacks(params->callbacks);
 
@@ -342,6 +332,30 @@ char *hs_router_remove_path_prefix(struct HSRoute *route, struct HSHttpRequest *
 }
 
 
+bool _hs_router_find_route_and_serve(struct HSRouter *router, struct HSServeFlowParams *params)
+{
+  if (router == NULL || params == NULL)
+  {
+    return(false);
+  }
+
+  size_t count = vector_size(router->routes);
+  bool   done  = false;
+  for (size_t index = 0; index < count; index++)
+  {
+    struct HSRoute *route = (struct HSRoute *)vector_get(router->routes, index);
+
+    if (_hs_router_serve(router, params, route))
+    {
+      done = true;
+      break;
+    }
+  }
+
+  return(done);
+}
+
+
 bool _hs_router_serve(struct HSRouter *router, struct HSServeFlowParams *params, struct HSRoute *route)
 {
   if (  router == NULL
@@ -508,7 +522,7 @@ enum HSServeFlowResponse _hs_router_as_route_serve(struct HSRoute *route, struct
 
   struct HSRouter *router = (struct HSRouter *)route->extension;
 
-  params->router_state->done = hs_router_serve(router, params);
+  params->router_state->done = _hs_router_find_route_and_serve(router, params);
 
   params->request->resource = original_path;
   hs_io_free(params->router_state->base_path);
