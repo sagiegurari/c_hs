@@ -20,20 +20,9 @@ void hs_io_free(void *ptr)
 }
 
 
-void hs_io_close(int socket)
+char *hs_io_read_line(struct HSSocket *socket, struct StringBuffer *work_buffer)
 {
-  if (!socket)
-  {
-    return;
-  }
-
-  close(socket);
-}
-
-
-char *hs_io_read_line(int socket, struct StringBuffer *work_buffer)
-{
-  if (!socket || work_buffer == NULL)
+  if (!hs_socket_is_open(socket) || work_buffer == NULL)
   {
     return(NULL);
   }
@@ -55,7 +44,7 @@ char *hs_io_read_line(int socket, struct StringBuffer *work_buffer)
   do
   {
     // read next bulk
-    size = read(socket, buffer, HS_IO_READ_BUFFER_SIZE);
+    size = socket->read(socket, buffer, HS_IO_READ_BUFFER_SIZE);
 
     if (size)
     {
@@ -79,9 +68,9 @@ char *hs_io_read_line(int socket, struct StringBuffer *work_buffer)
   return(NULL);
 } /* hs_io_read_line */
 
-struct HSIOHttpRequestPayload *hs_io_new_http_request_payload(int socket, struct StringBuffer *buffer)
+struct HSIOHttpRequestPayload *hs_io_new_http_request_payload(struct HSSocket *socket, struct StringBuffer *buffer)
 {
-  if (!socket || buffer == NULL)
+  if (!hs_socket_is_open(socket) || buffer == NULL)
   {
     return(NULL);
   }
@@ -106,9 +95,9 @@ void hs_io_release_http_request_payload(struct HSIOHttpRequestPayload *payload)
 }
 
 
-bool hs_io_read_fully(int socket, struct StringBuffer *buffer, size_t length)
+bool hs_io_read_fully(struct HSSocket *socket, struct StringBuffer *buffer, size_t length)
 {
-  if (!socket || buffer == NULL)
+  if (!hs_socket_is_open(socket) || buffer == NULL)
   {
     return(false);
   }
@@ -129,7 +118,7 @@ bool hs_io_read_fully(int socket, struct StringBuffer *buffer, size_t length)
     {
       buffer_size = left;
     }
-    size = read(socket, io_buffer, buffer_size);
+    size = socket->read(socket, io_buffer, buffer_size);
 
     if (size > 0)
     {
@@ -143,9 +132,9 @@ bool hs_io_read_fully(int socket, struct StringBuffer *buffer, size_t length)
 }
 
 
-bool hs_io_read_and_write_to_file(int socket, FILE *fp, size_t length)
+bool hs_io_read_and_write_to_file(struct HSSocket *socket, FILE *fp, size_t length)
 {
-  if (!socket)
+  if (!hs_socket_is_open(socket))
   {
     return(false);
   }
@@ -166,7 +155,7 @@ bool hs_io_read_and_write_to_file(int socket, FILE *fp, size_t length)
     {
       buffer_size = left;
     }
-    size = read(socket, io_buffer, buffer_size);
+    size = socket->read(socket, io_buffer, buffer_size);
 
     if (size > 0)
     {
@@ -183,9 +172,9 @@ bool hs_io_read_and_write_to_file(int socket, FILE *fp, size_t length)
 }
 
 
-bool hs_io_write_string_to_socket(int socket, char *content, size_t length)
+bool hs_io_write_string_to_socket(struct HSSocket *socket, char *content, size_t length)
 {
-  if (!socket || content == NULL)
+  if (!hs_socket_is_open(socket) || content == NULL)
   {
     return(false);
   }
@@ -199,7 +188,7 @@ bool hs_io_write_string_to_socket(int socket, char *content, size_t length)
 
   do
   {
-    ssize_t written = write(socket, ptr, left);
+    ssize_t written = socket->write(socket, ptr, left);
 
     // in case of error
     if (written < 0)
@@ -216,9 +205,9 @@ bool hs_io_write_string_to_socket(int socket, char *content, size_t length)
 }
 
 
-bool hs_io_write_file_to_socket(int socket, char *filename)
+bool hs_io_write_file_to_socket(struct HSSocket *socket, char *filename)
 {
-  if (!socket || filename == NULL)
+  if (!hs_socket_is_open(socket) || filename == NULL)
   {
     return(false);
   }

@@ -22,8 +22,9 @@ void test_impl()
 
   fsio_write_text_file(filename, raw);
 
-  int                         socket   = open(filename, O_RDONLY);
-  struct HSHttpRequest        *request = hs_parser_parse_request(socket);
+  int                         socket    = open(filename, O_RDONLY);
+  struct HSSocket             *hssocket = hs_socket_plain_new(socket);
+  struct HSHttpRequest        *request  = hs_parser_parse_request(hssocket);
 
   struct HSHttpRequestPayload *payload = request->payload;
   assert_true(payload != NULL);
@@ -39,7 +40,7 @@ void test_impl()
   assert_true(!done);
 
   hs_types_http_request_release(request);
-  close(socket);
+  hs_socket_close_and_release(hssocket);
   fsio_remove(filename);
   fsio_remove(output_filename);
 } /* test_impl */

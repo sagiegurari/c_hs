@@ -1,6 +1,7 @@
 #ifndef __HS_PARSER_H__
 #define __HS_PARSER_H__
 
+#include "hs_socket.h"
 #include "hs_types.h"
 
 /**
@@ -46,7 +47,7 @@ void hs_parser_set_header(struct HSHttpRequest *, char * /* key */, char * /* va
  * Parsers the http header and creates a new http request struct.
  * The payload is not parsed.
  */
-struct HSHttpRequest *hs_parser_parse_request(int /* socket */);
+struct HSHttpRequest *hs_parser_parse_request(struct HSSocket *);
 
 /**
  * Parsers the HTTP method and returns the enum value.

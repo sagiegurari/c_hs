@@ -75,10 +75,11 @@ void test_impl()
   char *filename = "./test_router_serve_text.txt";
 
   fsio_create_empty_file(filename);
-  int                            socket = open(filename, O_WRONLY);
+  int                            socket    = open(filename, O_WRONLY);
+  struct HSSocket                *hssocket = hs_socket_plain_new(socket);
 
   struct HSServerConnectionState *connection_state = hs_types_server_connection_state_new();
-  connection_state->socket = socket;
+  connection_state->socket = hssocket;
   struct HSServeFlowParams       *params = hs_types_serve_flow_params_new();
   params->connection_state    = connection_state;
   params->request->resource   = strdup("/test");
@@ -90,7 +91,7 @@ void test_impl()
   assert_true(done);
   assert_true(callback_called);
 
-  close(socket);
+  hs_socket_close_and_release(hssocket);
 
   char *content = fsio_read_text_file(filename);
 

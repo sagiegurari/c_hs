@@ -267,7 +267,7 @@ struct HSServerConnectionState *hs_types_server_connection_state_new()
 {
   struct HSServerConnectionState *state = malloc(sizeof(struct HSServerConnectionState));
 
-  state->socket          = 0;
+  state->socket          = NULL;
   state->request_counter = 0;
   state->creation_time   = time(NULL);
 

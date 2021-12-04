@@ -2,17 +2,15 @@
 #include "hs_router.h"
 #include "hs_server.h"
 #include "vector.h"
-#include <arpa/inet.h>
 #include <stdlib.h>
-#include <sys/socket.h>
 
 struct HSServerInternal
 {
   bool stop_requested;
 };
 
-bool _hs_server_set_recv_timeout_in_seconds(int, long);
-void _hs_server_single_thread_on_connection(struct HSServer *, int, void *, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, int, size_t, void *));
+void _hs_server_plain_socket_listen_loop(struct HSServer *, struct HSSocket *, struct sockaddr_in, void *, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t, void *));
+void _hs_server_single_thread_on_connection(struct HSServer *, struct HSSocket *, void *, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t, void *));
 
 struct HSServer *hs_server_new()
 {
@@ -21,7 +19,8 @@ struct HSServer *hs_server_new()
   server->router                       = hs_router_new();
   server->accept_recv_timeout_seconds  = -1;
   server->request_recv_timeout_seconds = -1;
-  server->create_socket_and_listen     = hs_server_create_socket_and_listen;
+  server->create_socket_and_listen     = hs_server_create_plain_socket_and_listen;
+  server->listen_loop                  = _hs_server_plain_socket_listen_loop;
 
   server->connection_handler = hs_server_connection_handler_new();
 
@@ -56,12 +55,13 @@ void hs_server_release(struct HSServer *server)
 }
 
 
-bool hs_server_serve(struct HSServer *server, struct sockaddr_in address, void *context, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, int, size_t, void *))
+bool hs_server_serve(struct HSServer *server, struct sockaddr_in address, void *context, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t, void *))
 {
   if (  server == NULL
      || server->internal == NULL
      || server->router == NULL
      || server->create_socket_and_listen == NULL
+     || server->listen_loop == NULL
      || server->connection_handler == NULL
      || server->connection_handler->on_connection == NULL)
   {
@@ -71,8 +71,8 @@ bool hs_server_serve(struct HSServer *server, struct sockaddr_in address, void *
   server->internal->stop_requested = false;
 
   // start listening
-  int socket_fd = server->create_socket_and_listen(server, &address);
-  if (!socket_fd)
+  struct HSSocket *socket = server->create_socket_and_listen(server, &address);
+  if (socket == NULL)
   {
     return(false);
   }
@@ -83,27 +83,10 @@ bool hs_server_serve(struct HSServer *server, struct sockaddr_in address, void *
   }
 
   // listen loop
-  int address_size = sizeof(address);
-  do
-  {
-    int client_socket = accept(socket_fd, (struct sockaddr *)&address, (socklen_t *)&address_size);
+  server->listen_loop(server, socket, address, context, should_stop_server, should_stop_for_connection);
 
-    if (client_socket && _hs_server_set_recv_timeout_in_seconds(client_socket, server->request_recv_timeout_seconds))
-    {
-      server->connection_handler->on_connection(server, client_socket, context, should_stop_server, should_stop_for_connection);
-    }
-    else
-    {
-      hs_io_close(client_socket);
-
-      if (should_stop_server != NULL && !server->internal->stop_requested)
-      {
-        server->internal->stop_requested = should_stop_server(server, context);
-      }
-    }
-  } while (!server->internal->stop_requested);
-
-  hs_io_close(socket_fd);
+  // stop listening
+  hs_socket_close_and_release(socket);
 
   if (server->connection_handler->stop_connections != NULL)
   {
@@ -147,7 +130,7 @@ void hs_server_connection_handler_release(struct HSServerConnectionHandler *hand
 }
 
 
-int hs_server_create_socket_and_listen(struct HSServer *server, struct sockaddr_in *address)
+struct HSSocket *hs_server_create_plain_socket_and_listen(struct HSServer *server, struct sockaddr_in *address)
 {
   if (server == NULL || address == NULL)
   {
@@ -160,33 +143,40 @@ int hs_server_create_socket_and_listen(struct HSServer *server, struct sockaddr_
     return(0);
   }
 
-  int opt = 1;
-  if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)) < 0)
+  struct HSSocket *hssocket = hs_socket_plain_new(socket_fd);
+  if (hssocket == NULL)
   {
-    hs_io_close(socket_fd);
+    close(socket_fd);
     return(0);
   }
 
-  if (!_hs_server_set_recv_timeout_in_seconds(socket_fd, server->accept_recv_timeout_seconds))
+  int opt = 1;
+  if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)) < 0)
   {
-    hs_io_close(socket_fd);
+    hs_socket_close_and_release(hssocket);
+    return(0);
+  }
+
+  if (!hssocket->set_recv_timeout_in_seconds(hssocket, server->accept_recv_timeout_seconds))
+  {
+    hs_socket_close_and_release(hssocket);
     return(0);
   }
 
   if (bind(socket_fd, (struct sockaddr *)address, sizeof(*address)) < 0)
   {
-    hs_io_close(socket_fd);
+    hs_socket_close_and_release(hssocket);
     return(0);
   }
 
   if (listen(socket_fd, 1) < 0)
   {
-    hs_io_close(socket_fd);
+    hs_socket_close_and_release(hssocket);
     return(0);
   }
 
-  return(socket_fd);
-} /* hs_server_create_socket_and_listen */
+  return(hssocket);
+} /* hs_server_create_plain_socket_and_listen */
 
 
 struct sockaddr_in hs_server_init_ipv4_address(uint16_t port)
@@ -201,27 +191,36 @@ struct sockaddr_in hs_server_init_ipv4_address(uint16_t port)
 }
 
 
-bool _hs_server_set_recv_timeout_in_seconds(int socket, long recv_timeout_seconds)
+void _hs_server_plain_socket_listen_loop(struct HSServer *server, struct HSSocket *server_socket, struct sockaddr_in address, void *context, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t, void *))
 {
-  if (socket <= 0)
+  // listen loop
+  int address_size = sizeof(address);
+
+  do
   {
-    return(false);
-  }
+    struct HSSocket *client_socket = hs_socket_plain_accept(server_socket, (struct sockaddr *)&address, (socklen_t *)&address_size);
 
-  if (recv_timeout_seconds <= 0)
-  {
-    return(true);
-  }
+    if (client_socket && client_socket->set_recv_timeout_in_seconds(client_socket, server->request_recv_timeout_seconds))
+    {
+      server->connection_handler->on_connection(server, client_socket, context, should_stop_server, should_stop_for_connection);
+    }
+    else
+    {
+      if (client_socket != NULL)
+      {
+        hs_socket_close_and_release(client_socket);
+      }
 
-  struct timeval timeout;
-  timeout.tv_sec  = recv_timeout_seconds;
-  timeout.tv_usec = 0;
-
-  return(!setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout)));
+      if (should_stop_server != NULL && !server->internal->stop_requested)
+      {
+        server->internal->stop_requested = should_stop_server(server, context);
+      }
+    }
+  } while (!server->internal->stop_requested);
 }
 
 
-void _hs_server_single_thread_on_connection(struct HSServer *server, int socket, void *context, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, int, size_t, void *))
+void _hs_server_single_thread_on_connection(struct HSServer *server, struct HSSocket *socket, void *context, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t, void *))
 {
   if (  server == NULL
      || server->router == NULL
@@ -232,7 +231,7 @@ void _hs_server_single_thread_on_connection(struct HSServer *server, int socket,
 
   hs_router_serve_forever(server->router, socket, context, should_stop_for_connection);
 
-  hs_io_close(socket);
+  hs_socket_close_and_release(socket);
 
   if (should_stop_server != NULL && !server->internal->stop_requested)
   {

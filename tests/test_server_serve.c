@@ -53,9 +53,9 @@ bool _test_should_stop_server(struct HSServer *server, void *context)
 }
 
 
-bool _test_should_stop_router(struct HSRouter *router, int socket, size_t counter, void *context)
+bool _test_should_stop_router(struct HSRouter *router, struct HSSocket *socket, size_t counter, void *context)
 {
-  if (router == NULL || !socket || context == NULL)
+  if (router == NULL || !hs_socket_is_open(socket) || context == NULL)
   {
     test_fail();
     return(true);

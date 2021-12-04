@@ -15,7 +15,9 @@ void test_impl()
 
   assert_true(!done);
 
-  done = hs_io_write_file_to_socket(1, NULL);
+  struct HSSocket *hssocket = hs_socket_plain_new(1);
+  done = hs_io_write_file_to_socket(hssocket, NULL);
+  hs_socket_close_and_release(hssocket);
   assert_true(!done);
 
   struct StringBuffer *buffer = string_buffer_new();
@@ -33,8 +35,9 @@ void test_impl()
   fsio_create_empty_file(filename);
   int socket = open(filename, O_WRONLY);
 
-  done = hs_io_write_file_to_socket(socket, input_filename);
-  close(socket);
+  hssocket = hs_socket_plain_new(socket);
+  done     = hs_io_write_file_to_socket(hssocket, input_filename);
+  hs_socket_close_and_release(hssocket);
   fsio_remove(input_filename);
   assert_true(done);
 

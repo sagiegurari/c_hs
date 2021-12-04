@@ -19,7 +19,7 @@ I wrote it for some small personal projects that needed to expose integration vi
 The requirements were very basic and therefore this server is not really production ready.
 It is lacking many features, such as:
 
-* TLS
+* TLS (contains socket abstraction to enable it)
 * HTTP 2
 * No built in multi threaded support (but expandable to enable that).
 * Configuration Based

@@ -23,8 +23,9 @@ void test_impl()
 
   fsio_write_text_file(filename, raw);
 
-  int                  socket   = open(filename, O_RDONLY);
-  struct HSHttpRequest *request = hs_parser_parse_request(socket);
+  int                  socket    = open(filename, O_RDONLY);
+  struct HSSocket      *hssocket = hs_socket_plain_new(socket);
+  struct HSHttpRequest *request  = hs_parser_parse_request(hssocket);
 
   assert_string_equal(request->domain, "");
   assert_string_equal(request->resource, "/testpost");
@@ -58,7 +59,7 @@ void test_impl()
   assert_string_equal(hs_types_array_string_pair_get_value(request->headers, index), "application/x-www-form-urlencoded");
 
   hs_types_http_request_release(request);
-  close(socket);
+  hs_socket_close_and_release(hssocket);
   fsio_remove(filename);
 } /* test_impl */
 

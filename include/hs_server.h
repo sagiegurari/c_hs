@@ -1,6 +1,7 @@
 #ifndef __HS_SERVER_H__
 #define __HS_SERVER_H__
 
+#include "hs_socket.h"
 #include <netinet/ip.h>
 #include <sys/time.h>
 
@@ -10,7 +11,7 @@ struct HSServerInternal;
 struct HSServerConnectionHandler
 {
   void (*init)(struct HSServerConnectionHandler *);
-  void (*on_connection)(struct HSServer *, int /* socket */, void * /* context */, bool (*should_stop_server)(struct HSServer *, void * /* context */), bool (*should_stop_for_connection)(struct HSRouter *, int /* socket */, size_t /* request counter */, void * /* context */));
+  void (*on_connection)(struct HSServer *, struct HSSocket *, void * /* context */, bool (*should_stop_server)(struct HSServer *, void * /* context */), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t /* request counter */, void * /* context */));
   void (*stop_connections)(struct HSServerConnectionHandler *);
   void (*release)(struct HSServerConnectionHandler *);
   void *extension;
@@ -21,7 +22,8 @@ struct HSServer
   struct HSRouter                  *router;
   time_t                           accept_recv_timeout_seconds;
   time_t                           request_recv_timeout_seconds;
-  int                              (*create_socket_and_listen)(struct HSServer *, struct sockaddr_in *);
+  struct HSSocket                  * (*create_socket_and_listen)(struct HSServer *, struct sockaddr_in *);
+  void                             (*listen_loop)(struct HSServer *, struct HSSocket *, struct sockaddr_in, void * /* context */, bool (*should_stop_server)(struct HSServer *, void * /* context */), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t /* request counter */, void * /* context */));
   struct HSServerConnectionHandler *connection_handler;
   struct HSServerInternal          *internal;
 };
@@ -53,7 +55,7 @@ void hs_server_release(struct HSServer *);
  * Once stop is requested via callback, the socket will be closed and this
  * function can be invoked again.
  */
-bool hs_server_serve(struct HSServer *, struct sockaddr_in, void * /* context */, bool (*should_stop_server)(struct HSServer *, void * /* context */), bool (*should_stop_for_connection)(struct HSRouter *, int /* socket */, size_t /* request counter */, void * /* context */));
+bool hs_server_serve(struct HSServer *, struct sockaddr_in, void * /* context */, bool (*should_stop_server)(struct HSServer *, void * /* context */), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t /* request counter */, void * /* context */));
 
 /**
  * Returns new connection handler.
@@ -71,7 +73,7 @@ void hs_server_connection_handler_release(struct HSServerConnectionHandler *);
  * to new incoming connections.
  * This function can be set for the server->create_socket_and_listen.
  */
-int hs_server_create_socket_and_listen(struct HSServer *, struct sockaddr_in *);
+struct HSSocket *hs_server_create_plain_socket_and_listen(struct HSServer *, struct sockaddr_in *);
 
 /**
  * Simple utility function to create address for the given port.

@@ -3,6 +3,7 @@
 
 #include "hs.h"
 #include "hs_io.h"
+#include "hs_socket.h"
 #include <stdbool.h>
 #include <stddef.h>
 

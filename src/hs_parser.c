@@ -203,9 +203,9 @@ void hs_parser_set_header(struct HSHttpRequest *request, char *key, char *value)
   }
 }
 
-struct HSHttpRequest *hs_parser_parse_request(int socket)
+struct HSHttpRequest *hs_parser_parse_request(struct HSSocket *socket)
 {
-  if (!socket)
+  if (socket == NULL)
   {
     return(NULL);
   }
