@@ -14,12 +14,11 @@
 
 <a name="overview"></a>
 ## Overview
-This library provides both embeddable http server and HTTP parsing utility functions.<br>
+This library provides both embeddable http/s server and HTTP parsing utility functions.<br>
 I wrote it for some small personal projects that needed to expose integration via http.
 The requirements were very basic and therefore this server is not really production ready.
 It is lacking many features, such as:
 
-* TLS (contains socket abstraction to enable it)
 * HTTP 2
 * No built in multi threaded support (but expandable to enable that).
 * Configuration Based
