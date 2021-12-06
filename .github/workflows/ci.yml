@@ -2,6 +2,7 @@ name: CI
 on: [push, pull_request]
 env:
   BUILD_TYPE: Release
+  X_CMAKE_OPEN_SSL: true
 jobs:
   ci:
     name: CI
