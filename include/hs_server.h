@@ -17,15 +17,32 @@ struct HSServerConnectionHandler
   void *extension;
 };
 
+struct HSServerSSLInfo
+{
+  // external files with the key and certificate (default NULL)
+  // The strings will be released with the server.
+  char *private_key_pem_file;
+  char *certificate_pem_file;
+};
+
 struct HSServer
 {
   struct HSRouter                  *router;
   time_t                           accept_recv_timeout_seconds;
   time_t                           request_recv_timeout_seconds;
-  struct HSSocket                  * (*create_socket_and_listen)(struct HSServer *, struct sockaddr_in *);
-  void                             (*listen_loop)(struct HSServer *, struct HSSocket *, struct sockaddr_in, void * /* context */, bool (*should_stop_server)(struct HSServer *, void * /* context */), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t /* request counter */, void * /* context */));
   struct HSServerConnectionHandler *connection_handler;
-  struct HSServerInternal          *internal;
+
+  // If populated, it will enable TLS support.
+  // However, if HS_SSL_SUPPORTED is undefined while this struct is populated,
+  // it means the library was compiled without SSL support and the
+  // hs_server_serve function will return false to avoid security issue.
+  struct HSServerSSLInfo  *ssl_info;
+
+  // server functions should not be invoked directly, instead use the hs_server_xxx functions.
+  struct HSSocket         * (*create_socket_and_listen)(struct HSServer *, struct sockaddr_in *);
+  struct HSSocket         * (*accept)(struct HSServer *, struct HSSocket *, struct sockaddr *, int /* address size */);
+  void                    (*listen_loop)(struct HSServer *, struct HSSocket *, struct sockaddr_in, void * /* context */, bool (*should_stop_server)(struct HSServer *, void * /* context */), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t /* request counter */, void * /* context */));
+  struct HSServerInternal *internal;
 };
 
 /**
@@ -71,14 +88,19 @@ void hs_server_connection_handler_release(struct HSServerConnectionHandler *);
 /**
  * Basic implementation of creating the server socket, binding and listening
  * to new incoming connections.
- * This function can be set for the server->create_socket_and_listen.
+ * This function can be set for the server->create_socket_and_listen and should
+ * not be invoked directly.
  */
-struct HSSocket *hs_server_create_plain_socket_and_listen(struct HSServer *, struct sockaddr_in *);
+struct HSSocket *hs_server_create_socket_and_listen(struct HSServer *, struct sockaddr_in *);
 
 /**
  * Simple utility function to create address for the given port.
  */
 struct sockaddr_in hs_server_init_ipv4_address(uint16_t /* port */);
+
+#ifdef HS_SSL_SUPPORTED
+
+#endif
 
 #endif
 

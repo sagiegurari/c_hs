@@ -13,6 +13,7 @@ struct HSSocket
   bool    (*set_recv_timeout_in_seconds)(struct HSSocket *, long);
   void    (*close)(struct HSSocket *);
   void    (*release)(struct HSSocket *);
+  int     raw_socket; // should not be used directly
   void    *internal;
 };
 
@@ -21,7 +22,16 @@ void hs_socket_close(struct HSSocket *);
 void hs_socket_close_and_release(struct HSSocket *);
 
 struct HSSocket *hs_socket_plain_new(int /* socket */);
-struct HSSocket *hs_socket_plain_accept(struct HSSocket *, struct sockaddr *, socklen_t *);
+struct HSSocket *hs_socket_plain_accept(struct HSSocket *, struct sockaddr *, int /* address size */);
+
+#ifdef HS_SSL_SUPPORTED
+
+#include <openssl/ssl.h>
+
+struct HSSocket *hs_socket_ssl_new(int /* socket */, SSL_CTX *);
+struct HSSocket *hs_socket_ssl_accept(struct HSSocket *, struct sockaddr *, int /* address size */, SSL_CTX *);
+
+#endif
 
 #endif
 
