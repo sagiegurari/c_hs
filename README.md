@@ -60,7 +60,9 @@ enum LookingFor
 {
   LOOKING_FOR_FLAG,
   LOOKING_FOR_PORT,
-  LOOKING_FOR_BASE_DIR
+  LOOKING_FOR_BASE_DIR,
+  LOOKING_FOR_PRIVATE_KEY,
+  LOOKING_FOR_CERTIFICATE,
 };
 
 
@@ -91,6 +93,14 @@ int main(int argc, char *argv[])
         {
           looking_for = LOOKING_FOR_BASE_DIR;
         }
+        else if (!strcmp(argv[index], "--private-key"))
+        {
+          looking_for = LOOKING_FOR_PRIVATE_KEY;
+        }
+        else if (!strcmp(argv[index], "--certificate"))
+        {
+          looking_for = LOOKING_FOR_CERTIFICATE;
+        }
         break;
 
       case LOOKING_FOR_BASE_DIR:
@@ -101,6 +111,17 @@ int main(int argc, char *argv[])
       case LOOKING_FOR_PORT:
         looking_for = LOOKING_FOR_FLAG;
         port        = atoi(argv[index]);
+        break;
+
+      case LOOKING_FOR_PRIVATE_KEY:
+        looking_for                            = LOOKING_FOR_FLAG;
+        server->ssl_info->private_key_pem_file = strdup(argv[index]);
+        break;
+
+      case LOOKING_FOR_CERTIFICATE:
+        looking_for                            = LOOKING_FOR_FLAG;
+        server->ssl_info->certificate_pem_file = strdup(argv[index]);
+        break;
       }
     }
   }

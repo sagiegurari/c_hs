@@ -77,6 +77,7 @@ int main(int argc, char *argv[])
       case LOOKING_FOR_PORT:
         looking_for = LOOKING_FOR_FLAG;
         port        = atoi(argv[index]);
+        break;
 
       case LOOKING_FOR_PRIVATE_KEY:
         looking_for                            = LOOKING_FOR_FLAG;
