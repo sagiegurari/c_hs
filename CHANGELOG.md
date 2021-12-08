@@ -1,6 +1,6 @@
 ## CHANGELOG
 
-### v0.7.0
+### v0.7.0 (2021-12-08)
 
 * Enhancement: Socket abstraction layer to enable TLS support
 * Enhancement: TLS support via OpenSSL
