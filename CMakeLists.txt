@@ -74,6 +74,7 @@ if("$ENV{X_CMAKE_OPEN_SSL}" STREQUAL "true")
 
   add_custom_command(
     TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/bin/
     COMMAND ${CMAKE_COMMAND} -E copy "${X_CMAKE_PROJECT_ROOT_DIR}/examples/*.pem" ${CMAKE_BINARY_DIR}/bin/
   )
 endif()
