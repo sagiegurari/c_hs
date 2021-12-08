@@ -60,6 +60,7 @@ jobs:
       working-directory: ${{runner.workspace}}/target
       run: ctest -C $BUILD_TYPE --output-on-failure
     - name: Memory Leak Test
+      if: matrix.open_ssl == 'false'
       shell: bash
       working-directory: ${{runner.workspace}}/target
       run: |
