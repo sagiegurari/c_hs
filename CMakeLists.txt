@@ -71,6 +71,11 @@ if("$ENV{X_CMAKE_OPEN_SSL}" STREQUAL "true")
 
   include_directories(${OPENSSL_INCLUDE_DIR})
   target_link_libraries(${CMAKE_PROJECT_NAME} ${OPENSSL_LIBRARIES})
+
+  add_custom_command(
+    TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy "${X_CMAKE_PROJECT_ROOT_DIR}/examples/*.pem" ${CMAKE_BINARY_DIR}/bin/
+  )
 endif()
 
 # example
@@ -88,10 +93,5 @@ utils_setup_c_all_tests(
   ADDITIONAL_SOURCES "${COMMON_TEST_SOURCES}"
   COMPILATION_FLAGS "${X_CMAKE_C_FLAGS}"
   BINARY_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-)
-
-add_custom_command(
-  TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy "${X_CMAKE_PROJECT_ROOT_DIR}/examples/*.pem" ${CMAKE_BINARY_DIR}/bin/
 )
 
