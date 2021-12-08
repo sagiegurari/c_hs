@@ -1,9 +1,13 @@
+#include "test.h"
+#include <stdio.h>
+
+#ifdef HS_SSL_SUPPORTED
 #include "fsio.h"
 #include "stringfn.h"
-#include "test.h"
 #include <arpa/inet.h>
 #include <fcntl.h>
-#include <stdio.h>
+#include <openssl/err.h>
+#include <openssl/ssl.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
@@ -72,7 +76,7 @@ bool _test_should_stop_router(struct HSRouter *router, struct HSSocket *socket, 
 
 void test_impl()
 {
-  char *filename = "./test_server_serve.txt";
+  char *filename = "./test_server_serve_tls.txt";
 
   fsio_remove(filename);
 
@@ -85,8 +89,10 @@ void test_impl()
     struct HSRouter *sub_router = hs_router_new();
     struct HSRoute  *route      = hs_route_new();
 
-    server->accept_recv_timeout_seconds  = 5;
-    server->request_recv_timeout_seconds = 5;
+    server->accept_recv_timeout_seconds    = 5;
+    server->request_recv_timeout_seconds   = 5;
+    server->ssl_info->private_key_pem_file = strdup("./key.pem");
+    server->ssl_info->certificate_pem_file = strdup("./cert.pem");
     struct sockaddr_in address = hs_server_init_ipv4_address(7005);
 
     hs_router_add_route(server->router, hs_routes_error_411_length_required_route_new());
@@ -167,6 +173,10 @@ void test_impl()
   }
   else
   {
+    SSL_load_error_strings();
+    SSL_library_init();
+    OpenSSL_add_all_algorithms();
+
     int                socket_fd = 0;
     ssize_t            read_size = -1;
     struct sockaddr_in serv_addr;
@@ -193,14 +203,19 @@ void test_impl()
       return;
     }
 
+    SSL_CTX *ssl_context = SSL_CTX_new(SSLv23_method());
+    SSL     *ssl         = SSL_new(ssl_context);
+    SSL_set_fd(ssl, socket_fd);
+    SSL_connect(ssl);
+
     char *request = "GET /test HTTP/1.0\r\n"
                     "Connection: keep-alive\r\n"
                     "Content-Length: 0\r\n"
                     "\r\n";
     fsio_append_text_file(filename, request);
-    send(socket_fd, request, strlen(request), 0);
+    SSL_write(ssl, request, strlen(request));
     sleep(1);
-    read_size         = read(socket_fd, buffer, 1024);
+    read_size         = SSL_read(ssl, buffer, 1024);
     buffer[read_size] = '\0';
     fsio_append_text_file(filename, buffer);
     request = "GET /admin HTTP/1.0\r\n"
@@ -208,9 +223,9 @@ void test_impl()
               "Content-Length: 0\r\n"
               "\r\n";
     fsio_append_text_file(filename, request);
-    send(socket_fd, request, strlen(request), 0);
+    SSL_write(ssl, request, strlen(request));
     sleep(1);
-    read_size         = read(socket_fd, buffer, 1024);
+    read_size         = SSL_read(ssl, buffer, 1024);
     buffer[read_size] = '\0';
     fsio_append_text_file(filename, buffer);
     request = "GET /admin/ HTTP/1.0\r\n"
@@ -218,13 +233,14 @@ void test_impl()
               "Content-Length: 0\r\n"
               "\r\n";
     fsio_append_text_file(filename, request);
-    send(socket_fd, request, strlen(request), 0);
+    SSL_write(ssl, request, strlen(request));
     sleep(1);
-    read_size         = read(socket_fd, buffer, 1024);
+    read_size         = SSL_read(ssl, buffer, 1024);
     buffer[read_size] = '\0';
     fsio_append_text_file(filename, buffer);
 
     close(socket_fd);
+    SSL_free(ssl);
 
     sleep(1);
     if ((socket_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
@@ -238,14 +254,18 @@ void test_impl()
       return;
     }
 
+    ssl = SSL_new(ssl_context);
+    SSL_set_fd(ssl, socket_fd);
+    SSL_connect(ssl);
+
     request = "GET /admin/gohome HTTP/1.0\r\n"
               "Connection: keep-alive\r\n"
               "Content-Length: 0\r\n"
               "\r\n";
     fsio_append_text_file(filename, request);
-    send(socket_fd, request, strlen(request), 0);
+    SSL_write(ssl, request, strlen(request));
     sleep(1);
-    read_size         = read(socket_fd, buffer, 1024);
+    read_size         = SSL_read(ssl, buffer, 1024);
     buffer[read_size] = '\0';
     fsio_append_text_file(filename, buffer);
     request = "GET /admin/index.html HTTP/1.0\r\n"
@@ -253,15 +273,31 @@ void test_impl()
               "Content-Length: 0\r\n"
               "\r\n";
     fsio_append_text_file(filename, request);
-    send(socket_fd, request, strlen(request), 0);
-    sleep(1);
-    read_size         = read(socket_fd, buffer, 1024);
+    SSL_write(ssl, request, strlen(request));
+    read_size         = SSL_read(ssl, buffer, 1024);
+    buffer[read_size] = '\0';
+    fsio_append_text_file(filename, buffer);
+    read_size         = SSL_read(ssl, buffer, 1024);
     buffer[read_size] = '\0';
     fsio_append_text_file(filename, buffer);
 
     close(socket_fd);
+    SSL_free(ssl);
+
+    SSL_CTX_free(ssl_context);
+
+    ERR_free_strings();
+    EVP_cleanup();
   }
 } /* test_impl */
+#else
+
+
+void test_impl()
+{
+  printf("TLS testing not supported\n");
+}
+#endif
 
 
 int main()

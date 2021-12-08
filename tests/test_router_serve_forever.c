@@ -7,7 +7,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-int                      global_counter = -2;
+int                      global_counter      = -2;
+int                      global_plain_socket = 0;
 
 enum HSServeFlowResponse _test_redirect(struct HSRoute *route, struct HSServeFlowParams *params)
 {
@@ -38,7 +39,7 @@ enum HSServeFlowResponse _test_serve(struct HSRoute *route, struct HSServeFlowPa
 }
 
 
-bool _test_should_stop(struct HSRouter *router, int socket, size_t counter, void *context)
+bool _test_should_stop(struct HSRouter *router, struct HSSocket *socket, size_t counter, void *context)
 {
   if (router == NULL || !socket || context == NULL)
   {
@@ -96,7 +97,7 @@ bool _test_should_stop(struct HSRouter *router, int socket, size_t counter, void
   bool done = hs_io_write_string_to_socket(socket, request, strlen(request));
 
   assert_true(done);
-  lseek(socket, strlen(request) * -1, SEEK_END);
+  lseek(global_plain_socket, strlen(request) * -1, SEEK_END);
 
   return(false);
 } /* _test_should_stop */
@@ -131,7 +132,10 @@ void test_impl()
   fsio_create_empty_file(filename);
   int  socket = open(filename, O_RDWR);
 
-  bool done = hs_router_serve_forever(router, socket, "test context", _test_should_stop);
+  global_plain_socket = socket;
+  struct HSSocket *hssocket = hs_socket_plain_new(socket);
+  bool            done      = hs_router_serve_forever(router, hssocket, "test context", _test_should_stop);
+  hs_socket_close_and_release(hssocket);
   assert_true(done);
 
   char *content = fsio_read_text_file(filename);

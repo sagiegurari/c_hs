@@ -77,9 +77,9 @@ void hs_router_add_route(struct HSRouter *router, struct HSRoute *route)
 }
 
 
-bool hs_router_serve_forever(struct HSRouter *router, int socket, void *context, bool (*should_stop)(struct HSRouter *, int, size_t, void *))
+bool hs_router_serve_forever(struct HSRouter *router, struct HSSocket *socket, void *context, bool (*should_stop)(struct HSRouter *, struct HSSocket *, size_t, void *))
 {
-  if (router == NULL || !socket)
+  if (router == NULL || !hs_socket_is_open(socket))
   {
     return(false);
   }
@@ -111,7 +111,7 @@ bool hs_router_serve_forever(struct HSRouter *router, int socket, void *context,
 
 bool hs_router_serve_next(struct HSRouter *router, struct HSServerConnectionState *connection_state)
 {
-  if (router == NULL || connection_state == NULL || !connection_state->socket)
+  if (router == NULL || connection_state == NULL || !hs_socket_is_open(connection_state->socket))
   {
     return(false);
   }
@@ -141,7 +141,7 @@ bool hs_router_serve(struct HSRouter *router, struct HSServeFlowParams *params)
      || params->request == NULL
      || params->response == NULL
      || params->connection_state == NULL
-     || !params->connection_state->socket
+     || !hs_socket_is_open(params->connection_state->socket)
      || params->request->resource == NULL
      || params->router_state == NULL)
   {
@@ -362,7 +362,7 @@ bool _hs_router_serve(struct HSRouter *router, struct HSServeFlowParams *params,
      || params->request == NULL
      || params->response == NULL
      || params->connection_state == NULL
-     || !params->connection_state->socket
+     || !hs_socket_is_open(params->connection_state->socket)
      || params->request->resource == NULL
      || params->router_state == NULL
      || params->router_state->closed_connection)
@@ -489,8 +489,8 @@ bool _hs_router_serve(struct HSRouter *router, struct HSServeFlowParams *params,
 
   if (close_connection)
   {
-    hs_io_close(params->connection_state->socket);
-    params->connection_state->socket        = 0;
+    hs_socket_close(params->connection_state->socket);
+    params->connection_state->socket        = NULL;
     params->router_state->closed_connection = true;
   }
 
@@ -503,7 +503,7 @@ enum HSServeFlowResponse _hs_router_as_route_serve(struct HSRoute *route, struct
      || params->request == NULL
      || params->response == NULL
      || params->connection_state == NULL
-     || !params->connection_state->socket
+     || !hs_socket_is_open(params->connection_state->socket)
      || params->request->resource == NULL
      || params->router_state == NULL
      || params->router_state->closed_connection)

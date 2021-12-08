@@ -12,6 +12,7 @@ extend = [
 
 [env]
 X_CMAKE_UNCRUSTIFY_ENABLED = { source = "${CARGO_MAKE_CI}", default_value = "true", mapping = { "true" = "false" } }
+X_CMAKE_OPEN_SSL = true
 
 [config]
 load_script = '''
@@ -38,4 +39,23 @@ for file in ${files}
 end
 release ${files}
 '''
+
+[tasks.generate-certificate]
+command = "openssl"
+args = [
+  "req",
+  "-x509",
+  "-newkey",
+  "rsa:4096",
+  "-keyout",
+  "./key.pem",
+  "-out",
+  "cert.pem",
+  "-sha256",
+  "-days",
+  "365",
+  "-nodes",
+  "-subj",
+  "'/CN=localhost'"
+]
 

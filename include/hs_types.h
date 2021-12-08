@@ -2,6 +2,7 @@
 #define __HS_TYPES_H__
 
 #include "hs_constants.h"
+#include "hs_socket.h"
 #include "hs_types_array.h"
 #include "hs_types_cookie.h"
 #include <stdbool.h>
@@ -76,9 +77,9 @@ struct HSPostResponseCallbacks
 
 struct HSServerConnectionState
 {
-  int    socket;
-  size_t request_counter;
-  time_t creation_time;
+  struct HSSocket *socket;
+  size_t          request_counter;
+  time_t          creation_time;
 };
 
 struct HSServeFlowParams

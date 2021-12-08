@@ -25,10 +25,11 @@ void test_impl()
   char *filename = "./test_io_write_string_to_socket.txt";
 
   fsio_create_empty_file(filename);
-  int socket = open(filename, O_WRONLY);
+  int             socket = open(filename, O_WRONLY);
 
-  done = hs_io_write_string_to_socket(socket, raw, strlen(raw));
-  close(socket);
+  struct HSSocket *hssocket = hs_socket_plain_new(socket);
+  done = hs_io_write_string_to_socket(hssocket, raw, strlen(raw));
+  hs_socket_close_and_release(hssocket);
   assert_true(done);
 
   char *text = fsio_read_text_file(filename);

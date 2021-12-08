@@ -3,7 +3,10 @@
 
 void test_impl()
 {
-  char *line = hs_io_read_line(1, NULL);
+  struct HSSocket *socket = hs_socket_plain_new(1);
+  char            *line   = hs_io_read_line(socket, NULL);
+
+  hs_socket_close_and_release(socket);
 
   assert_true(line == NULL);
 }

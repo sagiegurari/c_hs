@@ -47,8 +47,9 @@ void _test_with_values(struct HSRouter *router, struct HSRoute *route, bool is_g
   fsio_create_empty_file(filename);
   int                            socket = open(filename, O_WRONLY);
 
+  struct HSSocket                *hssocket         = hs_socket_plain_new(socket);
   struct HSServerConnectionState *connection_state = hs_types_server_connection_state_new();
-  connection_state->socket = socket;
+  connection_state->socket = hssocket;
   struct HSServeFlowParams       *params = hs_types_serve_flow_params_new();
   params->connection_state  = connection_state;
   params->request->resource = strdup("/test");
@@ -74,7 +75,7 @@ void _test_with_values(struct HSRouter *router, struct HSRoute *route, bool is_g
     assert_true(done);
   }
 
-  close(socket);
+  hs_socket_close_and_release(hssocket);
 
   if (expected_response != NULL)
   {

@@ -5,11 +5,11 @@ env:
 jobs:
   ci:
     name: CI
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
+        open_ssl: [true, false]
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -49,6 +49,8 @@ jobs:
       shell: bash
       working-directory: ${{runner.workspace}}/target
       run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+      env:
+        X_CMAKE_OPEN_SSL: ${{ matrix.open_ssl }}
     - name: Build
       shell: bash
       working-directory: ${{runner.workspace}}/target
@@ -58,7 +60,7 @@ jobs:
       working-directory: ${{runner.workspace}}/target
       run: ctest -C $BUILD_TYPE --output-on-failure
     - name: Memory Leak Test
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.open_ssl == false
       shell: bash
       working-directory: ${{runner.workspace}}/target
       run: |

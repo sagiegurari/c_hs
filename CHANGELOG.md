@@ -1,5 +1,10 @@
 ## CHANGELOG
 
+### v0.7.0
+
+* Enhancement: Socket abstraction layer to enable TLS support
+* Enhancement: TLS support via OpenSSL
+
 ### v0.6.2 (2021-10-06)
 
 * Fix: routes inside multiple routers callbacks would be called multiple times

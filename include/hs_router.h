@@ -2,6 +2,7 @@
 #define __HS_ROUTER_H__
 
 #include "hs_route.h"
+#include "hs_socket.h"
 #include "hs_types.h"
 
 struct HSRouter;
@@ -29,7 +30,7 @@ void hs_router_add_route(struct HSRouter *, struct HSRoute *);
 /**
  * Loops over HTTP requests and handles them until socket closed.
  */
-bool hs_router_serve_forever(struct HSRouter *, int /* socket */, void * /* context */, bool (*should_stop)(struct HSRouter *, int /* socket */, size_t /* request counter */, void * /* context */));
+bool hs_router_serve_forever(struct HSRouter *, struct HSSocket *, void * /* context */, bool (*should_stop)(struct HSRouter *, struct HSSocket *, size_t /* request counter */, void * /* context */));
 
 /**
  * Reads the next HTTP request and handles it.

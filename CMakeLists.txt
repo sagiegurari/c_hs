@@ -45,6 +45,7 @@ file(GLOB HEADER_SOURCES "include/*.h")
 file(GLOB TEST_SOURCES "tests/*")
 file(GLOB COMMON_TEST_SOURCES "tests/test.*")
 file(GLOB EXAMPLE_SOURCES "examples/*.c")
+file(GLOB EXAMPLE_PEM_FILES "examples/*.pem")
 
 # format code
 if(DEFINED ENV{X_CMAKE_UNCRUSTIFY_ENABLED})
@@ -60,9 +61,27 @@ if(NOT WIN32)
   set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES COMPILE_FLAGS "${X_CMAKE_C_FLAGS} -Wconversion")
 endif()
 
+# openssl support
+if("$ENV{X_CMAKE_OPEN_SSL}" STREQUAL "true")
+  find_package(OpenSSL REQUIRED)
+
+  message("OpenSSL Include: ${OPENSSL_INCLUDE_DIR}")
+  message("OpenSSL Libs: ${OPENSSL_LIBRARIES}")
+
+  add_definitions(-DHS_SSL_SUPPORTED)
+
+  include_directories(${OPENSSL_INCLUDE_DIR})
+  target_link_libraries(${CMAKE_PROJECT_NAME} ${OPENSSL_LIBRARIES})
+
+  file(COPY ${EXAMPLE_PEM_FILES} DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+endif()
+
 # example
 add_executable(example examples/example.c)
 target_link_libraries(example ${CMAKE_PROJECT_NAME})
+if("$ENV{X_CMAKE_OPEN_SSL}" STREQUAL "true")
+  target_link_libraries(example ${OPENSSL_LIBRARIES})
+endif()
 set_target_properties(example PROPERTIES COMPILE_FLAGS "${X_CMAKE_C_FLAGS}")
 
 # tests
