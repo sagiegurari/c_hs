@@ -90,3 +90,8 @@ utils_setup_c_all_tests(
   BINARY_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
+add_custom_command(
+  TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy "${X_CMAKE_PROJECT_ROOT_DIR}/examples/*.pem" ${CMAKE_BINARY_DIR}/bin/
+)
+
