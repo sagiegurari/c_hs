@@ -61,7 +61,7 @@ if(NOT WIN32)
 endif()
 
 # openssl support
-if(DEFINED ENV{X_CMAKE_OPEN_SSL})
+if("$ENV{X_CMAKE_OPEN_SSL}" STREQUAL "true")
   find_package(OpenSSL REQUIRED)
 
   message("OpenSSL Include: ${OPENSSL_INCLUDE_DIR}")
@@ -76,7 +76,7 @@ endif()
 # example
 add_executable(example examples/example.c)
 target_link_libraries(example ${CMAKE_PROJECT_NAME})
-if(DEFINED ENV{X_CMAKE_OPEN_SSL})
+if("$ENV{X_CMAKE_OPEN_SSL}" STREQUAL "true")
   target_link_libraries(example ${OPENSSL_LIBRARIES})
 endif()
 set_target_properties(example PROPERTIES COMPILE_FLAGS "${X_CMAKE_C_FLAGS}")
