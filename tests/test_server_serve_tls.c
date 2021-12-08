@@ -285,6 +285,9 @@ void test_impl()
     SSL_free(ssl);
 
     SSL_CTX_free(ssl_context);
+
+    ERR_free_strings();
+    EVP_cleanup();
   }
 } /* test_impl */
 #else

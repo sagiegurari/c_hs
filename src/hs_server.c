@@ -409,12 +409,15 @@ void _hs_server_ssl_cleanup()
 {
   _hs_server_global_ssl_init--;
 
-  if (!_hs_server_global_ssl_init)
+  if (_hs_server_global_ssl_init < 0)
+  {
+    _hs_server_global_ssl_init = 0;
+  }
+
+  if (_hs_server_global_ssl_init)
   {
     return;
   }
-
-  _hs_server_global_ssl_init = false;
 
   ERR_free_strings();
   EVP_cleanup();
