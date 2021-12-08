@@ -45,6 +45,7 @@ file(GLOB HEADER_SOURCES "include/*.h")
 file(GLOB TEST_SOURCES "tests/*")
 file(GLOB COMMON_TEST_SOURCES "tests/test.*")
 file(GLOB EXAMPLE_SOURCES "examples/*.c")
+file(GLOB EXAMPLE_PEM_FILES "examples/*.pem")
 
 # format code
 if(DEFINED ENV{X_CMAKE_UNCRUSTIFY_ENABLED})
@@ -72,11 +73,7 @@ if("$ENV{X_CMAKE_OPEN_SSL}" STREQUAL "true")
   include_directories(${OPENSSL_INCLUDE_DIR})
   target_link_libraries(${CMAKE_PROJECT_NAME} ${OPENSSL_LIBRARIES})
 
-  add_custom_command(
-    TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/bin/
-    COMMAND ${CMAKE_COMMAND} -E copy "${X_CMAKE_PROJECT_ROOT_DIR}/examples/*.pem" ${CMAKE_BINARY_DIR}/bin/
-  )
+  file(COPY ${EXAMPLE_PEM_FILES} DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 endif()
 
 # example
