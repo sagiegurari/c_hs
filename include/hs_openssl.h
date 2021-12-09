@@ -1,9 +1,13 @@
 #ifndef __HS_OPENSSL_H__
 #define __HS_OPENSSL_H__
 
+#include <stdbool.h>
+
 /**
  * This is an internal header and should not be used outside the library.
  */
+
+bool hs_openssl_supported(void);
 
 #ifdef HS_SSL_SUPPORTED
 #include <openssl/ssl.h>

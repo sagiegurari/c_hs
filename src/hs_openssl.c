@@ -6,6 +6,12 @@
 int _hs_openssl_global_ssl_init = 0;
 
 
+bool hs_openssl_supported()
+{
+  return(true);
+}
+
+
 void hs_openssl_init()
 {
   _hs_openssl_global_ssl_init++;
@@ -79,6 +85,13 @@ void hs_openssl_context_release(SSL_CTX *ssl_context)
   }
 
   SSL_CTX_free(ssl_context);
+}
+#else
+
+
+bool hs_openssl_supported()
+{
+  return(false);
 }
 
 #endif
