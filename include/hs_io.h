@@ -6,15 +6,15 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+/**
+ * This is an internal header and should not be used outside the library.
+ */
+
 struct HSIOHttpRequestPayload
 {
   struct StringBuffer *partial;
   struct HSSocket     *socket;
 };
-
-/**
- * This is an internal header and should not be used outside the library.
- */
 
 /**
  * Frees the provided pointer if not NULL.

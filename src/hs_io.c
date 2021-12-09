@@ -44,7 +44,7 @@ char *hs_io_read_line(struct HSSocket *socket, struct StringBuffer *work_buffer)
   do
   {
     // read next bulk
-    size = socket->read(socket, buffer, HS_IO_READ_BUFFER_SIZE);
+    size = hs_socket_read(socket, buffer, HS_IO_READ_BUFFER_SIZE);
 
     if (size)
     {
@@ -118,7 +118,7 @@ bool hs_io_read_fully(struct HSSocket *socket, struct StringBuffer *buffer, size
     {
       buffer_size = left;
     }
-    size = socket->read(socket, io_buffer, buffer_size);
+    size = hs_socket_read(socket, io_buffer, buffer_size);
 
     if (size > 0)
     {
@@ -155,7 +155,7 @@ bool hs_io_read_and_write_to_file(struct HSSocket *socket, FILE *fp, size_t leng
     {
       buffer_size = left;
     }
-    size = socket->read(socket, io_buffer, buffer_size);
+    size = hs_socket_read(socket, io_buffer, buffer_size);
 
     if (size > 0)
     {
@@ -188,7 +188,7 @@ bool hs_io_write_string_to_socket(struct HSSocket *socket, char *content, size_t
 
   do
   {
-    ssize_t written = socket->write(socket, ptr, left);
+    ssize_t written = hs_socket_write(socket, ptr, left);
 
     // in case of error
     if (written < 0)

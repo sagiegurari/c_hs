@@ -1,5 +1,9 @@
 ## CHANGELOG
 
+### v0.7.1 (2021-12-09)
+
+* Update headers to enable access to socket struct
+
 ### v0.7.0 (2021-12-08)
 
 * Enhancement: Socket abstraction layer to enable TLS support

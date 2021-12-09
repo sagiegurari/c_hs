@@ -1,4 +1,5 @@
 #include "hs_io.h"
+#include "hs_openssl.h"
 #include "hs_router.h"
 #include "hs_server.h"
 #include "vector.h"
@@ -20,10 +21,6 @@ void _hs_server_single_thread_on_connection(struct HSServer *, struct HSSocket *
 #ifdef HS_SSL_SUPPORTED
 
 struct HSSocket *_hs_server_ssl_socket_accept(struct HSServer *, struct HSSocket *, struct sockaddr *, int);
-void _hs_server_ssl_init();
-void _hs_server_ssl_cleanup();
-SSL_CTX *_hs_server_ssl_context_create(struct HSServerSSLInfo *);
-void _hs_server_ssl_context_release(SSL_CTX *);
 
 #endif
 
@@ -83,7 +80,7 @@ void hs_server_release(struct HSServer *server)
   if (server->internal != NULL)
   {
 #ifdef HS_SSL_SUPPORTED
-    _hs_server_ssl_context_release(server->internal->ssl_context);
+    hs_openssl_context_release(server->internal->ssl_context);
     server->internal->ssl_context = NULL;
 #endif
 
@@ -119,12 +116,12 @@ bool hs_server_serve(struct HSServer *server, struct sockaddr_in address, void *
   {
 #ifdef HS_SSL_SUPPORTED
     server->accept = _hs_server_ssl_socket_accept;
-    _hs_server_ssl_init();
-    server->internal->ssl_context = _hs_server_ssl_context_create(server->ssl_info);
+    hs_openssl_init();
+    server->internal->ssl_context = hs_openssl_context_create(server->ssl_info->private_key_pem_file, server->ssl_info->certificate_pem_file);
 
     if (server->internal->ssl_context == NULL)
     {
-      _hs_server_ssl_cleanup();
+      hs_openssl_cleanup();
       return(false);
     }
 #else
@@ -147,9 +144,9 @@ bool hs_server_serve(struct HSServer *server, struct sockaddr_in address, void *
 #ifdef HS_SSL_SUPPORTED
     if (use_ssl)
     {
-      _hs_server_ssl_context_release(server->internal->ssl_context);
+      hs_openssl_context_release(server->internal->ssl_context);
       server->internal->ssl_context = NULL;
-      _hs_server_ssl_cleanup();
+      hs_openssl_cleanup();
     }
 #endif
 
@@ -175,9 +172,9 @@ bool hs_server_serve(struct HSServer *server, struct sockaddr_in address, void *
 #ifdef HS_SSL_SUPPORTED
   if (use_ssl)
   {
-    _hs_server_ssl_context_release(server->internal->ssl_context);
+    hs_openssl_context_release(server->internal->ssl_context);
     server->internal->ssl_context = NULL;
-    _hs_server_ssl_cleanup();
+    hs_openssl_cleanup();
   }
 #endif
 
@@ -247,7 +244,7 @@ struct HSSocket *hs_server_create_socket_and_listen(struct HSServer *server, str
     return(0);
   }
 
-  if (!hssocket->set_recv_timeout_in_seconds(hssocket, server->accept_recv_timeout_seconds))
+  if (!hs_socket_set_recv_timeout_in_seconds(hssocket, server->accept_recv_timeout_seconds))
   {
     hs_socket_close_and_release(hssocket);
     return(0);
@@ -300,7 +297,7 @@ void _hs_server_socket_listen_loop(struct HSServer *server, struct HSSocket *ser
   do
   {
     struct HSSocket *client_socket = server->accept(server, server_socket, (struct sockaddr *)&address, address_size);
-    if (client_socket != NULL && client_socket->set_recv_timeout_in_seconds(client_socket, server->request_recv_timeout_seconds))
+    if (client_socket != NULL && hs_socket_set_recv_timeout_in_seconds(client_socket, server->request_recv_timeout_seconds))
     {
       server->connection_handler->on_connection(server, client_socket, context, should_stop_server, should_stop_for_connection);
     }
@@ -341,7 +338,6 @@ void _hs_server_single_thread_on_connection(struct HSServer *server, struct HSSo
 
 #ifdef HS_SSL_SUPPORTED
 #include <openssl/err.h>
-int             _hs_server_global_ssl_init = 0;
 
 struct HSSocket *_hs_server_ssl_socket_accept(struct HSServer *server, struct HSSocket *server_socket, struct sockaddr *address, int address_size)
 {
@@ -355,72 +351,5 @@ struct HSSocket *_hs_server_ssl_socket_accept(struct HSServer *server, struct HS
   return(hs_socket_ssl_accept(server_socket, address, address_size, server->internal->ssl_context));
 }
 
-
-SSL_CTX *_hs_server_ssl_context_create(struct HSServerSSLInfo *ssl_info)
-{
-  SSL_CTX *ssl_context = SSL_CTX_new(SSLv23_method());
-
-  SSL_CTX_set_options(ssl_context, SSL_OP_ALL);
-  SSL_CTX_set_options(ssl_context, SSL_OP_SINGLE_DH_USE);
-
-  if ((SSL_CTX_use_certificate_file(ssl_context, ssl_info->certificate_pem_file, SSL_FILETYPE_PEM)) <= 0)
-  {
-    _hs_server_ssl_context_release(ssl_context);
-    return(NULL);
-  }
-
-  if ((SSL_CTX_use_PrivateKey_file(ssl_context, ssl_info->private_key_pem_file, SSL_FILETYPE_PEM)) <= 0)
-  {
-    _hs_server_ssl_context_release(ssl_context);
-    return(NULL);
-  }
-
-  return(ssl_context);
-}
-
-
-void _hs_server_ssl_context_release(SSL_CTX *ssl_context)
-{
-  if (ssl_context == NULL)
-  {
-    return;
-  }
-
-  SSL_CTX_free(ssl_context);
-}
-
-
-void _hs_server_ssl_init()
-{
-  _hs_server_global_ssl_init++;
-
-  if (_hs_server_global_ssl_init > 1)
-  {
-    return;
-  }
-
-  SSL_load_error_strings();
-  SSL_library_init();
-  OpenSSL_add_all_algorithms();
-}
-
-
-void _hs_server_ssl_cleanup()
-{
-  _hs_server_global_ssl_init--;
-
-  if (_hs_server_global_ssl_init < 0)
-  {
-    _hs_server_global_ssl_init = 0;
-  }
-
-  if (_hs_server_global_ssl_init)
-  {
-    return;
-  }
-
-  ERR_free_strings();
-  EVP_cleanup();
-}
 #endif
 

@@ -12,6 +12,19 @@ void _hs_socket_plain_close(struct HSSocket *);
 void _hs_socket_plain_release(struct HSSocket *);
 
 
+struct HSSocket
+{
+  bool    (*is_closed)(struct HSSocket *);
+  ssize_t (*read)(struct HSSocket *, void * /* buffer */, size_t /* count */);
+  ssize_t (*write)(struct HSSocket *, const void * /* buffer */, size_t /* count */);
+  bool    (*set_recv_timeout_in_seconds)(struct HSSocket *, long);
+  void    (*close)(struct HSSocket *);
+  void    (*release)(struct HSSocket *);
+  int     raw_socket; // should not be used directly
+  void    *internal;
+};
+
+
 bool hs_socket_is_open(struct HSSocket *socket)
 {
   if (socket == NULL || socket->is_closed == NULL)
@@ -54,6 +67,39 @@ void hs_socket_close_and_release(struct HSSocket *socket)
   {
     free(socket);
   }
+}
+
+
+ssize_t hs_socket_read(struct HSSocket *socket, void *buffer, size_t count)
+{
+  if (socket == NULL || socket->read == NULL)
+  {
+    return(-1);
+  }
+
+  return(socket->read(socket, buffer, count));
+}
+
+
+ssize_t hs_socket_write(struct HSSocket *socket, const void *buffer, size_t count)
+{
+  if (socket == NULL || socket->write == NULL)
+  {
+    return(-1);
+  }
+
+  return(socket->write(socket, buffer, count));
+}
+
+
+bool    hs_socket_set_recv_timeout_in_seconds(struct HSSocket *socket, long recv_timeout_seconds)
+{
+  if (socket == NULL)
+  {
+    return(false);
+  }
+
+  return(socket->set_recv_timeout_in_seconds(socket, recv_timeout_seconds));
 }
 
 struct HSSocket *hs_socket_plain_new(int socket)
