@@ -6,7 +6,7 @@
 
 #define HS_IO_READ_BUFFER_SIZE    256
 
-char *_hs_io_read_line_from_buffer(struct StringBuffer *, bool *);
+static char *_hs_io_read_line_from_buffer(struct StringBuffer *, bool *);
 
 
 void hs_io_free(void *ptr)
@@ -251,7 +251,7 @@ bool hs_io_write_file_to_socket(struct HSSocket *socket, char *filename)
 } /* hs_io_write_file_to_socket */
 
 
-char *_hs_io_read_line_from_buffer(struct StringBuffer *buffer, bool *eof)
+static char *_hs_io_read_line_from_buffer(struct StringBuffer *buffer, bool *eof)
 {
   size_t length = string_buffer_get_content_size(buffer);
 

@@ -1,5 +1,9 @@
 ## CHANGELOG
 
+### v0.7.2
+
+* Added static to internal functions
+
 ### v0.7.1 (2021-12-09)
 
 * Update headers to enable access to socket struct

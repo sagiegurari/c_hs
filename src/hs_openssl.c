@@ -3,7 +3,7 @@
 #ifdef HS_SSL_SUPPORTED
 #include <openssl/err.h>
 
-int _hs_openssl_global_ssl_init = 0;
+static int _hs_openssl_global_ssl_init = 0;
 
 
 bool hs_openssl_supported()

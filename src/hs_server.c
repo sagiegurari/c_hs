@@ -14,13 +14,13 @@ struct HSServerInternal
 #endif
 };
 
-struct HSSocket *_hs_server_plain_socket_accept(struct HSServer *, struct HSSocket *, struct sockaddr *, int);
-void _hs_server_socket_listen_loop(struct HSServer *, struct HSSocket *, struct sockaddr_in, void *, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t, void *));
-void _hs_server_single_thread_on_connection(struct HSServer *, struct HSSocket *, void *, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t, void *));
+static struct HSSocket *_hs_server_plain_socket_accept(struct HSServer *, struct HSSocket *, struct sockaddr *, int);
+static void _hs_server_socket_listen_loop(struct HSServer *, struct HSSocket *, struct sockaddr_in, void *, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t, void *));
+static void _hs_server_single_thread_on_connection(struct HSServer *, struct HSSocket *, void *, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t, void *));
 
 #ifdef HS_SSL_SUPPORTED
 
-struct HSSocket *_hs_server_ssl_socket_accept(struct HSServer *, struct HSSocket *, struct sockaddr *, int);
+static struct HSSocket *_hs_server_ssl_socket_accept(struct HSServer *, struct HSSocket *, struct sockaddr *, int);
 
 #endif
 
@@ -277,7 +277,7 @@ struct sockaddr_in hs_server_init_ipv4_address(uint16_t port)
   return(address);
 }
 
-struct HSSocket *_hs_server_plain_socket_accept(struct HSServer *server, struct HSSocket *server_socket, struct sockaddr *address, int address_size)
+static struct HSSocket *_hs_server_plain_socket_accept(struct HSServer *server, struct HSSocket *server_socket, struct sockaddr *address, int address_size)
 {
   if (  server == NULL
      || server_socket == NULL)
@@ -289,7 +289,7 @@ struct HSSocket *_hs_server_plain_socket_accept(struct HSServer *server, struct 
 }
 
 
-void _hs_server_socket_listen_loop(struct HSServer *server, struct HSSocket *server_socket, struct sockaddr_in address, void *context, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t, void *))
+static void _hs_server_socket_listen_loop(struct HSServer *server, struct HSSocket *server_socket, struct sockaddr_in address, void *context, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t, void *))
 {
   // listen loop
   int address_size = sizeof(address);
@@ -317,7 +317,7 @@ void _hs_server_socket_listen_loop(struct HSServer *server, struct HSSocket *ser
 }
 
 
-void _hs_server_single_thread_on_connection(struct HSServer *server, struct HSSocket *socket, void *context, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t, void *))
+static void _hs_server_single_thread_on_connection(struct HSServer *server, struct HSSocket *socket, void *context, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t, void *))
 {
   if (  server == NULL
      || server->router == NULL
@@ -339,7 +339,7 @@ void _hs_server_single_thread_on_connection(struct HSServer *server, struct HSSo
 #ifdef HS_SSL_SUPPORTED
 #include <openssl/err.h>
 
-struct HSSocket *_hs_server_ssl_socket_accept(struct HSServer *server, struct HSSocket *server_socket, struct sockaddr *address, int address_size)
+static struct HSSocket *_hs_server_ssl_socket_accept(struct HSServer *server, struct HSSocket *server_socket, struct sockaddr *address, int address_size)
 {
   if (  server == NULL
      || server_socket == NULL

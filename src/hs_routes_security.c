@@ -13,10 +13,10 @@ struct HSRoutesBasicAuthContext
   void *context;
 };
 
-enum HSServeFlowResponse _hs_routes_security_headers_route_serve(struct HSRoute *, struct HSServeFlowParams *);
-void _hs_routes_security_headers_route_release(struct HSRoute *);
-enum HSServeFlowResponse _hs_routes_security_basic_auth_route_serve(struct HSRoute *, struct HSServeFlowParams *);
-void              _hs_routes_security_basic_auth_route_release(struct HSRoute *);
+static enum HSServeFlowResponse _hs_routes_security_headers_route_serve(struct HSRoute *, struct HSServeFlowParams *);
+static void _hs_routes_security_headers_route_release(struct HSRoute *);
+static enum HSServeFlowResponse _hs_routes_security_basic_auth_route_serve(struct HSRoute *, struct HSServeFlowParams *);
+static void _hs_routes_security_basic_auth_route_release(struct HSRoute *);
 
 struct HSRoutesSecurityResponseHeaders *hs_routes_security_headers_response_headers_new()
 {
@@ -66,7 +66,7 @@ struct HSRoute *hs_routes_security_basic_auth_route_new(char *realm, bool (*auth
   return(route);
 }
 
-enum HSServeFlowResponse _hs_routes_security_headers_route_serve(struct HSRoute *route, struct HSServeFlowParams *params)
+static enum HSServeFlowResponse _hs_routes_security_headers_route_serve(struct HSRoute *route, struct HSServeFlowParams *params)
 {
   if (route == NULL || route->extension == NULL || params == NULL)
   {
@@ -151,7 +151,7 @@ enum HSServeFlowResponse _hs_routes_security_headers_route_serve(struct HSRoute 
 } /* _hs_routes_security_headers_route_serve */
 
 
-void _hs_routes_security_headers_route_release(struct HSRoute *route)
+static void _hs_routes_security_headers_route_release(struct HSRoute *route)
 {
   if (route == NULL || route->extension == NULL)
   {
@@ -165,7 +165,7 @@ void _hs_routes_security_headers_route_release(struct HSRoute *route)
   hs_io_free(headers);
 }
 
-enum HSServeFlowResponse _hs_routes_security_basic_auth_route_serve(struct HSRoute *route, struct HSServeFlowParams *params)
+static enum HSServeFlowResponse _hs_routes_security_basic_auth_route_serve(struct HSRoute *route, struct HSServeFlowParams *params)
 {
   if (  route == NULL
      || params == NULL
@@ -209,7 +209,7 @@ enum HSServeFlowResponse _hs_routes_security_basic_auth_route_serve(struct HSRou
 } /* _hs_routes_basic_auth_serve */
 
 
-void              _hs_routes_security_basic_auth_route_release(struct HSRoute *route)
+static void _hs_routes_security_basic_auth_route_release(struct HSRoute *route)
 {
   if (route == NULL || route->extension == NULL)
   {

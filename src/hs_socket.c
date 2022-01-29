@@ -2,14 +2,14 @@
 #include <arpa/inet.h>
 #include <stdlib.h>
 
-int _hs_socket_get_socket(struct HSSocket *);
-int _hs_socket_server_accept(struct HSSocket *, struct sockaddr *, int);
-bool _hs_socket_is_closed(struct HSSocket *);
-bool _hs_socket_set_recv_timeout_in_seconds(struct HSSocket *, long);
-ssize_t _hs_socket_plain_read(struct HSSocket *, void *, size_t);
-ssize_t _hs_socket_plain_write(struct HSSocket *, const void *, size_t);
-void _hs_socket_plain_close(struct HSSocket *);
-void _hs_socket_plain_release(struct HSSocket *);
+static int _hs_socket_get_socket(struct HSSocket *);
+static int _hs_socket_server_accept(struct HSSocket *, struct sockaddr *, int);
+static bool _hs_socket_is_closed(struct HSSocket *);
+static bool _hs_socket_set_recv_timeout_in_seconds(struct HSSocket *, long);
+static ssize_t _hs_socket_plain_read(struct HSSocket *, void *, size_t);
+static ssize_t _hs_socket_plain_write(struct HSSocket *, const void *, size_t);
+static void _hs_socket_plain_close(struct HSSocket *);
+static void _hs_socket_plain_release(struct HSSocket *);
 
 
 struct HSSocket
@@ -140,7 +140,7 @@ struct HSSocket *hs_socket_plain_accept(struct HSSocket *server_socket, struct s
 }
 
 
-int _hs_socket_get_socket(struct HSSocket *hssocket)
+static int _hs_socket_get_socket(struct HSSocket *hssocket)
 {
   if (hssocket == NULL)
   {
@@ -156,7 +156,7 @@ int _hs_socket_get_socket(struct HSSocket *hssocket)
 }
 
 
-int _hs_socket_server_accept(struct HSSocket *server_socket, struct sockaddr *address, int address_size)
+static int _hs_socket_server_accept(struct HSSocket *server_socket, struct sockaddr *address, int address_size)
 {
   int socket_fd = _hs_socket_get_socket(server_socket);
 
@@ -175,7 +175,7 @@ int _hs_socket_server_accept(struct HSSocket *server_socket, struct sockaddr *ad
 }
 
 
-bool _hs_socket_is_closed(struct HSSocket *hssocket)
+static bool _hs_socket_is_closed(struct HSSocket *hssocket)
 {
   int socket = _hs_socket_get_socket(hssocket);
 
@@ -183,7 +183,7 @@ bool _hs_socket_is_closed(struct HSSocket *hssocket)
 }
 
 
-bool _hs_socket_set_recv_timeout_in_seconds(struct HSSocket *hssocket, long recv_timeout_seconds)
+static bool _hs_socket_set_recv_timeout_in_seconds(struct HSSocket *hssocket, long recv_timeout_seconds)
 {
   int socket = _hs_socket_get_socket(hssocket);
 
@@ -205,7 +205,7 @@ bool _hs_socket_set_recv_timeout_in_seconds(struct HSSocket *hssocket, long recv
 }
 
 
-ssize_t _hs_socket_plain_read(struct HSSocket *hssocket, void *buffer, size_t count)
+static ssize_t _hs_socket_plain_read(struct HSSocket *hssocket, void *buffer, size_t count)
 {
   int socket = _hs_socket_get_socket(hssocket);
 
@@ -218,7 +218,7 @@ ssize_t _hs_socket_plain_read(struct HSSocket *hssocket, void *buffer, size_t co
 }
 
 
-ssize_t _hs_socket_plain_write(struct HSSocket *hssocket, const void *buffer, size_t count)
+static ssize_t _hs_socket_plain_write(struct HSSocket *hssocket, const void *buffer, size_t count)
 {
   int socket = _hs_socket_get_socket(hssocket);
 
@@ -231,7 +231,7 @@ ssize_t _hs_socket_plain_write(struct HSSocket *hssocket, const void *buffer, si
 }
 
 
-void _hs_socket_plain_close(struct HSSocket *hssocket)
+static void _hs_socket_plain_close(struct HSSocket *hssocket)
 {
   int socket = _hs_socket_get_socket(hssocket);
 
@@ -244,7 +244,7 @@ void _hs_socket_plain_close(struct HSSocket *hssocket)
 }
 
 
-void _hs_socket_plain_release(struct HSSocket *hssocket)
+static void _hs_socket_plain_release(struct HSSocket *hssocket)
 {
   if (hssocket == NULL)
   {

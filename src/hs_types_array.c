@@ -20,13 +20,13 @@ struct HSArrayDataPair
   struct Vector *vector;
 };
 
-void _hs_types_array_pair_release(struct HSArrayPair *, bool);
-void _hs_types_array_release(struct Vector *, bool);
-bool _hs_types_array_pair_add(struct Vector *, char *, void *);
-char *_hs_types_array_pair_get_key(struct Vector *, size_t);
-void *_hs_types_array_pair_get_value(struct Vector *, size_t);
-void *_hs_types_array_pair_get_by_key(struct Vector *, char *);
-void _hs_types_array_pair_remove_by_key(struct Vector *, char *, bool);
+static void _hs_types_array_pair_release(struct HSArrayPair *, bool);
+static void _hs_types_array_release(struct Vector *, bool);
+static bool _hs_types_array_pair_add(struct Vector *, char *, void *);
+static char *_hs_types_array_pair_get_key(struct Vector *, size_t);
+static void *_hs_types_array_pair_get_value(struct Vector *, size_t);
+static void *_hs_types_array_pair_get_by_key(struct Vector *, char *);
+static void _hs_types_array_pair_remove_by_key(struct Vector *, char *, bool);
 
 struct HSArrayStringPair *hs_types_array_string_pair_new()
 {
@@ -205,7 +205,7 @@ void hs_types_array_data_pair_remove_by_key(struct HSArrayDataPair *array, char 
 }
 
 
-void _hs_types_array_pair_release(struct HSArrayPair *pair, bool release_value)
+static void _hs_types_array_pair_release(struct HSArrayPair *pair, bool release_value)
 {
   if (pair == NULL)
   {
@@ -221,7 +221,7 @@ void _hs_types_array_pair_release(struct HSArrayPair *pair, bool release_value)
 }
 
 
-void _hs_types_array_release(struct Vector *vector, bool release_value)
+static void _hs_types_array_release(struct Vector *vector, bool release_value)
 {
   if (vector == NULL)
   {
@@ -239,7 +239,7 @@ void _hs_types_array_release(struct Vector *vector, bool release_value)
 }
 
 
-bool _hs_types_array_pair_add(struct Vector *vector, char *key, void *value)
+static bool _hs_types_array_pair_add(struct Vector *vector, char *key, void *value)
 {
   if (vector == NULL || key == NULL)
   {
@@ -256,7 +256,7 @@ bool _hs_types_array_pair_add(struct Vector *vector, char *key, void *value)
 }
 
 
-char *_hs_types_array_pair_get_key(struct Vector *vector, size_t index)
+static char *_hs_types_array_pair_get_key(struct Vector *vector, size_t index)
 {
   if (vector == NULL)
   {
@@ -273,7 +273,7 @@ char *_hs_types_array_pair_get_key(struct Vector *vector, size_t index)
 }
 
 
-void *_hs_types_array_pair_get_value(struct Vector *vector, size_t index)
+static void *_hs_types_array_pair_get_value(struct Vector *vector, size_t index)
 {
   if (vector == NULL)
   {
@@ -290,7 +290,7 @@ void *_hs_types_array_pair_get_value(struct Vector *vector, size_t index)
 }
 
 
-void *_hs_types_array_pair_get_by_key(struct Vector *vector, char *key)
+static void *_hs_types_array_pair_get_by_key(struct Vector *vector, char *key)
 {
   if (vector == NULL || key == NULL)
   {
@@ -311,7 +311,7 @@ void *_hs_types_array_pair_get_by_key(struct Vector *vector, char *key)
 }
 
 
-void _hs_types_array_pair_remove_by_key(struct Vector *vector, char *key, bool release_value)
+static void _hs_types_array_pair_remove_by_key(struct Vector *vector, char *key, bool release_value)
 {
   if (vector == NULL || key == NULL)
   {

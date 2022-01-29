@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-enum HSServeFlowResponse _hs_routes_redirection_serve(struct HSRoute *, struct HSServeFlowParams *);
-void _hs_routes_redirection_release(struct HSRoute *);
+static enum HSServeFlowResponse _hs_routes_redirection_serve(struct HSRoute *, struct HSServeFlowParams *);
+static void _hs_routes_redirection_release(struct HSRoute *);
 
 struct HsRoutesRedirectionContext
 {
@@ -57,7 +57,7 @@ bool hs_routes_redirection_set_header_and_status_code(struct HSServeFlowParams *
   return(true);
 }
 
-enum HSServeFlowResponse _hs_routes_redirection_serve(struct HSRoute *route, struct HSServeFlowParams *params)
+static enum HSServeFlowResponse _hs_routes_redirection_serve(struct HSRoute *route, struct HSServeFlowParams *params)
 {
   if (route == NULL || route->extension == NULL)
   {
@@ -74,7 +74,7 @@ enum HSServeFlowResponse _hs_routes_redirection_serve(struct HSRoute *route, str
 }
 
 
-void _hs_routes_redirection_release(struct HSRoute *route)
+static void _hs_routes_redirection_release(struct HSRoute *route)
 {
   if (route == NULL || route->extension == NULL)
   {

@@ -3,8 +3,8 @@
 #include "hs_routes_payload_limit.h"
 #include <stdlib.h>
 
-enum HSServeFlowResponse _hs_routes_payload_limit_serve(struct HSRoute *, struct HSServeFlowParams *);
-void _hs_routes_payload_limit_release(struct HSRoute *);
+static enum HSServeFlowResponse _hs_routes_payload_limit_serve(struct HSRoute *, struct HSServeFlowParams *);
+static void _hs_routes_payload_limit_release(struct HSRoute *);
 
 struct HSRoute *hs_routes_payload_limit_route_new(size_t size_limit)
 {
@@ -23,7 +23,7 @@ struct HSRoute *hs_routes_payload_limit_route_new(size_t size_limit)
   return(route);
 }
 
-enum HSServeFlowResponse _hs_routes_payload_limit_serve(struct HSRoute *route, struct HSServeFlowParams *params)
+static enum HSServeFlowResponse _hs_routes_payload_limit_serve(struct HSRoute *route, struct HSServeFlowParams *params)
 {
   if (route == NULL || route->extension == NULL || params == NULL || params->request == NULL)
   {
@@ -43,7 +43,7 @@ enum HSServeFlowResponse _hs_routes_payload_limit_serve(struct HSRoute *route, s
 }
 
 
-void _hs_routes_payload_limit_release(struct HSRoute *route)
+static void _hs_routes_payload_limit_release(struct HSRoute *route)
 {
   if (route == NULL)
   {

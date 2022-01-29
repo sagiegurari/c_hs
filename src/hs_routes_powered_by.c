@@ -2,9 +2,9 @@
 #include "hs_routes_powered_by.h"
 #include <string.h>
 
-enum HSServeFlowResponse _hs_routes_powered_by_serve(struct HSRoute *, struct HSServeFlowParams *);
+static enum HSServeFlowResponse _hs_routes_powered_by_serve(struct HSRoute *, struct HSServeFlowParams *);
 
-struct HSRoute           *hs_routes_powered_by_route_new(char *powered_by)
+struct HSRoute                  *hs_routes_powered_by_route_new(char *powered_by)
 {
   struct HSRoute *route = hs_routes_common_serve_all_route_new();
 
@@ -18,7 +18,7 @@ struct HSRoute           *hs_routes_powered_by_route_new(char *powered_by)
   return(route);
 }
 
-enum HSServeFlowResponse _hs_routes_powered_by_serve(struct HSRoute *route, struct HSServeFlowParams *params)
+static enum HSServeFlowResponse _hs_routes_powered_by_serve(struct HSRoute *route, struct HSServeFlowParams *params)
 {
   if (route == NULL || params == NULL || params->response == NULL || params->response->headers == NULL)
   {

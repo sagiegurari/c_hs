@@ -3,9 +3,9 @@
 #include "hs_routes_ratelimit.h"
 #include <stdlib.h>
 
-struct HSRoute           *_hs_routes_ratelimit_base_route_new(size_t);
-enum HSServeFlowResponse _hs_routes_ratelimit_max_connection_requests_route_serve(struct HSRoute *, struct HSServeFlowParams *);
-enum HSServeFlowResponse _hs_routes_ratelimit_max_connection_time_route_serve(struct HSRoute *, struct HSServeFlowParams *);
+static struct HSRoute           *_hs_routes_ratelimit_base_route_new(size_t);
+static enum HSServeFlowResponse _hs_routes_ratelimit_max_connection_requests_route_serve(struct HSRoute *, struct HSServeFlowParams *);
+static enum HSServeFlowResponse _hs_routes_ratelimit_max_connection_time_route_serve(struct HSRoute *, struct HSServeFlowParams *);
 
 struct HSRoutesRateLimitValue
 {
@@ -30,7 +30,7 @@ struct HSRoute *hs_routes_ratelimit_max_connection_time_route_new(size_t max_tim
   return(route);
 }
 
-struct HSRoute *_hs_routes_ratelimit_base_route_new(size_t value)
+static struct HSRoute *_hs_routes_ratelimit_base_route_new(size_t value)
 {
   struct HSRoute *route = hs_routes_common_serve_all_route_new();
 
@@ -43,7 +43,7 @@ struct HSRoute *_hs_routes_ratelimit_base_route_new(size_t value)
   return(route);
 }
 
-enum HSServeFlowResponse _hs_routes_ratelimit_max_connection_requests_route_serve(struct HSRoute *route, struct HSServeFlowParams *params)
+static enum HSServeFlowResponse _hs_routes_ratelimit_max_connection_requests_route_serve(struct HSRoute *route, struct HSServeFlowParams *params)
 {
   if (  route == NULL
      || params == NULL
@@ -64,7 +64,7 @@ enum HSServeFlowResponse _hs_routes_ratelimit_max_connection_requests_route_serv
   return(HS_SERVE_FLOW_RESPONSE_CONTINUE);
 }
 
-enum HSServeFlowResponse _hs_routes_ratelimit_max_connection_time_route_serve(struct HSRoute *route, struct HSServeFlowParams *params)
+static enum HSServeFlowResponse _hs_routes_ratelimit_max_connection_time_route_serve(struct HSRoute *route, struct HSServeFlowParams *params)
 {
   if (  route == NULL
      || params == NULL

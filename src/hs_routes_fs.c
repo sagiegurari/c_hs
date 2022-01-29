@@ -26,12 +26,12 @@ struct HSRoutesDirectoryServeContext
   void *context;
 };
 
-enum HSServeFlowResponse _hs_routes_file_route_serve(struct HSRoute *, struct HSServeFlowParams *);
-void _hs_routes_file_route_release(struct HSRoute *);
-enum HSServeFlowResponse _hs_routes_directory_route_serve(struct HSRoute *, struct HSServeFlowParams *);
-void _hs_routes_directory_route_release(struct HSRoute *);
-void _hs_routes_directory_render_entry(struct StringBuffer *, char * (*render)(char *, char *, void *), char *, char *, void *);
-void _hs_routes_directory_default_renderer(struct StringBuffer *, char *, char *);
+static enum HSServeFlowResponse _hs_routes_file_route_serve(struct HSRoute *, struct HSServeFlowParams *);
+static void _hs_routes_file_route_release(struct HSRoute *);
+static enum HSServeFlowResponse _hs_routes_directory_route_serve(struct HSRoute *, struct HSServeFlowParams *);
+static void _hs_routes_directory_route_release(struct HSRoute *);
+static void _hs_routes_directory_render_entry(struct StringBuffer *, char * (*render)(char *, char *, void *), char *, char *, void *);
+static void _hs_routes_directory_default_renderer(struct StringBuffer *, char *, char *);
 
 struct HSRoute *hs_routes_fs_file_route_new(char *base_directory)
 {
@@ -169,7 +169,7 @@ char *hs_routes_fs_directory_route_render_file_entry_with_media_support(char *na
   return(html);
 } /* hs_routes_fs_directory_route_render_file_entry_with_media_support */
 
-enum HSServeFlowResponse _hs_routes_file_route_serve(struct HSRoute *route, struct HSServeFlowParams *params)
+static enum HSServeFlowResponse _hs_routes_file_route_serve(struct HSRoute *route, struct HSServeFlowParams *params)
 {
   if (  route == NULL
      || params == NULL
@@ -214,7 +214,7 @@ enum HSServeFlowResponse _hs_routes_file_route_serve(struct HSRoute *route, stru
 } /* _hs_routes_file_serve */
 
 
-void _hs_routes_file_route_release(struct HSRoute *route)
+static void _hs_routes_file_route_release(struct HSRoute *route)
 {
   if (route == NULL || route->extension == NULL)
   {
@@ -227,7 +227,7 @@ void _hs_routes_file_route_release(struct HSRoute *route)
   hs_io_free(context);
 }
 
-enum HSServeFlowResponse _hs_routes_directory_route_serve(struct HSRoute *route, struct HSServeFlowParams *params)
+static enum HSServeFlowResponse _hs_routes_directory_route_serve(struct HSRoute *route, struct HSServeFlowParams *params)
 {
   if (  route == NULL
      || params == NULL
@@ -353,7 +353,7 @@ enum HSServeFlowResponse _hs_routes_directory_route_serve(struct HSRoute *route,
 } /* _hs_routes_directory_serve */
 
 
-void _hs_routes_directory_route_release(struct HSRoute *route)
+static void _hs_routes_directory_route_release(struct HSRoute *route)
 {
   if (route == NULL || route->extension == NULL)
   {
@@ -368,7 +368,7 @@ void _hs_routes_directory_route_release(struct HSRoute *route)
 }
 
 
-void _hs_routes_directory_render_entry(struct StringBuffer *buffer, char * (*render_entry)(char *, char *, void *), char *name, char *href, void *context)
+static void _hs_routes_directory_render_entry(struct StringBuffer *buffer, char * (*render_entry)(char *, char *, void *), char *name, char *href, void *context)
 {
   char *entry_html = NULL;
 
@@ -389,7 +389,7 @@ void _hs_routes_directory_render_entry(struct StringBuffer *buffer, char * (*ren
 }
 
 
-void _hs_routes_directory_default_renderer(struct StringBuffer *buffer, char *name, char *href)
+static void _hs_routes_directory_default_renderer(struct StringBuffer *buffer, char *name, char *href)
 {
   string_buffer_append_string(buffer, "<a class=\"entry\" href=\"");
   string_buffer_append_string(buffer, href);

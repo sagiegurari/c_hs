@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-enum HSServeFlowResponse _hs_routes_static_serve(struct HSRoute *, struct HSServeFlowParams *);
-void _hs_routes_static_release(struct HSRoute *);
+static enum HSServeFlowResponse _hs_routes_static_serve(struct HSRoute *, struct HSServeFlowParams *);
+static void _hs_routes_static_release(struct HSRoute *);
 
 struct HsRoutesStaticContext
 {
@@ -52,7 +52,7 @@ struct HSRoute *hs_routes_static_js_route_new(char *js_text)
   return(hs_routes_static_route_new(js_text, HS_MIME_TYPE_TEXT_JAVASCRIPT));
 }
 
-enum HSServeFlowResponse _hs_routes_static_serve(struct HSRoute *route, struct HSServeFlowParams *params)
+static enum HSServeFlowResponse _hs_routes_static_serve(struct HSRoute *route, struct HSServeFlowParams *params)
 {
   if (route == NULL || route->extension == NULL)
   {
@@ -69,7 +69,7 @@ enum HSServeFlowResponse _hs_routes_static_serve(struct HSRoute *route, struct H
 }
 
 
-void _hs_routes_static_release(struct HSRoute *route)
+static void _hs_routes_static_release(struct HSRoute *route)
 {
   if (route == NULL || route->extension == NULL)
   {

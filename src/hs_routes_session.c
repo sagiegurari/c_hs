@@ -10,11 +10,11 @@
 
 #define HS_ROUTES_SESSION_INI_SECTION_NAME    "session"
 
-enum HSServeFlowResponse _hs_routes_session_route_serve(struct HSRoute *, struct HSServeFlowParams *);
-void _hs_routes_session_route_release(struct HSRoute *);
-void _hs_routes_session_callback_run(struct HSPostResponseCallback *);
-void _hs_routes_session_callback_release(struct HSPostResponseCallback *);
-char *_hs_routes_session_get_file_for_session_id(char *);
+static enum HSServeFlowResponse _hs_routes_session_route_serve(struct HSRoute *, struct HSServeFlowParams *);
+static void _hs_routes_session_route_release(struct HSRoute *);
+static void _hs_routes_session_callback_run(struct HSPostResponseCallback *);
+static void _hs_routes_session_callback_release(struct HSPostResponseCallback *);
+static char *_hs_routes_session_get_file_for_session_id(char *);
 
 struct HSSessionRouteContext
 {
@@ -275,7 +275,7 @@ struct HSCookie *hs_routes_session_new_cookie(char *name, char *session_id)
   return(cookie);
 }
 
-enum HSServeFlowResponse _hs_routes_session_route_serve(struct HSRoute *route, struct HSServeFlowParams *params)
+static enum HSServeFlowResponse _hs_routes_session_route_serve(struct HSRoute *route, struct HSServeFlowParams *params)
 {
   if (  route == NULL
      || route->extension == NULL
@@ -343,7 +343,7 @@ enum HSServeFlowResponse _hs_routes_session_route_serve(struct HSRoute *route, s
 } /* _hs_routes_session_route_serve */
 
 
-void _hs_routes_session_route_release(struct HSRoute *route)
+static void _hs_routes_session_route_release(struct HSRoute *route)
 {
   if (route == NULL || route->extension == NULL)
   {
@@ -363,7 +363,7 @@ void _hs_routes_session_route_release(struct HSRoute *route)
 }
 
 
-void _hs_routes_session_callback_run(struct HSPostResponseCallback *callback)
+static void _hs_routes_session_callback_run(struct HSPostResponseCallback *callback)
 {
   if (callback == NULL || callback->context == NULL)
   {
@@ -400,7 +400,7 @@ void _hs_routes_session_callback_run(struct HSPostResponseCallback *callback)
 }
 
 
-void _hs_routes_session_callback_release(struct HSPostResponseCallback *callback)
+static void _hs_routes_session_callback_release(struct HSPostResponseCallback *callback)
 {
   if (callback == NULL || callback->context == NULL)
   {
@@ -414,7 +414,7 @@ void _hs_routes_session_callback_release(struct HSPostResponseCallback *callback
 }
 
 
-char *_hs_routes_session_get_file_for_session_id(char *session_id)
+static char *_hs_routes_session_get_file_for_session_id(char *session_id)
 {
   if (session_id == NULL)
   {

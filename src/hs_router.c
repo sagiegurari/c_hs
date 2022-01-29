@@ -14,11 +14,11 @@ struct HSRouter
 };
 
 
-bool _hs_router_find_route_and_serve(struct HSRouter *, struct HSServeFlowParams *);
-bool _hs_router_serve(struct HSRouter *, struct HSServeFlowParams *, struct HSRoute *);
-enum HSServeFlowResponse _hs_router_as_route_serve(struct HSRoute *, struct HSServeFlowParams *);
-void                           _hs_router_as_route_release(struct HSRoute *);
-void _hs_router_run_callbacks(struct HSPostResponseCallbacks *);
+static bool _hs_router_find_route_and_serve(struct HSRouter *, struct HSServeFlowParams *);
+static bool _hs_router_serve(struct HSRouter *, struct HSServeFlowParams *, struct HSRoute *);
+static enum HSServeFlowResponse _hs_router_as_route_serve(struct HSRoute *, struct HSServeFlowParams *);
+static void                           _hs_router_as_route_release(struct HSRoute *);
+static void _hs_router_run_callbacks(struct HSPostResponseCallbacks *);
 
 struct HSRouter *hs_router_new()
 {
@@ -332,7 +332,7 @@ char *hs_router_remove_path_prefix(struct HSRoute *route, struct HSHttpRequest *
 }
 
 
-bool _hs_router_find_route_and_serve(struct HSRouter *router, struct HSServeFlowParams *params)
+static bool _hs_router_find_route_and_serve(struct HSRouter *router, struct HSServeFlowParams *params)
 {
   if (router == NULL || params == NULL)
   {
@@ -356,7 +356,7 @@ bool _hs_router_find_route_and_serve(struct HSRouter *router, struct HSServeFlow
 }
 
 
-bool _hs_router_serve(struct HSRouter *router, struct HSServeFlowParams *params, struct HSRoute *route)
+static bool _hs_router_serve(struct HSRouter *router, struct HSServeFlowParams *params, struct HSRoute *route)
 {
   if (  router == NULL
      || params->request == NULL
@@ -495,9 +495,9 @@ bool _hs_router_serve(struct HSRouter *router, struct HSServeFlowParams *params,
   }
 
   return(true);
-}   /* _hs_router_serve */
+} /* _hs_router_serve */
 
-enum HSServeFlowResponse _hs_router_as_route_serve(struct HSRoute *route, struct HSServeFlowParams *params)
+static enum HSServeFlowResponse _hs_router_as_route_serve(struct HSRoute *route, struct HSServeFlowParams *params)
 {
   if (  route == NULL
      || params->request == NULL
@@ -537,7 +537,7 @@ enum HSServeFlowResponse _hs_router_as_route_serve(struct HSRoute *route, struct
 }
 
 
-void _hs_router_as_route_release(struct HSRoute *route)
+static void _hs_router_as_route_release(struct HSRoute *route)
 {
   if (route == NULL || route->extension == NULL)
   {
@@ -550,7 +550,7 @@ void _hs_router_as_route_release(struct HSRoute *route)
 }
 
 
-void _hs_router_run_callbacks(struct HSPostResponseCallbacks *callbacks)
+static void _hs_router_run_callbacks(struct HSPostResponseCallbacks *callbacks)
 {
   if (callbacks == NULL || !callbacks->count)
   {

@@ -6,9 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct HSHttpRequest *_hs_parser_create_request_from_path(char *url_or_resource, bool force_protocol);
+static struct HSHttpRequest *_hs_parser_create_request_from_path(char *url_or_resource, bool force_protocol);
 
-struct HSHttpRequest *hs_parser_create_request_from_resource(char *resource)
+struct HSHttpRequest        *hs_parser_create_request_from_resource(char *resource)
 {
   return(_hs_parser_create_request_from_path(resource, false));
 }
@@ -289,7 +289,7 @@ enum HSHttpMethod hs_parser_parse_method(char *method_string)
   }
 
   return(HS_HTTP_METHOD_UNKNOWN);
-}   /* _hs_parser_parse_method */
+} /* hs_parser_parse_method */
 
 struct HSArrayStringPair *hs_parser_parse_query_string(char *query_string)
 {
@@ -414,7 +414,7 @@ enum HSHttpProtocol hs_parser_parse_protocol_from_url(char *url)
   return(protocol);
 }
 
-struct HSHttpRequest *_hs_parser_create_request_from_path(char *url_or_resource, bool force_protocol)
+static struct HSHttpRequest *_hs_parser_create_request_from_path(char *url_or_resource, bool force_protocol)
 {
   if (url_or_resource == NULL)
   {
