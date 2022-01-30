@@ -178,13 +178,12 @@ static enum HSServeFlowResponse _hs_routes_security_basic_auth_route_serve(struc
 
   struct HSRoutesBasicAuthContext *context = (struct HSRoutesBasicAuthContext *)route->extension;
 
-  bool                            valid = false;
   if (params->request->authorization != NULL)
   {
     if (stringfn_starts_with(params->request->authorization, "Basic ") && strlen(params->request->authorization) > 6)
     {
       char *authorization = stringfn_mut_substring(params->request->authorization, 6, 0);
-      valid = context->auth(authorization, context->context);
+      bool valid          = context->auth(authorization, context->context);
 
       // auth is valid, go to next route
       if (valid)

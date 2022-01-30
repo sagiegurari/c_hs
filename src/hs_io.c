@@ -229,7 +229,7 @@ bool hs_io_write_file_to_socket(struct HSSocket *socket, char *filename)
     }
 
     size_t read = fread(buffer, 1, HS_IO_READ_BUFFER_SIZE - 1, fp);
-    if (read <= 0)
+    if (!read)
     {
       done = false;
       break;

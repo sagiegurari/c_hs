@@ -147,8 +147,7 @@ bool hs_parser_parse_cookie_header(struct HSCookies *cookies, char *cookie_line)
 
     if (!looking_for_name && !string_buffer_is_empty(buffer))
     {
-      looking_for_name = true;
-      value            = string_buffer_to_string(buffer);
+      value = string_buffer_to_string(buffer);
 
       struct HSCookie *cookie = hs_types_cookie_new();
       cookie->name  = name;

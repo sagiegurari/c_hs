@@ -377,7 +377,6 @@ bool hs_types_http_request_payload_to_file(struct HSHttpRequest *request, char *
     return(false);
   }
 
-  char *text = NULL;
   if (request->payload->payload->partial != NULL)
   {
     size_t current_length = string_buffer_get_content_size(request->payload->payload->partial);
@@ -398,7 +397,7 @@ bool hs_types_http_request_payload_to_file(struct HSHttpRequest *request, char *
 
     if (current_length)
     {
-      text = string_buffer_to_string(request->payload->payload->partial);
+      char *text = string_buffer_to_string(request->payload->payload->partial);
       if (trim > 0)
       {
         stringfn_mut_substring(text, 0, trim);

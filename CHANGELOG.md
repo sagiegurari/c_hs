@@ -3,6 +3,7 @@
 ### v0.7.2
 
 * Added static to internal functions
+* Adding lint checks as part of build
 
 ### v0.7.1 (2021-12-09)
 

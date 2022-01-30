@@ -285,12 +285,11 @@ static enum HSServeFlowResponse _hs_routes_directory_route_serve(struct HSRoute 
   int           file_list_size = scandir(path, &file_list, 0, alphasort);
   if (file_list_size > 0)
   {
-    struct dirent       *entry;
     struct StringBuffer *dir_buffer   = string_buffer_new();
     struct StringBuffer *files_buffer = string_buffer_new();
     for (int index = 0; index < file_list_size; index++)
     {
-      entry = file_list[index];
+      struct dirent *entry = file_list[index];
       if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, ".."))
       {
         // skip special directories
