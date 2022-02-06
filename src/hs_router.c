@@ -190,14 +190,14 @@ struct HSRoute *hs_router_as_route(struct HSRouter *router)
 
 struct StringBuffer *hs_router_write_common_response_header(enum HSHttpResponseCode code, struct HSArrayStringPair *headers, struct HSCookies *cookies, bool close_connection)
 {
-  struct StringBuffer *buffer = string_buffer_new();
+  struct StringBuffer *buffer = stringbuffer_new();
 
   // write status line
-  string_buffer_append_string(buffer, "HTTP/1.1 ");
-  string_buffer_append_unsigned_int(buffer, code);
-  string_buffer_append(buffer, ' ');
-  string_buffer_append_unsigned_int(buffer, code);
-  string_buffer_append_string(buffer, "\r\n");
+  stringbuffer_append_string(buffer, "HTTP/1.1 ");
+  stringbuffer_append_unsigned_int(buffer, code);
+  stringbuffer_append(buffer, ' ');
+  stringbuffer_append_unsigned_int(buffer, code);
+  stringbuffer_append_string(buffer, "\r\n");
 
   // write headers (may contain set cookie headers)
   size_t count = hs_types_array_string_pair_count(headers);
@@ -210,10 +210,10 @@ struct StringBuffer *hs_router_write_common_response_header(enum HSHttpResponseC
 
       if (key != NULL && value != NULL)
       {
-        string_buffer_append_string(buffer, key);
-        string_buffer_append_string(buffer, ": ");
-        string_buffer_append_string(buffer, value);
-        string_buffer_append_string(buffer, "\r\n");
+        stringbuffer_append_string(buffer, key);
+        stringbuffer_append_string(buffer, ": ");
+        stringbuffer_append_string(buffer, value);
+        stringbuffer_append_string(buffer, "\r\n");
       }
     }
   }
@@ -228,69 +228,69 @@ struct StringBuffer *hs_router_write_common_response_header(enum HSHttpResponseC
 
       if (cookie != NULL && cookie->name != NULL && cookie->value != NULL)
       {
-        string_buffer_append_string(buffer, "Set-Cookie: ");
-        string_buffer_append_string(buffer, cookie->name);
-        string_buffer_append_string(buffer, "=");
-        string_buffer_append_string(buffer, cookie->value);
+        stringbuffer_append_string(buffer, "Set-Cookie: ");
+        stringbuffer_append_string(buffer, cookie->name);
+        stringbuffer_append_string(buffer, "=");
+        stringbuffer_append_string(buffer, cookie->value);
 
         // write cookie attributes
         if (cookie->expires != NULL)
         {
-          string_buffer_append_string(buffer, "; Expires=");
-          string_buffer_append_string(buffer, cookie->expires);
+          stringbuffer_append_string(buffer, "; Expires=");
+          stringbuffer_append_string(buffer, cookie->expires);
         }
         if (cookie->max_age >= 0)
         {
-          string_buffer_append_string(buffer, "; Max-Age=");
-          string_buffer_append_int(buffer, cookie->max_age);
+          stringbuffer_append_string(buffer, "; Max-Age=");
+          stringbuffer_append_int(buffer, cookie->max_age);
         }
         if (cookie->secure)
         {
-          string_buffer_append_string(buffer, "; Secure");
+          stringbuffer_append_string(buffer, "; Secure");
         }
         if (cookie->http_only)
         {
-          string_buffer_append_string(buffer, "; HttpOnly");
+          stringbuffer_append_string(buffer, "; HttpOnly");
         }
         if (cookie->domain != NULL)
         {
-          string_buffer_append_string(buffer, "; Domain=");
-          string_buffer_append_string(buffer, cookie->domain);
+          stringbuffer_append_string(buffer, "; Domain=");
+          stringbuffer_append_string(buffer, cookie->domain);
         }
         if (cookie->path != NULL)
         {
-          string_buffer_append_string(buffer, "; Path=");
-          string_buffer_append_string(buffer, cookie->path);
+          stringbuffer_append_string(buffer, "; Path=");
+          stringbuffer_append_string(buffer, cookie->path);
         }
 
-        string_buffer_append_string(buffer, "; SameSite=");
+        stringbuffer_append_string(buffer, "; SameSite=");
         switch (cookie->same_site)
         {
         case HS_COOKIE_SAME_SITE_NONE:
-          string_buffer_append_string(buffer, "None");
+          stringbuffer_append_string(buffer, "None");
           break;
 
         case HS_COOKIE_SAME_SITE_LAX:
-          string_buffer_append_string(buffer, "Lax");
+          stringbuffer_append_string(buffer, "Lax");
           break;
 
         case HS_COOKIE_SAME_SITE_STRICT:
-          string_buffer_append_string(buffer, "Strict");
+          stringbuffer_append_string(buffer, "Strict");
           break;
         }
 
-        string_buffer_append_string(buffer, "\r\n");
+        stringbuffer_append_string(buffer, "\r\n");
       }
     }
   }
 
   if (close_connection)
   {
-    string_buffer_append_string(buffer, "Connection: close\r\n");
+    stringbuffer_append_string(buffer, "Connection: close\r\n");
   }
   else
   {
-    string_buffer_append_string(buffer, "Connection: keep-alive\r\n");
+    stringbuffer_append_string(buffer, "Connection: keep-alive\r\n");
   }
 
   return(buffer);
@@ -419,9 +419,9 @@ static bool _hs_router_serve(struct HSRouter *router, struct HSServeFlowParams *
     const char *mime_type = hs_constants_mime_type_to_string(params->response->mime_type);
     if (mime_type != NULL)
     {
-      string_buffer_append_string(header_buffer, "Content-Type: ");
-      string_buffer_append_string(header_buffer, (char *)mime_type);
-      string_buffer_append_string(header_buffer, "\r\n");
+      stringbuffer_append_string(header_buffer, "Content-Type: ");
+      stringbuffer_append_string(header_buffer, (char *)mime_type);
+      stringbuffer_append_string(header_buffer, "\r\n");
     }
   }
 
@@ -429,9 +429,9 @@ static bool _hs_router_serve(struct HSRouter *router, struct HSServeFlowParams *
   if (params->response->content_string != NULL)
   {
     size_t content_length = strlen(params->response->content_string);
-    string_buffer_append_string(header_buffer, "Content-Length: ");
-    string_buffer_append_unsigned_long(header_buffer, content_length);
-    string_buffer_append_string(header_buffer, "\r\n\r\n");
+    stringbuffer_append_string(header_buffer, "Content-Length: ");
+    stringbuffer_append_unsigned_long(header_buffer, content_length);
+    stringbuffer_append_string(header_buffer, "\r\n\r\n");
 
     if (!content_length)
     {
@@ -443,26 +443,26 @@ static bool _hs_router_serve(struct HSRouter *router, struct HSServeFlowParams *
     long content_length = fsio_file_size(params->response->content_file);
     if (content_length)
     {
-      string_buffer_append_string(header_buffer, "Content-Length: ");
-      string_buffer_append_long(header_buffer, content_length);
-      string_buffer_append_string(header_buffer, "\r\n\r\n");
+      stringbuffer_append_string(header_buffer, "Content-Length: ");
+      stringbuffer_append_long(header_buffer, content_length);
+      stringbuffer_append_string(header_buffer, "\r\n\r\n");
     }
     else
     {
       // file validations should be done by the route, so we are keeping response status code
       // as is and just not returning any content.
       has_content = false;
-      string_buffer_append_string(header_buffer, "Content-Length: 0\r\n\r\n");
+      stringbuffer_append_string(header_buffer, "Content-Length: 0\r\n\r\n");
     }
   }
   else
   {
     has_content = false;
-    string_buffer_append_string(header_buffer, "Content-Length: 0\r\n\r\n");
+    stringbuffer_append_string(header_buffer, "Content-Length: 0\r\n\r\n");
   }
 
-  char   *header_string = string_buffer_to_string(header_buffer);
-  size_t length         = string_buffer_get_content_size(header_buffer);
+  char   *header_string = stringbuffer_to_string(header_buffer);
+  size_t length         = stringbuffer_get_content_size(header_buffer);
   hs_io_write_string_to_socket(params->connection_state->socket, header_string, length);
   hs_io_free(header_string);
 
@@ -478,7 +478,7 @@ static bool _hs_router_serve(struct HSRouter *router, struct HSServeFlowParams *
     }
   }
 
-  string_buffer_release(header_buffer);
+  stringbuffer_release(header_buffer);
 
   // if there is still payload left to read, no matter what we sent to the header
   // we will still close the connection instead of reading all that payload for nothing

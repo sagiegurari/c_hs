@@ -13,9 +13,9 @@ void test_impl()
   struct HSArrayStringPair *headers = NULL;
   struct HSCookies         *cookies = NULL;
   struct StringBuffer      *buffer  = hs_router_write_common_response_header(HS_HTTP_RESPONSE_CODE_NOT_FOUND, headers, cookies, false);
-  char                     *text    = string_buffer_to_string(buffer);
+  char                     *text    = stringbuffer_to_string(buffer);
 
-  string_buffer_release(buffer);
+  stringbuffer_release(buffer);
   assert_string_equal(text, "HTTP/1.1 404 404\r\nConnection: keep-alive\r\n");
   hs_io_free(text);
   hs_types_array_string_pair_release(headers);
@@ -24,8 +24,8 @@ void test_impl()
   headers = hs_types_array_string_pair_new();
   cookies = hs_types_cookies_new();
   buffer  = hs_router_write_common_response_header(HS_HTTP_RESPONSE_CODE_OK, headers, cookies, true);
-  text    = string_buffer_to_string(buffer);
-  string_buffer_release(buffer);
+  text    = stringbuffer_to_string(buffer);
+  stringbuffer_release(buffer);
   assert_string_equal(text, "HTTP/1.1 200 200\r\nConnection: close\r\n");
   hs_io_free(text);
   hs_types_array_string_pair_release(headers);
@@ -57,8 +57,8 @@ void test_impl()
   cookie->value = strdup("v3");
   hs_types_cookies_add(cookies, cookie);
   buffer = hs_router_write_common_response_header(HS_HTTP_RESPONSE_CODE_FORBIDDEN, headers, cookies, true);
-  text   = string_buffer_to_string(buffer);
-  string_buffer_release(buffer);
+  text   = stringbuffer_to_string(buffer);
+  stringbuffer_release(buffer);
   assert_string_equal(text, "HTTP/1.1 403 403\r\n"
                       "header1: value1\r\n"
                       "header2: value2\r\n"

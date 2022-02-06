@@ -32,11 +32,11 @@ struct HSRoute *hs_routes_favicon_route_new(char *path, int max_age_seconds)
   context->cache_control_header = NULL;
   if (max_age_seconds > 0)
   {
-    struct StringBuffer *buffer = string_buffer_new();
-    string_buffer_append_string(buffer, "public, max-age=");
-    string_buffer_append_int(buffer, max_age_seconds);
-    context->cache_control_header = string_buffer_to_string(buffer);
-    string_buffer_release(buffer);
+    struct StringBuffer *buffer = stringbuffer_new();
+    stringbuffer_append_string(buffer, "public, max-age=");
+    stringbuffer_append_int(buffer, max_age_seconds);
+    context->cache_control_header = stringbuffer_to_string(buffer);
+    stringbuffer_release(buffer);
   }
   route->extension = context;
 

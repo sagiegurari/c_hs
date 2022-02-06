@@ -20,14 +20,14 @@ void test_impl()
   hs_socket_close_and_release(hssocket);
   assert_true(!done);
 
-  struct StringBuffer *buffer = string_buffer_new();
+  struct StringBuffer *buffer = stringbuffer_new();
 
   for (size_t index = 0; index < 5000; index++)
   {
-    string_buffer_append_unsigned_int(buffer, index);
+    stringbuffer_append_unsigned_int(buffer, index);
   }
-  char *raw = string_buffer_to_string(buffer);
-  string_buffer_release(buffer);
+  char *raw = stringbuffer_to_string(buffer);
+  stringbuffer_release(buffer);
 
   char *input_filename = "./test_io_write_file_to_socket.in.txt";
   fsio_write_text_file(input_filename, raw);

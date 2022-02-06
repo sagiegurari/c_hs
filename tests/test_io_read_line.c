@@ -24,7 +24,7 @@ void test_impl()
   int                 socket    = open(filename, O_RDONLY);
   struct HSSocket     *hssocket = hs_socket_plain_new(socket);
 
-  struct StringBuffer *buffer = string_buffer_new();
+  struct StringBuffer *buffer = stringbuffer_new();
 
   char                *line = hs_io_read_line(hssocket, buffer);
   assert_string_equal(line, "POST /testpost HTTP/1.0");
@@ -51,7 +51,7 @@ void test_impl()
 
   hs_socket_close_and_release(hssocket);
   fsio_remove(filename);
-  string_buffer_release(buffer);
+  stringbuffer_release(buffer);
 } /* test_impl */
 
 

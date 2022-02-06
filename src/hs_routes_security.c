@@ -1,7 +1,7 @@
 #include "hs_io.h"
 #include "hs_routes_common.h"
 #include "hs_routes_security.h"
-#include "string_buffer.h"
+#include "stringbuffer.h"
 #include "stringfn.h"
 #include <stdlib.h>
 #include <string.h>
@@ -193,12 +193,12 @@ static enum HSServeFlowResponse _hs_routes_security_basic_auth_route_serve(struc
     }
   }
 
-  struct StringBuffer *buffer = string_buffer_new();
-  string_buffer_append_string(buffer, "Basic realm=\"");
-  string_buffer_append_string(buffer, context->realm);
-  string_buffer_append(buffer, '"');
-  char *realm = string_buffer_to_string(buffer);
-  string_buffer_release(buffer);
+  struct StringBuffer *buffer = stringbuffer_new();
+  stringbuffer_append_string(buffer, "Basic realm=\"");
+  stringbuffer_append_string(buffer, context->realm);
+  stringbuffer_append(buffer, '"');
+  char *realm = stringbuffer_to_string(buffer);
+  stringbuffer_release(buffer);
 
   params->response->code = HS_HTTP_RESPONSE_CODE_UNAUTHORIZED;
   hs_types_array_string_pair_add(params->response->headers, strdup("WWW-Authenticate"), realm);

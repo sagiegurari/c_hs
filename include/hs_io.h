@@ -2,7 +2,7 @@
 #define __HS_IO_H__
 
 #include "hs_socket.h"
-#include "string_buffer.h"
+#include "stringbuffer.h"
 #include <stdbool.h>
 #include <stdio.h>
 

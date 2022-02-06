@@ -49,7 +49,7 @@ char *hs_io_read_line(struct HSSocket *socket, struct StringBuffer *work_buffer)
     if (size)
     {
       buffer[size] = 0;
-      string_buffer_append_string(work_buffer, buffer);
+      stringbuffer_append_string(work_buffer, buffer);
 
       // attempt to get next line from buffer
       line = _hs_io_read_line_from_buffer(work_buffer, &eof);
@@ -90,7 +90,7 @@ void hs_io_release_http_request_payload(struct HSIOHttpRequestPayload *payload)
     return;
   }
 
-  string_buffer_release(payload->partial);
+  stringbuffer_release(payload->partial);
   hs_io_free(payload);
 }
 
@@ -124,7 +124,7 @@ bool hs_io_read_fully(struct HSSocket *socket, struct StringBuffer *buffer, size
     {
       left            = left - (size_t)size;
       io_buffer[size] = 0;
-      string_buffer_append_string(buffer, io_buffer);
+      stringbuffer_append_string(buffer, io_buffer);
     }
   } while (size > 0 && left > 0);
 
@@ -253,14 +253,14 @@ bool hs_io_write_file_to_socket(struct HSSocket *socket, char *filename)
 
 static char *_hs_io_read_line_from_buffer(struct StringBuffer *buffer, bool *eof)
 {
-  size_t length = string_buffer_get_content_size(buffer);
+  size_t length = stringbuffer_get_content_size(buffer);
 
   if (length < 2)
   {
     return(NULL);
   }
 
-  char *content = string_buffer_to_string(buffer);
+  char *content = stringbuffer_to_string(buffer);
   char *line    = NULL;
   for (size_t index = 0; index < length - 1; index++)
   {
@@ -274,11 +274,11 @@ static char *_hs_io_read_line_from_buffer(struct StringBuffer *buffer, bool *eof
       {
         *eof = true;
       }
-      string_buffer_clear(buffer);
+      stringbuffer_clear(buffer);
 
       if (length > (index + 1))
       {
-        string_buffer_append_string(buffer, content + index + 2);
+        stringbuffer_append_string(buffer, content + index + 2);
       }
 
       break;

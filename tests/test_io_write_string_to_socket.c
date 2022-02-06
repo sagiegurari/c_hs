@@ -13,14 +13,14 @@ void test_impl()
 
   assert_true(!done);
 
-  struct StringBuffer *buffer = string_buffer_new();
+  struct StringBuffer *buffer = stringbuffer_new();
 
   for (size_t index = 0; index < 5000; index++)
   {
-    string_buffer_append_unsigned_int(buffer, index);
+    stringbuffer_append_unsigned_int(buffer, index);
   }
-  char *raw = string_buffer_to_string(buffer);
-  string_buffer_release(buffer);
+  char *raw = stringbuffer_to_string(buffer);
+  stringbuffer_release(buffer);
 
   char *filename = "./test_io_write_string_to_socket.txt";
 

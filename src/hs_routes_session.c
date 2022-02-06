@@ -115,15 +115,15 @@ char *hs_routes_session_route_generate_cookie_id(void *context)
     return(NULL);
   }
 
-  struct StringBuffer *buffer = string_buffer_new();
+  struct StringBuffer *buffer = stringbuffer_new();
 
-  string_buffer_append_int(buffer, rand());
-  string_buffer_append_long(buffer, time(NULL));
-  string_buffer_append_int(buffer, rand());
-  string_buffer_append_string(buffer, "SID");
+  stringbuffer_append_int(buffer, rand());
+  stringbuffer_append_long(buffer, time(NULL));
+  stringbuffer_append_int(buffer, rand());
+  stringbuffer_append_string(buffer, "SID");
 
-  char *cookie_id = string_buffer_to_string(buffer);
-  string_buffer_release(buffer);
+  char *cookie_id = stringbuffer_to_string(buffer);
+  stringbuffer_release(buffer);
 
   return(cookie_id);
 }
@@ -421,11 +421,11 @@ static char *_hs_routes_session_get_file_for_session_id(char *session_id)
     return(NULL);
   }
 
-  struct StringBuffer *buffer = string_buffer_new();
-  string_buffer_append_string(buffer, "./sessions/");
-  string_buffer_append_string(buffer, session_id);
-  char *file = string_buffer_to_string(buffer);
-  string_buffer_release(buffer);
+  struct StringBuffer *buffer = stringbuffer_new();
+  stringbuffer_append_string(buffer, "./sessions/");
+  stringbuffer_append_string(buffer, session_id);
+  char *file = stringbuffer_to_string(buffer);
+  stringbuffer_release(buffer);
 
   return(file);
 }

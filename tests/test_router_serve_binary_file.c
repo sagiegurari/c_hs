@@ -58,15 +58,15 @@ void test_impl()
   char                *content     = fsio_read_binary_file(filename);
   char                *png_content = fsio_read_binary_file(TEST_BINARY_FILE);
 
-  struct StringBuffer *buffer = string_buffer_new();
-  string_buffer_append_string(buffer, "HTTP/1.1 200 200\r\n"
-                              "Connection: close\r\n"
-                              "Content-Type: image/png\r\n"
-                              "Content-Length: 500\r\n"
-                              "\r\n");
-  string_buffer_append_string(buffer, png_content);
-  char *expected_content = string_buffer_to_string(buffer);
-  string_buffer_release(buffer);
+  struct StringBuffer *buffer = stringbuffer_new();
+  stringbuffer_append_string(buffer, "HTTP/1.1 200 200\r\n"
+                             "Connection: close\r\n"
+                             "Content-Type: image/png\r\n"
+                             "Content-Length: 500\r\n"
+                             "\r\n");
+  stringbuffer_append_string(buffer, png_content);
+  char *expected_content = stringbuffer_to_string(buffer);
+  stringbuffer_release(buffer);
   hs_io_free(png_content);
 
   assert_string_equal(content, expected_content);

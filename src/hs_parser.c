@@ -1,7 +1,7 @@
 #include "hs_io.h"
 #include "hs_parser.h"
 #include "hs_types.h"
-#include "string_buffer.h"
+#include "stringbuffer.h"
 #include "stringfn.h"
 #include <stdlib.h>
 #include <string.h>
@@ -100,7 +100,7 @@ bool hs_parser_parse_cookie_header(struct HSCookies *cookies, char *cookie_line)
   bool   added  = false;
   if (length)
   {
-    struct StringBuffer *buffer = string_buffer_new_with_options(length, true);
+    struct StringBuffer *buffer = stringbuffer_new_with_options(length, true);
 
     char                *name            = NULL;
     char                *value           = NULL;
@@ -114,12 +114,12 @@ bool hs_parser_parse_cookie_header(struct HSCookies *cookies, char *cookie_line)
         if (character == '=')
         {
           looking_for_name = false;
-          name             = string_buffer_to_string(buffer);
-          string_buffer_clear(buffer);
+          name             = stringbuffer_to_string(buffer);
+          stringbuffer_clear(buffer);
         }
-        else if (character != ' ' || !string_buffer_is_empty(buffer))
+        else if (character != ' ' || !stringbuffer_is_empty(buffer))
         {
-          string_buffer_append(buffer, character);
+          stringbuffer_append(buffer, character);
         }
       }
       else
@@ -127,8 +127,8 @@ bool hs_parser_parse_cookie_header(struct HSCookies *cookies, char *cookie_line)
         if (character == ';' && (index == length - 1 || cookie_line[index + 1] == ' '))
         {
           looking_for_name = true;
-          value            = string_buffer_to_string(buffer);
-          string_buffer_clear(buffer);
+          value            = stringbuffer_to_string(buffer);
+          stringbuffer_clear(buffer);
 
           struct HSCookie *cookie = hs_types_cookie_new();
           cookie->name  = name;
@@ -140,14 +140,14 @@ bool hs_parser_parse_cookie_header(struct HSCookies *cookies, char *cookie_line)
         }
         else
         {
-          string_buffer_append(buffer, character);
+          stringbuffer_append(buffer, character);
         }
       }
     }
 
-    if (!looking_for_name && !string_buffer_is_empty(buffer))
+    if (!looking_for_name && !stringbuffer_is_empty(buffer))
     {
-      value = string_buffer_to_string(buffer);
+      value = stringbuffer_to_string(buffer);
 
       struct HSCookie *cookie = hs_types_cookie_new();
       cookie->name  = name;
@@ -159,7 +159,7 @@ bool hs_parser_parse_cookie_header(struct HSCookies *cookies, char *cookie_line)
       hs_io_free(name);
     }
 
-    string_buffer_release(buffer);
+    stringbuffer_release(buffer);
   }
 
   return(added);
@@ -210,11 +210,11 @@ struct HSHttpRequest *hs_parser_parse_request(struct HSSocket *socket)
   }
 
   // read request line
-  struct StringBuffer *work_buffer = string_buffer_new();
+  struct StringBuffer *work_buffer = stringbuffer_new();
   char                *line        = hs_io_read_line(socket, work_buffer);
   if (line == NULL)
   {
-    string_buffer_release(work_buffer);
+    stringbuffer_release(work_buffer);
     return(NULL);
   }
 
@@ -303,7 +303,7 @@ struct HSArrayStringPair *hs_parser_parse_query_string(char *query_string)
     return(NULL);
   }
 
-  struct StringBuffer      *buffer = string_buffer_new();
+  struct StringBuffer      *buffer = stringbuffer_new();
   struct HSArrayStringPair *array  = hs_types_array_string_pair_new();
 
   char                     *key         = NULL;
@@ -317,8 +317,8 @@ struct HSArrayStringPair *hs_parser_parse_query_string(char *query_string)
     {
       if (character == '&')
       {
-        key = string_buffer_to_string(buffer);
-        string_buffer_clear(buffer);
+        key = stringbuffer_to_string(buffer);
+        stringbuffer_clear(buffer);
 
         hs_types_array_string_pair_add(array, key, NULL);
 
@@ -326,23 +326,23 @@ struct HSArrayStringPair *hs_parser_parse_query_string(char *query_string)
       }
       else if (character == '=')
       {
-        key = string_buffer_to_string(buffer);
-        string_buffer_clear(buffer);
+        key = stringbuffer_to_string(buffer);
+        stringbuffer_clear(buffer);
         look_for_key = false;
       }
       else
       {
-        string_buffer_append(buffer, character);
+        stringbuffer_append(buffer, character);
       }
     }
     else
     {
       if (character == '&')
       {
-        if (!string_buffer_is_empty(buffer))
+        if (!stringbuffer_is_empty(buffer))
         {
-          value = string_buffer_to_string(buffer);
-          string_buffer_clear(buffer);
+          value = stringbuffer_to_string(buffer);
+          stringbuffer_clear(buffer);
         }
 
         hs_types_array_string_pair_add(array, key, value);
@@ -353,30 +353,30 @@ struct HSArrayStringPair *hs_parser_parse_query_string(char *query_string)
       }
       else
       {
-        string_buffer_append(buffer, character);
+        stringbuffer_append(buffer, character);
       }
     }
   }
 
   if (look_for_key)
   {
-    if (!string_buffer_is_empty(buffer))
+    if (!stringbuffer_is_empty(buffer))
     {
-      key = string_buffer_to_string(buffer);
+      key = stringbuffer_to_string(buffer);
       hs_types_array_string_pair_add(array, key, NULL);
     }
   }
   else
   {
-    if (!string_buffer_is_empty(buffer))
+    if (!stringbuffer_is_empty(buffer))
     {
-      value = string_buffer_to_string(buffer);
+      value = stringbuffer_to_string(buffer);
     }
 
     hs_types_array_string_pair_add(array, key, value);
   }
 
-  string_buffer_release(buffer);
+  stringbuffer_release(buffer);
 
   return(array);
 } /* hs_parser_parse_query_string */

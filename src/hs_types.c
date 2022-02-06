@@ -318,11 +318,11 @@ char *hs_types_http_request_payload_to_string(struct HSHttpRequest *request)
   size_t              trim    = 0;
   if (buffer == NULL)
   {
-    buffer = string_buffer_new();
+    buffer = stringbuffer_new();
   }
   else
   {
-    size_t current_length = string_buffer_get_content_size(request->payload->payload->partial);
+    size_t current_length = stringbuffer_get_content_size(request->payload->payload->partial);
     if (current_length > length)
     {
       trim   = length;
@@ -343,13 +343,13 @@ char *hs_types_http_request_payload_to_string(struct HSHttpRequest *request)
     hs_io_read_fully(request->payload->payload->socket, buffer, length);
   }
 
-  char *content = string_buffer_to_string(buffer);
+  char *content = stringbuffer_to_string(buffer);
   if (trim > 0)
   {
     stringfn_mut_substring(content, 0, trim);
   }
 
-  string_buffer_release(buffer);
+  stringbuffer_release(buffer);
   request->payload->payload->partial = NULL;
 
   return(content);
@@ -379,7 +379,7 @@ bool hs_types_http_request_payload_to_file(struct HSHttpRequest *request, char *
 
   if (request->payload->payload->partial != NULL)
   {
-    size_t current_length = string_buffer_get_content_size(request->payload->payload->partial);
+    size_t current_length = stringbuffer_get_content_size(request->payload->payload->partial);
     size_t trim           = 0;
     if (current_length > length)
     {
@@ -397,12 +397,12 @@ bool hs_types_http_request_payload_to_file(struct HSHttpRequest *request, char *
 
     if (current_length)
     {
-      char *text = string_buffer_to_string(request->payload->payload->partial);
+      char *text = stringbuffer_to_string(request->payload->payload->partial);
       if (trim > 0)
       {
         stringfn_mut_substring(text, 0, trim);
       }
-      string_buffer_release(request->payload->payload->partial);
+      stringbuffer_release(request->payload->payload->partial);
       request->payload->payload->partial = NULL;
 
       if (fputs(text, fp) == EOF)

@@ -2,6 +2,7 @@
 
 ### v0.7.2
 
+* Maintenance: Update string_buffer dependency
 * Added static to internal functions
 * Adding lint checks as part of build
 

@@ -115,11 +115,11 @@ char *hs_routes_fs_directory_route_render_file_entry_with_media_support(char *na
     return(NULL);
   }
 
-  struct StringBuffer *buffer = string_buffer_new();
+  struct StringBuffer *buffer = stringbuffer_new();
 
-  string_buffer_append_string(buffer, "<a class=\"entry\" href=\"");
-  string_buffer_append_string(buffer, href);
-  string_buffer_append_string(buffer, "\">");
+  stringbuffer_append_string(buffer, "<a class=\"entry\" href=\"");
+  stringbuffer_append_string(buffer, href);
+  stringbuffer_append_string(buffer, "\">");
 
   // handle some of the supported mime types
   enum HSMimeType mime_type = hs_constants_file_extension_to_mime_type(name);
@@ -135,11 +135,11 @@ char *hs_routes_fs_directory_route_render_file_entry_with_media_support(char *na
   case HS_MIME_TYPE_IMAGE_X_ICON:
   case HS_MIME_TYPE_IMAGE_TIFF:
   case HS_MIME_TYPE_IMAGE_X_MS_BMP:
-    string_buffer_append_string(buffer, "<img src=\"");
-    string_buffer_append_string(buffer, href);
-    string_buffer_append_string(buffer, "\" alt=\"");
-    string_buffer_append_string(buffer, name);
-    string_buffer_append_string(buffer, "\" class=\"entry-image\"></img>");
+    stringbuffer_append_string(buffer, "<img src=\"");
+    stringbuffer_append_string(buffer, href);
+    stringbuffer_append_string(buffer, "\" alt=\"");
+    stringbuffer_append_string(buffer, name);
+    stringbuffer_append_string(buffer, "\" class=\"entry-image\"></img>");
     break;
 
   case HS_MIME_TYPE_VIDEO_WEBM:
@@ -149,22 +149,22 @@ char *hs_routes_fs_directory_route_render_file_entry_with_media_support(char *na
   case HS_MIME_TYPE_VIDEO_MPEG:
   case HS_MIME_TYPE_VIDEO_QUICKTIME:
   case HS_MIME_TYPE_VIDEO_X_FLV:
-    string_buffer_append_string(buffer, "<video src=\"");
-    string_buffer_append_string(buffer, href);
-    string_buffer_append_string(buffer, "\" alt=\"");
-    string_buffer_append_string(buffer, name);
-    string_buffer_append_string(buffer, "\" class=\"entry-video\" autoplay=\"false\" controls loop=\"false\" preload=\"none\"></video>");
+    stringbuffer_append_string(buffer, "<video src=\"");
+    stringbuffer_append_string(buffer, href);
+    stringbuffer_append_string(buffer, "\" alt=\"");
+    stringbuffer_append_string(buffer, name);
+    stringbuffer_append_string(buffer, "\" class=\"entry-video\" autoplay=\"false\" controls loop=\"false\" preload=\"none\"></video>");
     break;
 
   default:
-    string_buffer_append_string(buffer, name);
+    stringbuffer_append_string(buffer, name);
     break;
   }
 
-  string_buffer_append_string(buffer, "</a><br>\n");
+  stringbuffer_append_string(buffer, "</a><br>\n");
 
-  char *html = string_buffer_to_string(buffer);
-  string_buffer_release(buffer);
+  char *html = stringbuffer_to_string(buffer);
+  stringbuffer_release(buffer);
 
   return(html);
 } /* hs_routes_fs_directory_route_render_file_entry_with_media_support */
@@ -256,37 +256,37 @@ static enum HSServeFlowResponse _hs_routes_directory_route_serve(struct HSRoute 
   char                *path_clone = strdup(path);
   char                *dir_name   = basename(path_clone);
 
-  struct StringBuffer *html_buffer = string_buffer_new();
-  string_buffer_append_string(html_buffer, "<!DOCTYPE html>\n"
-                              "<html>\n"
-                              "<head>\n"
-                              "<title>");
-  string_buffer_append_string(html_buffer, dir_name);
-  string_buffer_append_string(html_buffer, "</title>\n"
-                              "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\">\n");
+  struct StringBuffer *html_buffer = stringbuffer_new();
+  stringbuffer_append_string(html_buffer, "<!DOCTYPE html>\n"
+                             "<html>\n"
+                             "<head>\n"
+                             "<title>");
+  stringbuffer_append_string(html_buffer, dir_name);
+  stringbuffer_append_string(html_buffer, "</title>\n"
+                             "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\">\n");
   if (params->router_state->base_path != NULL)
   {
-    string_buffer_append_string(html_buffer, "<base href=\"");
-    string_buffer_append_string(html_buffer, params->router_state->base_path);
-    string_buffer_append_string(html_buffer, "<\">\n");
+    stringbuffer_append_string(html_buffer, "<base href=\"");
+    stringbuffer_append_string(html_buffer, params->router_state->base_path);
+    stringbuffer_append_string(html_buffer, "<\">\n");
   }
   if (context->additional_head_content != NULL)
   {
-    string_buffer_append_string(html_buffer, context->additional_head_content);
+    stringbuffer_append_string(html_buffer, context->additional_head_content);
   }
-  string_buffer_append_string(html_buffer, "</head>\n"
-                              "<body>\n");
-  string_buffer_append_string(html_buffer, "<h1 class=\"header\">Directory: ");
-  string_buffer_append_string(html_buffer, dir_name);
-  string_buffer_append_string(html_buffer, "</h1>\n");
+  stringbuffer_append_string(html_buffer, "</head>\n"
+                             "<body>\n");
+  stringbuffer_append_string(html_buffer, "<h1 class=\"header\">Directory: ");
+  stringbuffer_append_string(html_buffer, dir_name);
+  stringbuffer_append_string(html_buffer, "</h1>\n");
   hs_io_free(path_clone);
 
   struct dirent **file_list    = NULL;
   int           file_list_size = scandir(path, &file_list, 0, alphasort);
   if (file_list_size > 0)
   {
-    struct StringBuffer *dir_buffer   = string_buffer_new();
-    struct StringBuffer *files_buffer = string_buffer_new();
+    struct StringBuffer *dir_buffer   = stringbuffer_new();
+    struct StringBuffer *files_buffer = stringbuffer_new();
     for (int index = 0; index < file_list_size; index++)
     {
       struct dirent *entry = file_list[index];
@@ -328,21 +328,21 @@ static enum HSServeFlowResponse _hs_routes_directory_route_serve(struct HSRoute 
 
     hs_io_free(file_list);
 
-    char *entries_html = string_buffer_to_string(dir_buffer);
-    string_buffer_release(dir_buffer);
-    string_buffer_append_string(html_buffer, entries_html);
+    char *entries_html = stringbuffer_to_string(dir_buffer);
+    stringbuffer_release(dir_buffer);
+    stringbuffer_append_string(html_buffer, entries_html);
     hs_io_free(entries_html);
-    entries_html = string_buffer_to_string(files_buffer);
-    string_buffer_release(files_buffer);
-    string_buffer_append_string(html_buffer, entries_html);
+    entries_html = stringbuffer_to_string(files_buffer);
+    stringbuffer_release(files_buffer);
+    stringbuffer_append_string(html_buffer, entries_html);
     hs_io_free(entries_html);
   }
 
-  string_buffer_append_string(html_buffer, "</body>\n"
-                              "</html>");
+  stringbuffer_append_string(html_buffer, "</body>\n"
+                             "</html>");
 
-  char *html = string_buffer_to_string(html_buffer);
-  string_buffer_release(html_buffer);
+  char *html = stringbuffer_to_string(html_buffer);
+  stringbuffer_release(html_buffer);
 
   params->response->code           = HS_HTTP_RESPONSE_CODE_OK;
   params->response->content_string = html;
@@ -378,7 +378,7 @@ static void _hs_routes_directory_render_entry(struct StringBuffer *buffer, char 
 
   if (entry_html != NULL)
   {
-    string_buffer_append_string(buffer, entry_html);
+    stringbuffer_append_string(buffer, entry_html);
     hs_io_free(entry_html);
   }
   else
@@ -390,10 +390,10 @@ static void _hs_routes_directory_render_entry(struct StringBuffer *buffer, char 
 
 static void _hs_routes_directory_default_renderer(struct StringBuffer *buffer, char *name, char *href)
 {
-  string_buffer_append_string(buffer, "<a class=\"entry\" href=\"");
-  string_buffer_append_string(buffer, href);
-  string_buffer_append_string(buffer, "\">");
-  string_buffer_append_string(buffer, name);
-  string_buffer_append_string(buffer, "</a><br>\n");
+  stringbuffer_append_string(buffer, "<a class=\"entry\" href=\"");
+  stringbuffer_append_string(buffer, href);
+  stringbuffer_append_string(buffer, "\">");
+  stringbuffer_append_string(buffer, name);
+  stringbuffer_append_string(buffer, "</a><br>\n");
 }
 
