@@ -1,5 +1,5 @@
-#ifndef __HS_SOCKET_H__
-#define __HS_SOCKET_H__
+#ifndef HS_SOCKET_H
+#define HS_SOCKET_H
 
 #include <stdbool.h>
 #include <sys/socket.h>

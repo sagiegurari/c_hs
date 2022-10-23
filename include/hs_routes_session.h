@@ -1,5 +1,5 @@
-#ifndef __HS_ROUTES_SESSION_H__
-#define __HS_ROUTES_SESSION_H__
+#ifndef HS_ROUTES_SESSION_H
+#define HS_ROUTES_SESSION_H
 
 #include "hs_route.h"
 

@@ -1,5 +1,5 @@
-#ifndef __HS_IO_H__
-#define __HS_IO_H__
+#ifndef HS_IO_H
+#define HS_IO_H
 
 #include "hs_socket.h"
 #include "stringbuffer.h"

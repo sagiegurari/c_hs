@@ -1,5 +1,5 @@
-#ifndef __HS_ROUTES_RATELIMIT_H__
-#define __HS_ROUTES_RATELIMIT_H__
+#ifndef HS_ROUTES_RATELIMIT_H
+#define HS_ROUTES_RATELIMIT_H
 
 #include "hs_route.h"
 

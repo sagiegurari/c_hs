@@ -1,5 +1,5 @@
-#ifndef __HS_TYPES_ARRAY_H__
-#define __HS_TYPES_ARRAY_H__
+#ifndef HS_TYPES_ARRAY_H
+#define HS_TYPES_ARRAY_H
 
 #include <stdbool.h>
 #include <stddef.h>

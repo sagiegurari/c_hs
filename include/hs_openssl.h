@@ -1,5 +1,5 @@
-#ifndef __HS_OPENSSL_H__
-#define __HS_OPENSSL_H__
+#ifndef HS_OPENSSL_H
+#define HS_OPENSSL_H
 
 #include <stdbool.h>
 

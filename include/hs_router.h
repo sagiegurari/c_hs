@@ -1,5 +1,5 @@
-#ifndef __HS_ROUTER_H__
-#define __HS_ROUTER_H__
+#ifndef HS_ROUTER_H
+#define HS_ROUTER_H
 
 #include "hs_route.h"
 #include "hs_socket.h"

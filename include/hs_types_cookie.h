@@ -1,5 +1,5 @@
-#ifndef __HS_TYPES_COOKIE_H__
-#define __HS_TYPES_COOKIE_H__
+#ifndef HS_TYPES_COOKIE_H
+#define HS_TYPES_COOKIE_H
 
 #include "hs_constants.h"
 #include <stdbool.h>

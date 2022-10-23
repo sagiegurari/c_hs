@@ -5,6 +5,7 @@
 * Maintenance: Update string_buffer dependency
 * Added static to internal functions
 * Adding lint checks as part of build
+* Updated header include guard macro name
 
 ### v0.7.1 (2021-12-09)
 

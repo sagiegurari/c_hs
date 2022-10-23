@@ -1,5 +1,5 @@
-#ifndef __HS_SERVER_H__
-#define __HS_SERVER_H__
+#ifndef HS_SERVER_H
+#define HS_SERVER_H
 
 #include "hs_socket.h"
 #include <netinet/ip.h>

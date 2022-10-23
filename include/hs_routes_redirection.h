@@ -1,5 +1,5 @@
-#ifndef __HS_ROUTES_REDIRECTION_H__
-#define __HS_ROUTES_REDIRECTION_H__
+#ifndef HS_ROUTES_REDIRECTION_H
+#define HS_ROUTES_REDIRECTION_H
 
 #include "hs_route.h"
 

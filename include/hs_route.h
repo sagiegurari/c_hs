@@ -1,5 +1,5 @@
-#ifndef __HS_ROUTE_H__
-#define __HS_ROUTE_H__
+#ifndef HS_ROUTE_H
+#define HS_ROUTE_H
 
 #include "hs_types.h"
 

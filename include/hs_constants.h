@@ -1,5 +1,5 @@
-#ifndef __HS_CONSTANTS_H__
-#define __HS_CONSTANTS_H__
+#ifndef HS_CONSTANTS_H
+#define HS_CONSTANTS_H
 
 enum HSHttpMethod
 {

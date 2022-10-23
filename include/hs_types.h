@@ -1,5 +1,5 @@
-#ifndef __HS_TYPES_H__
-#define __HS_TYPES_H__
+#ifndef HS_TYPES_H
+#define HS_TYPES_H
 
 #include "hs_constants.h"
 #include "hs_socket.h"

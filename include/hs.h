@@ -1,5 +1,5 @@
-#ifndef __HS_H__
-#define __HS_H__
+#ifndef HS_H
+#define HS_H
 
 /**
  * This is the top level header which includes all other headers.

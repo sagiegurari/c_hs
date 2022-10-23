@@ -1,5 +1,5 @@
-#ifndef __HS_PARSER_H__
-#define __HS_PARSER_H__
+#ifndef HS_PARSER_H
+#define HS_PARSER_H
 
 #include "hs_socket.h"
 #include "hs_types.h"

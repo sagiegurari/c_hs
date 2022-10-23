@@ -1,5 +1,5 @@
-#ifndef __HS_ROUTES_PAYLOAD_LIMIT_H__
-#define __HS_ROUTES_PAYLOAD_LIMIT_H__
+#ifndef HS_ROUTES_PAYLOAD_LIMIT_H
+#define HS_ROUTES_PAYLOAD_LIMIT_H
 
 #include "hs_route.h"
 
