@@ -310,14 +310,19 @@ static enum HSServeFlowResponse _hs_routes_directory_route_serve(struct HSRoute 
         char *resource_clone         = strdup(params->request->resource);
         char *resource_last_dir_name = basename(resource_clone);
         char *href                   = fsio_join_paths(resource_last_dir_name, entry->d_name);
+        char *relative_href          = href;
+        if (href[0] == '/' || href[0] == '\\')
+        {
+          relative_href = href + 1;
+        }
 
         if (is_directory)
         {
-          _hs_routes_directory_render_entry(dir_buffer, context->render_directory_entry, entry->d_name, href, context->context);
+          _hs_routes_directory_render_entry(dir_buffer, context->render_directory_entry, entry->d_name, relative_href, context->context);
         }
         else if (fsio_file_exists(entry_path))
         {
-          _hs_routes_directory_render_entry(files_buffer, context->render_file_entry, entry->d_name, href, context->context);
+          _hs_routes_directory_render_entry(files_buffer, context->render_file_entry, entry->d_name, relative_href, context->context);
         }
 
         hs_io_free(resource_clone);

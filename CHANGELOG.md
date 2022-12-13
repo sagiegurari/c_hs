@@ -1,5 +1,9 @@
 ## CHANGELOG
 
+### v0.7.3
+
+* Fix: fix FS directory route relative paths
+
 ### v0.7.2 (2022-12-13)
 
 * Fix: fix FS directory route relative paths
