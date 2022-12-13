@@ -1,7 +1,8 @@
 ## CHANGELOG
 
-### v0.7.2
+### v0.7.2 (2022-12-13)
 
+* Fix: fix FS directory route relative paths
 * Maintenance: Update string_buffer dependency
 * Added static to internal functions
 * Adding lint checks as part of build
