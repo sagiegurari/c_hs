@@ -4,7 +4,6 @@ if [ "$1" = "--clean" ]; then
   rm -Rf ./target
 fi
 
-export X_CMAKE_UNCRUSTIFY_ENABLED=1
 export X_CMAKE_OPEN_SSL=true
 
 echo Creating Target Directory...
