@@ -48,21 +48,13 @@ file(GLOB EXAMPLE_SOURCES "examples/*.c")
 file(GLOB EXAMPLE_PEM_FILES "examples/*.pem")
 
 # lint code
-find_program(CMAKE_CXX_CPPCHECK NAMES cppcheck)
-if (CMAKE_CXX_CPPCHECK)
-  add_custom_target(cppcheck ALL
-    ${CMAKE_CXX_CPPCHECK}
-    --enable=all --inline-suppr --error-exitcode=1 --suppress=missingIncludeSystem -I ./include/ ./src/*.c
-    WORKING_DIRECTORY "${X_CMAKE_PROJECT_ROOT_DIR}")
-endif()
+utils_cppcheck(INCLUDE_DIRECTORY "./include/" SOURCES "./src/*.c" WORKING_DIRECTORY "${X_CMAKE_PROJECT_ROOT_DIR}")
 
 # format code
-if(DEFINED ENV{X_CMAKE_UNCRUSTIFY_ENABLED})
-  add_custom_target(uncrustify ALL
-    uncrustify
-    -c ${X_CMAKE_PROJECT_ROOT_DIR}/uncrustify.cfg
-    --no-backup ${SOURCES} ${HEADER_SOURCES} ${TEST_SOURCES} ${EXAMPLE_SOURCES})
-endif()
+utils_uncrustify(
+  CONFIG_FILE "${X_CMAKE_PROJECT_ROOT_DIR}/uncrustify.cfg"
+  SOURCES ${SOURCES} ${HEADER_SOURCES} ${TEST_SOURCES} ${EXAMPLE_SOURCES}
+)
 
 # create static library
 add_library(${CMAKE_PROJECT_NAME} STATIC ${SOURCES} ${STRINGFN_SOURCES} ${STRING_BUFFER_SOURCES} ${VECTOR_SOURCES} ${FSIO_SOURCES} ${INI_SOURCES})
@@ -96,9 +88,13 @@ set_target_properties(example PROPERTIES COMPILE_FLAGS "${X_CMAKE_C_FLAGS}")
 # tests
 include(CTest)
 
+utils_setup_test_lib(
+  SOURCES "${COMMON_TEST_SOURCES}"
+  COMPILATION_FLAGS "${X_CMAKE_C_FLAGS}"
+)
 utils_setup_c_all_tests(
-  ADDITIONAL_SOURCES "${COMMON_TEST_SOURCES}"
   COMPILATION_FLAGS "${X_CMAKE_C_FLAGS}"
   BINARY_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+  LIBRARIES "Test"
 )
 
