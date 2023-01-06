@@ -17,7 +17,7 @@ enum HSServeFlowResponse _test_serve(struct HSRoute *route, struct HSServeFlowPa
 
   params->response->code = HS_HTTP_RESPONSE_CODE_OK;
 
-  struct HSSession *session = (struct HSSession *)hs_types_array_data_pair_get_by_key(params->route_state->data_pairs, HS_DEFAULT_SESSION_STATE_NAME);
+  struct HSSession *session = (struct HSSession *)hashtable_get(params->route_state->data, HS_DEFAULT_SESSION_STATE_NAME);
   assert_true(session != NULL);
   assert_true(session->id != NULL);
   if (global_session_id == NULL)

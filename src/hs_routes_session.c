@@ -1,4 +1,5 @@
 #include "fsio.h"
+#include "hs_external_libs.h"
 #include "hs_io.h"
 #include "hs_routes_common.h"
 #include "hs_routes_session.h"
@@ -326,7 +327,7 @@ static enum HSServeFlowResponse _hs_routes_session_route_serve(struct HSRoute *r
   }
 
   // add session to route data
-  hs_types_array_data_pair_add(params->route_state->data_pairs, strdup(context->session_name), session);
+  hashtable_insert(params->route_state->data, strdup(context->session_name), session, hs_io_release_hashtable_key);
 
   // setup post response callback to write the session back to storage
   struct HSSessionCallbackContext *callback_context = malloc(sizeof(struct HSSessionCallbackContext));
@@ -379,7 +380,7 @@ static void _hs_routes_session_callback_run(struct HSPostResponseCallback *callb
     return;
   }
 
-  void *data = hs_types_array_data_pair_get_by_key(context->route_state->data_pairs, context->route_context->session_name);
+  void *data = hashtable_get(context->route_state->data, context->route_context->session_name);
   if (data == NULL)
   {
     return;

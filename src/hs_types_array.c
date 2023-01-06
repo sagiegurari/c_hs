@@ -15,11 +15,6 @@ struct HSArrayStringPair
   struct Vector *vector;
 };
 
-struct HSArrayDataPair
-{
-  struct Vector *vector;
-};
-
 static void _hs_types_array_pair_release(struct HSArrayPair *, bool);
 static void _hs_types_array_release(struct Vector *, bool);
 static bool _hs_types_array_pair_add(struct Vector *, char *, void *);
@@ -114,94 +109,6 @@ void hs_types_array_string_pair_remove_by_key(struct HSArrayStringPair *array, c
   }
 
   _hs_types_array_pair_remove_by_key(array->vector, key, true);
-}
-
-struct HSArrayDataPair *hs_types_array_data_pair_new()
-{
-  struct HSArrayDataPair *array = malloc(sizeof(struct HSArrayDataPair));
-
-  array->vector = vector_new();
-
-  return(array);
-}
-
-
-void hs_types_array_data_pair_release(struct HSArrayDataPair *array)
-{
-  if (array == NULL)
-  {
-    return;
-  }
-
-  _hs_types_array_release(array->vector, false);
-
-  hs_io_free(array);
-}
-
-
-size_t hs_types_array_data_pair_count(struct HSArrayDataPair *array)
-{
-  if (array == NULL)
-  {
-    return(0);
-  }
-
-  return(vector_size(array->vector));
-}
-
-
-bool hs_types_array_data_pair_add(struct HSArrayDataPair *array, char *key, void *value)
-{
-  if (array == NULL)
-  {
-    return(false);
-  }
-
-  return(_hs_types_array_pair_add(array->vector, key, value));
-}
-
-
-char *hs_types_array_data_pair_get_key(struct HSArrayDataPair *array, size_t index)
-{
-  if (array == NULL)
-  {
-    return(NULL);
-  }
-
-  return(_hs_types_array_pair_get_key(array->vector, index));
-}
-
-
-void *hs_types_array_data_pair_get_value(struct HSArrayDataPair *array, size_t index)
-{
-  if (array == NULL)
-  {
-    return(NULL);
-  }
-
-  return(_hs_types_array_pair_get_value(array->vector, index));
-}
-
-
-void *hs_types_array_data_pair_get_by_key(struct HSArrayDataPair *array, char *key)
-{
-  if (array == NULL)
-  {
-    return(NULL);
-  }
-
-  return(_hs_types_array_pair_get_by_key(array->vector, key));
-}
-
-
-void hs_types_array_data_pair_remove_by_key(struct HSArrayDataPair *array, char *key)
-{
-  if (array == NULL)
-  {
-    return;
-  }
-
-  _hs_types_array_pair_remove_by_key(array->vector, key, false);
 }
 
 

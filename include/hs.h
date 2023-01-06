@@ -9,6 +9,7 @@
  */
 
 #include "hs_constants.h"
+#include "hs_external_libs.h"
 #include "hs_parser.h"
 #include "hs_route.h"
 #include "hs_router.h"

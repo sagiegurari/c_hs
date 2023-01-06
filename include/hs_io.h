@@ -60,5 +60,10 @@ bool hs_io_write_string_to_socket(struct HSSocket *, char *, size_t);
  */
 bool hs_io_write_file_to_socket(struct HSSocket *, char *);
 
+/**
+ * Used by hashtables to release only the key.
+ */
+void hs_io_release_hashtable_key(char *, void *);
+
 #endif
 
