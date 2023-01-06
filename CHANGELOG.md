@@ -1,5 +1,9 @@
 ## CHANGELOG
 
+### v0.8.0 (2022-01-06)
+
+* Enhancement: migrated data array in state to hashtable
+
 ### v0.7.3 (2022-12-13)
 
 * Fix: fix FS directory route relative paths
