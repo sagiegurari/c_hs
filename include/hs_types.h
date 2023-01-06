@@ -22,8 +22,8 @@ struct HSRouteFlowState
 {
   // string key/value pairs (all values will be freed at end of request)
   struct HSArrayStringPair *string_pairs;
-  // data array (values are not freed at end of request and must be manually freed via post response callback)
-  struct HSArrayDataPair   *data_pairs;
+  // data table (values are freed at end of request based on provided release function)
+  struct HashTable         *data;
 };
 
 struct HSHttpRequest

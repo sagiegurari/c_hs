@@ -234,6 +234,7 @@ bool hs_io_write_file_to_socket(struct HSSocket *socket, char *filename)
       done = false;
       break;
     }
+    void hs_io_release_hashtable_key(char *, void *);
 
     buffer[read] = '\0';
 
@@ -249,6 +250,18 @@ bool hs_io_write_file_to_socket(struct HSSocket *socket, char *filename)
 
   return(done);
 } /* hs_io_write_file_to_socket */
+
+
+void hs_io_release_hashtable_key(char *key, void *data)
+{
+  hs_io_free(key);
+
+  if (data == NULL)
+  {
+    // for static check
+    return;
+  }
+}
 
 
 static char *_hs_io_read_line_from_buffer(struct StringBuffer *buffer, bool *eof)

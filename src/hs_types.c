@@ -1,3 +1,4 @@
+#include "hs_external_libs.h"
 #include "hs_io.h"
 #include "hs_types.h"
 #include "stringfn.h"
@@ -244,7 +245,7 @@ struct HSRouteFlowState *hs_types_route_flow_state_new()
   struct HSRouteFlowState *state = malloc(sizeof(struct HSRouteFlowState));
 
   state->string_pairs = hs_types_array_string_pair_new();
-  state->data_pairs   = hs_types_array_data_pair_new();
+  state->data         = hashtable_new();
 
   return(state);
 }
@@ -258,7 +259,7 @@ void hs_types_route_flow_state_release(struct HSRouteFlowState *state)
   }
 
   hs_types_array_string_pair_release(state->string_pairs);
-  hs_types_array_data_pair_release(state->data_pairs);
+  hashtable_release(state->data);
 
   hs_io_free(state);
 }

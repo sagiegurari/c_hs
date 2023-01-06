@@ -1,5 +1,13 @@
 #include "stringfn.h"
 #include "test.h"
+#include <string.h>
+
+
+void _test_release_both(char *key, void *value)
+{
+  hs_io_free(key);
+  hs_io_free(value);
+}
 
 
 void _test_set_cookies(struct HSCookies *cookies)
@@ -24,11 +32,11 @@ void _test_set_strings(struct HSArrayStringPair *array)
 }
 
 
-void _test_set_data(struct HSArrayDataPair *array)
+void _test_set_data(struct HashTable *data)
 {
   for (size_t index = 0; index < 5; index++)
   {
-    bool added = hs_types_array_data_pair_add(array, stringfn_new_empty_string(), "test");
+    bool added = hashtable_insert(data, stringfn_new_empty_string(), strdup("test"), _test_release_both);
     assert_true(added);
   }
 }
@@ -54,7 +62,7 @@ void test_impl()
   _test_set_strings(params->request->headers);
   _test_set_strings(params->response->headers);
   _test_set_strings(params->route_state->string_pairs);
-  _test_set_data(params->route_state->data_pairs);
+  _test_set_data(params->route_state->data);
 
   params->request->domain        = stringfn_new_empty_string();
   params->request->resource      = stringfn_new_empty_string();

@@ -35,6 +35,11 @@ jobs:
       with:
         repository: sagiegurari/c_vector
         path: target/c_vector
+    - name: Checkout c_hashtable
+      uses: actions/checkout@v2
+      with:
+        repository: sagiegurari/c_hashtable
+        path: target/c_hashtable
     - name: Checkout c_fsio
       uses: actions/checkout@v2
       with:
