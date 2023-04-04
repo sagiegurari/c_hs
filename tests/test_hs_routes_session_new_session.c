@@ -1,3 +1,4 @@
+#include "hs_external_libs.h"
 #include "test.h"
 #include <stdlib.h>
 #include <string.h>
@@ -10,7 +11,7 @@ void test_impl()
   hs_routes_session_release_session(session);
 
   session = hs_routes_session_new_session();
-  hs_types_array_string_pair_add(session->string_pairs, strdup("key"), strdup("value"));
+  hashtable_insert(session->data, "key", "value", NULL);
   hs_routes_session_release_session(session);
 } /* test_impl */
 

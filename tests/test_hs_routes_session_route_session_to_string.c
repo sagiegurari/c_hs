@@ -17,9 +17,9 @@ void test_impl()
   hs_io_free(session_string);
 
   session = hs_routes_session_new_session();
-  hs_types_array_string_pair_add(session->string_pairs, strdup("test1"), strdup("value1"));
-  hs_types_array_string_pair_add(session->string_pairs, strdup("test2"), strdup("value2"));
-  hs_types_array_string_pair_add(session->string_pairs, strdup("test3"), strdup("value3"));
+  hashtable_insert(session->data, "test1", "value1", NULL);
+  hashtable_insert(session->data, "test2", "value2", NULL);
+  hashtable_insert(session->data, "test3", "value3", NULL);
   session_string = hs_routes_session_route_session_to_string(session);
   assert_string_equal(session_string, "[session]\n"
                       "test1=value1\n"

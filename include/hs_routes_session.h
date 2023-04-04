@@ -1,6 +1,7 @@
 #ifndef HS_ROUTES_SESSION_H
 #define HS_ROUTES_SESSION_H
 
+#include "hs_external_libs.h"
 #include "hs_route.h"
 
 #define HS_DEFAULT_SESSION_COOKIE_NAME    "sc"
@@ -8,8 +9,9 @@
 
 struct HSSession
 {
-  char                     *id;
-  struct HSArrayStringPair *string_pairs;
+  char             *id;
+  // should only hold string values to enable serialization
+  struct HashTable *data;
 };
 
 /**
@@ -17,7 +19,8 @@ struct HSSession
  * in a specific cookie to persist it for future requests.
  * All provided data will be released when the route is released.
  */
-struct HSRoute *hs_routes_session_route_new(char * /* cookie name */, char * /* session name in route context */, char * (*generate_cookie_id)(void * /* context */), char * (*to_string)(struct HSSession *), void (*from_string)(struct HSSession *, char *), char * (*read_from_storage)(char * /* ID */, void * /* context */), bool (*write_to_storage)(char * /* ID */, char * /* serialized session */, void * /* context */), void (*release_context)(void *), void * /* context */);
+struct HSRoute *hs_routes_session_route_new(char * /* cookie name */, char * /* session name in route context */, char * (*generate_cookie_id)(void * /* context */), void (*modify_cookie)(struct HSCookie *), char * (*to_string)(struct HSSession *), void (*from_string)(struct HSSession *, char *), char * (*read_from_storage)(char * /* ID */, void * /* context */), bool (*write_to_storage)(char * /* ID */, char * /* serialized session */, void * /* context */), void (*release_context)(void *), void * /* context */
+                                            );
 
 /**
  * The session route with file based storage and ini serialization format.

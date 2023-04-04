@@ -1,5 +1,4 @@
 #include "fsio.h"
-#include "hs_external_libs.h"
 #include "hs_io.h"
 #include "hs_routes_common.h"
 #include "hs_routes_session.h"
@@ -22,6 +21,7 @@ struct HSSessionRouteContext
   char *cookie_name;
   char *session_name;
   char * (*generate_cookie_id)(void *);
+  void (*modify_cookie)(struct HSCookie *);
   char * (*to_string)(struct HSSession *);
   void (*from_string)(struct HSSession *, char *);
   char * (*read_from_storage)(char *, void *);
@@ -37,7 +37,7 @@ struct HSSessionCallbackContext
   struct HSRouteFlowState       *route_state;
 };
 
-struct HSRoute *hs_routes_session_route_new(char *cookie_name, char *session_name, char * (*generate_cookie_id)(void *), char * (*to_string)(struct HSSession *), void (*from_string)(struct HSSession *, char *), char * (*read_from_storage)(char *, void *), bool (*write_to_storage)(char *, char *, void *), void (*release_context)(void *), void *route_context)
+struct HSRoute *hs_routes_session_route_new(char *cookie_name, char *session_name, char * (*generate_cookie_id)(void *), void (*modify_cookie)(struct HSCookie *), char * (*to_string)(struct HSSession *), void (*from_string)(struct HSSession *, char *), char * (*read_from_storage)(char *, void *), bool (*write_to_storage)(char *, char *, void *), void (*release_context)(void *), void *route_context)
 {
   if (  cookie_name == NULL
      || session_name == NULL
@@ -56,6 +56,7 @@ struct HSRoute *hs_routes_session_route_new(char *cookie_name, char *session_nam
   context->cookie_name        = cookie_name;
   context->session_name       = session_name;
   context->generate_cookie_id = generate_cookie_id;
+  context->modify_cookie      = modify_cookie;
   context->to_string          = to_string;
   context->from_string        = from_string;
   context->read_from_storage  = read_from_storage;
@@ -75,11 +76,12 @@ struct HSRoute *hs_routes_session_route_new_default()
   return(hs_routes_session_route_new(strdup(HS_DEFAULT_SESSION_COOKIE_NAME),
                                      strdup(HS_DEFAULT_SESSION_STATE_NAME),
                                      hs_routes_session_route_generate_cookie_id,
+                                     NULL, // modify cookie
                                      hs_routes_session_route_session_to_string,
                                      hs_routes_session_route_session_from_string,
                                      hs_routes_session_route_session_read_from_file_based_storage,
                                      hs_routes_session_route_session_write_to_file_based_storage,
-                                     NULL,
+                                     NULL, // release route context
                                      NULL));
 }
 
@@ -87,8 +89,8 @@ struct HSSession *hs_routes_session_new_session()
 {
   struct HSSession *session = malloc(sizeof(struct HSSession));
 
-  session->id           = NULL;
-  session->string_pairs = hs_types_array_string_pair_new();
+  session->id   = NULL;
+  session->data = hashtable_new();
 
   return(session);
 }
@@ -102,7 +104,7 @@ void hs_routes_session_release_session(struct HSSession *session)
   }
 
   hs_io_free(session->id);
-  hs_types_array_string_pair_release(session->string_pairs);
+  hashtable_release(session->data);
 
   hs_io_free(session);
 }
@@ -132,24 +134,27 @@ char *hs_routes_session_route_generate_cookie_id(void *context)
 
 char *hs_routes_session_route_session_to_string(struct HSSession *session)
 {
-  if (session == NULL || session->string_pairs == NULL)
+  if (session == NULL || session->data == NULL)
   {
     return(NULL);
   }
 
-  size_t count = hs_types_array_string_pair_count(session->string_pairs);
+  size_t count = hashtable_size(session->data);
   if (!count)
   {
     return(strdup(""));
   }
 
-  struct IniKeyValue **key_value_pairs = malloc(sizeof(struct IniKeyValue *) * count);
+  struct HashTableEntries entries           = hashtable_entries(session->data);
+  struct IniKeyValue      **key_value_pairs = malloc(sizeof(struct IniKeyValue *) * count);
   for (size_t index = 0; index < count; index++)
   {
     key_value_pairs[index]        = malloc(sizeof(struct IniKeyValue));
-    key_value_pairs[index]->key   = strdup(hs_types_array_string_pair_get_key(session->string_pairs, index));
-    key_value_pairs[index]->value = strdup(hs_types_array_string_pair_get_value(session->string_pairs, index));
+    key_value_pairs[index]->key   = strdup(entries.keys[index]);
+    key_value_pairs[index]->value = strdup(entries.values[index]);
   }
+  hs_io_free(entries.keys);
+  hs_io_free(entries.values);
 
   struct IniSection *section = malloc(sizeof(struct IniSection));
   section->name            = strdup(HS_ROUTES_SESSION_INI_SECTION_NAME);
@@ -172,7 +177,7 @@ char *hs_routes_session_route_session_to_string(struct HSSession *session)
 
 void hs_routes_session_route_session_from_string(struct HSSession *session, char *session_string)
 {
-  if (session == NULL || session_string == NULL || session->string_pairs == NULL)
+  if (session == NULL || session_string == NULL || session->data == NULL)
   {
     return;
   }
@@ -196,7 +201,7 @@ void hs_routes_session_route_session_from_string(struct HSSession *session, char
           struct IniKeyValue *ini_key_value = section->key_value_pairs[pair_index];
           if (ini_key_value != NULL && ini_key_value->key != NULL && ini_key_value->value != NULL)
           {
-            hs_types_array_string_pair_add(session->string_pairs, strdup(ini_key_value->key), strdup(ini_key_value->value));
+            hashtable_insert(session->data, strdup(ini_key_value->key), strdup(ini_key_value->value), hs_io_release_hashtable_key_and_value);
           }
         }
 
@@ -323,6 +328,10 @@ static enum HSServeFlowResponse _hs_routes_session_route_serve(struct HSRoute *r
   cookie = hs_routes_session_new_cookie(strdup(context->cookie_name), strdup(session_id));
   if (cookie != NULL)
   {
+    if (context->modify_cookie != NULL)
+    {
+      context->modify_cookie(cookie);
+    }
     hs_types_cookies_add(params->response->cookies, cookie);
   }
 

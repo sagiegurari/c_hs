@@ -264,6 +264,13 @@ void hs_io_release_hashtable_key(char *key, void *data)
 }
 
 
+void hs_io_release_hashtable_key_and_value(char *key, void *data)
+{
+  hs_io_free(key);
+  hs_io_free(data);
+}
+
+
 static char *_hs_io_read_line_from_buffer(struct StringBuffer *buffer, bool *eof)
 {
   size_t length = stringbuffer_get_content_size(buffer);

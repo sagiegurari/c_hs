@@ -23,15 +23,14 @@ enum HSServeFlowResponse _test_serve(struct HSRoute *route, struct HSServeFlowPa
   if (global_session_id == NULL)
   {
     global_session_id = strdup(session->id);
-    hs_types_array_string_pair_add(session->string_pairs, strdup("counter"), stringfn_format("%d", global_counter));
+    hashtable_insert(session->data, strdup("counter"), stringfn_format("%d", global_counter), hs_io_release_hashtable_key_and_value);
   }
   else
   {
     assert_string_equal(global_session_id, session->id);
-    assert_num_equal(atoi(hs_types_array_string_pair_get_by_key(session->string_pairs, "counter")), global_counter);
-    hs_types_array_string_pair_remove_by_key(session->string_pairs, "counter");
+    assert_num_equal(atoi(hashtable_get(session->data, "counter")), global_counter);
     global_counter++;
-    hs_types_array_string_pair_add(session->string_pairs, strdup("counter"), stringfn_format("%d", global_counter));
+    hashtable_insert(session->data, strdup("counter"), stringfn_format("%d", global_counter), hs_io_release_hashtable_key_and_value);
   }
 
   return(HS_SERVE_FLOW_RESPONSE_DONE);

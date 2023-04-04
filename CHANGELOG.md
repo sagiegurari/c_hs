@@ -1,5 +1,10 @@
 ## CHANGELOG
 
+### v0.9.0 (2023-04-04)
+
+* Enhancement: new modify_cookie function for session route
+* Enhancement: migrated data array in session to hashtable
+
 ### v0.8.0 (2022-01-06)
 
 * Enhancement: migrated data array in state to hashtable
