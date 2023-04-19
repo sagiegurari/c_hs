@@ -2,6 +2,7 @@
 #include "hs_openssl.h"
 #include "hs_router.h"
 #include "hs_server.h"
+#include "threadpool.h"
 #include "vector.h"
 #include <stdlib.h>
 
@@ -14,9 +15,21 @@ struct HSServerInternal
 #endif
 };
 
+struct HsServerOnConnectionParams
+{
+  struct HSServer *server;
+  struct HSSocket *socket;
+  void            *context;
+  bool            (*should_stop_server)(struct HSServer *, void *);
+  bool            (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t, void *);
+};
+
+static struct HSServer *_hs_server_new(struct HSServerConnectionHandler *);
 static struct HSSocket *_hs_server_plain_socket_accept(struct HSServer *, struct HSSocket *, struct sockaddr *, int);
 static void _hs_server_socket_listen_loop(struct HSServer *, struct HSSocket *, struct sockaddr_in, void *, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t, void *));
-static void _hs_server_single_thread_on_connection(struct HSServer *, struct HSSocket *, void *, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t, void *));
+static void _hs_server_single_thread_on_connection(struct HSServerConnectionHandler *, struct HSServer *, struct HSSocket *, void *, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t, void *));
+static void _hs_server_multi_thread_on_connection(struct HSServerConnectionHandler *, struct HSServer *, struct HSSocket *, void *, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t, void *));
+static void _hs_server_multi_thread_on_connection_in_background(void *);
 
 #ifdef HS_SSL_SUPPORTED
 
@@ -26,37 +39,32 @@ static struct HSSocket *_hs_server_ssl_socket_accept(struct HSServer *, struct H
 
 struct HSServer *hs_server_new()
 {
-  struct HSServer *server = malloc(sizeof(struct HSServer));
-
-  server->router                       = hs_router_new();
-  server->accept_recv_timeout_seconds  = -1;
-  server->request_recv_timeout_seconds = -1;
-  server->create_socket_and_listen     = hs_server_create_socket_and_listen;
-  server->listen_loop                  = _hs_server_socket_listen_loop;
-
-  server->connection_handler = hs_server_connection_handler_new();
-
-  server->ssl_info                       = malloc(sizeof(struct HSServerSSLInfo));
-  server->ssl_info->private_key_pem_file = NULL;
-  server->ssl_info->certificate_pem_file = NULL;
-
-  server->internal                 = malloc(sizeof(struct HSServerInternal));
-  server->internal->running        = false;
-  server->internal->stop_requested = false;
-
-#ifdef HS_SSL_SUPPORTED
-  server->internal->ssl_context = NULL;
-#endif
-
-  // by default setup single thread implementation
-  server->connection_handler->on_connection = _hs_server_single_thread_on_connection;
-
-  return(server);
+  return(hs_server_new_single_thread());
 }
 
 struct HSServer *hs_server_new_single_thread()
 {
-  return(hs_server_new());
+  struct HSServerConnectionHandler *connection_handler = hs_server_connection_handler_new();
+
+  connection_handler->on_connection = _hs_server_single_thread_on_connection;
+
+  return(_hs_server_new(connection_handler));
+}
+
+struct HSServer *hs_server_new_multi_thread(size_t thread_pool_size)
+{
+  if (!thread_pool_size)
+  {
+    return(NULL);
+  }
+
+  struct HSServerConnectionHandler *connection_handler = hs_server_connection_handler_new();
+  struct ThreadPoolOptions         options             = threadpool_new_default_options();
+  options.max_size                  = thread_pool_size;
+  connection_handler->extension     = threadpool_new_with_options(options, NULL /* api */);
+  connection_handler->on_connection = _hs_server_multi_thread_on_connection;
+
+  return(_hs_server_new(connection_handler));
 }
 
 
@@ -277,6 +285,33 @@ struct sockaddr_in hs_server_init_ipv4_address(uint16_t port)
   return(address);
 }
 
+static struct HSServer *_hs_server_new(struct HSServerConnectionHandler *connection_handler)
+{
+  struct HSServer *server = malloc(sizeof(struct HSServer));
+
+  server->router                       = hs_router_new();
+  server->accept_recv_timeout_seconds  = -1;
+  server->request_recv_timeout_seconds = -1;
+  server->create_socket_and_listen     = hs_server_create_socket_and_listen;
+  server->listen_loop                  = _hs_server_socket_listen_loop;
+
+  server->connection_handler = connection_handler;
+
+  server->ssl_info                       = malloc(sizeof(struct HSServerSSLInfo));
+  server->ssl_info->private_key_pem_file = NULL;
+  server->ssl_info->certificate_pem_file = NULL;
+
+  server->internal                 = malloc(sizeof(struct HSServerInternal));
+  server->internal->running        = false;
+  server->internal->stop_requested = false;
+
+#ifdef HS_SSL_SUPPORTED
+  server->internal->ssl_context = NULL;
+#endif
+
+  return(server);
+}
+
 static struct HSSocket *_hs_server_plain_socket_accept(struct HSServer *server, struct HSSocket *server_socket, struct sockaddr *address, int address_size)
 {
   if (  server == NULL
@@ -299,7 +334,7 @@ static void _hs_server_socket_listen_loop(struct HSServer *server, struct HSSock
     struct HSSocket *client_socket = server->accept(server, server_socket, (struct sockaddr *)&address, address_size);
     if (client_socket != NULL && hs_socket_set_recv_timeout_in_seconds(client_socket, server->request_recv_timeout_seconds))
     {
-      server->connection_handler->on_connection(server, client_socket, context, should_stop_server, should_stop_for_connection);
+      server->connection_handler->on_connection(server->connection_handler, server, client_socket, context, should_stop_server, should_stop_for_connection);
     }
     else
     {
@@ -317,8 +352,65 @@ static void _hs_server_socket_listen_loop(struct HSServer *server, struct HSSock
 }
 
 
-static void _hs_server_single_thread_on_connection(struct HSServer *server, struct HSSocket *socket, void *context, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t, void *))
+static void _hs_server_single_thread_on_connection(struct HSServerConnectionHandler *connection_handler, struct HSServer *server, struct HSSocket *socket, void *context, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t, void *))
 {
+  if (  connection_handler == NULL
+     || server == NULL
+     || server->router == NULL
+     || !socket)
+  {
+    return;
+  }
+
+  hs_router_serve_forever(server->router, socket, context, should_stop_for_connection);
+
+  hs_socket_close_and_release(socket);
+
+  if (should_stop_server != NULL && !server->internal->stop_requested)
+  {
+    server->internal->stop_requested = should_stop_server(server, context);
+  }
+}
+
+
+static void _hs_server_multi_thread_on_connection(struct HSServerConnectionHandler *connection_handler, struct HSServer *server, struct HSSocket *socket, void *context, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t, void *))
+{
+  if (  connection_handler == NULL
+     || server == NULL
+     || server->router == NULL
+     || !socket
+     || connection_handler->extension == NULL)
+  {
+    return;
+  }
+
+  struct HsServerOnConnectionParams *params = malloc(sizeof(struct HsServerOnConnectionParams));
+  params->server                     = server;
+  params->socket                     = socket;
+  params->context                    = context;
+  params->should_stop_server         = should_stop_server;
+  params->should_stop_for_connection = should_stop_for_connection;
+
+  struct ThreadPool *pool = (struct ThreadPool *)connection_handler->extension;
+  threadpool_invoke(pool, _hs_server_multi_thread_on_connection_in_background, params);
+}
+
+
+static void _hs_server_multi_thread_on_connection_in_background(void *args)
+{
+  if (args == NULL)
+  {
+    return;
+  }
+
+  struct HsServerOnConnectionParams *params = ( struct HsServerOnConnectionParams *)args;
+  struct HSServer                   *server = params->server;
+  struct HSSocket                   *socket = params->socket;
+  void                              *context = params->context;
+  bool                              (*should_stop_server)(struct HSServer *, void *) = params->should_stop_server;
+  bool                              (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t, void *) = params->should_stop_for_connection;
+  hs_io_free(params);
+
   if (  server == NULL
      || server->router == NULL
      || !socket)

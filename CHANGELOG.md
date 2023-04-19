@@ -1,5 +1,9 @@
 ## CHANGELOG
 
+### v0.10.0
+
+* Enhancement: support multi threaded server via internal thread pool
+
 ### v0.9.0 (2023-04-04)
 
 * Enhancement: new modify_cookie function for session route

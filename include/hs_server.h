@@ -11,7 +11,7 @@ struct HSServerInternal;
 struct HSServerConnectionHandler
 {
   void (*init)(struct HSServerConnectionHandler *);
-  void (*on_connection)(struct HSServer *, struct HSSocket *, void * /* context */, bool (*should_stop_server)(struct HSServer *, void * /* context */), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t /* request counter */, void * /* context */));
+  void (*on_connection)(struct HSServerConnectionHandler *, struct HSServer *, struct HSSocket *, void * /* context */, bool (*should_stop_server)(struct HSServer *, void * /* context */), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t /* request counter */, void * /* context */));
   void (*stop_connections)(struct HSServerConnectionHandler *);
   void (*release)(struct HSServerConnectionHandler *);
   void *extension;
@@ -58,6 +58,12 @@ struct HSServer *hs_server_new(void);
  * The server will run all requests on the current thread.
  */
 struct HSServer *hs_server_new_single_thread();
+
+/**
+ * Creates a new fully initialized server and returns it.
+ * The server will run all requests via thread pool.
+ */
+struct HSServer *hs_server_new_multi_thread(size_t /* thread pool size */);
 
 /**
  * Frees all memory used by the server.

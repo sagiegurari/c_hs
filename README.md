@@ -20,7 +20,7 @@ The requirements were very basic and therefore this server is not really product
 It is lacking many features, such as:
 
 * HTTP 2
-* No built in multi threaded support (but expandable to enable that).
+* Web Socket Support
 * Configuration Based
 
 It does however provide support for many core capabilities.
@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
 {
   // This is our main server
   // It has a built in router
-  struct HSServer *server = hs_server_new_single_thread();
+  struct HSServer *server = hs_server_new_multi_thread(5);
 
   server->accept_recv_timeout_seconds  = 60;
   server->request_recv_timeout_seconds = 30;

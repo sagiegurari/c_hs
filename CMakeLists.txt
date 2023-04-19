@@ -12,6 +12,7 @@ include("target/cmake-modules/src/utils.cmake")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_C_FLAGS -pthread)
 if(NOT WIN32)
   set(X_CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall -Wextra -Wcast-align -Wunused -Wshadow -Wpedantic")
 endif()
@@ -37,8 +38,10 @@ add_external_lib("vector")
 add_external_lib("hashtable")
 add_external_lib("fsio")
 add_external_lib("ini")
+add_external_lib("thread_lock")
+add_external_lib("thread_pool")
 
-include_directories(include "${STRINGFN_INCLUDE}" "${STRING_BUFFER_INCLUDE}" "${VECTOR_INCLUDE}" "${HASHTABLE_INCLUDE}" "${FSIO_INCLUDE}" "${INI_INCLUDE}")
+include_directories(include "${STRINGFN_INCLUDE}" "${STRING_BUFFER_INCLUDE}" "${VECTOR_INCLUDE}" "${HASHTABLE_INCLUDE}" "${FSIO_INCLUDE}" "${INI_INCLUDE}" "${THREAD_LOCK_INCLUDE}" "${THREAD_POOL_INCLUDE}")
 
 # define all sources
 file(GLOB SOURCES "src/*.c")
@@ -58,7 +61,7 @@ utils_uncrustify(
 )
 
 # create static library
-add_library(${CMAKE_PROJECT_NAME} STATIC ${SOURCES} ${STRINGFN_SOURCES} ${STRING_BUFFER_SOURCES} ${VECTOR_SOURCES} ${HASHTABLE_SOURCES} ${FSIO_SOURCES} ${INI_SOURCES})
+add_library(${CMAKE_PROJECT_NAME} STATIC ${SOURCES} ${STRINGFN_SOURCES} ${STRING_BUFFER_SOURCES} ${VECTOR_SOURCES} ${HASHTABLE_SOURCES} ${FSIO_SOURCES} ${INI_SOURCES} ${THREAD_LOCK_SOURCES} ${THREAD_POOL_SOURCES})
 if(NOT WIN32)
   set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES COMPILE_FLAGS "${X_CMAKE_C_FLAGS} -Wconversion")
 endif()
