@@ -23,6 +23,7 @@ struct HSRoutesDirectoryServeContext
   bool (*filter)(char *, bool);
   char * (*render_directory_entry)(char *, char *, void *);
   char * (*render_file_entry)(char *, char *, void *);
+  char * (*create_href)(struct HSServeFlowParams *params, char *, char *);
   void *context;
 };
 
@@ -32,6 +33,7 @@ static enum HSServeFlowResponse _hs_routes_directory_route_serve(struct HSRoute 
 static void _hs_routes_directory_route_release(struct HSRoute *);
 static void _hs_routes_directory_render_entry(struct StringBuffer *, char * (*render)(char *, char *, void *), char *, char *, void *);
 static void _hs_routes_directory_default_renderer(struct StringBuffer *, char *, char *);
+static char *_hs_routes_fs_default_create_href(struct HSServeFlowParams *, char *, char *);
 
 struct HSRoute *hs_routes_fs_file_route_new(char *base_directory)
 {
@@ -64,6 +66,7 @@ struct HSRoute *hs_routes_fs_directory_route_new(char *base_directory)
            NULL, // filter
            NULL, // render directory
            NULL, // render file
+           NULL, // create href
            NULL  // context
            ));
 }
@@ -76,6 +79,7 @@ struct HSRoute *hs_routes_fs_directory_route_new_with_media_support(char *base_d
            NULL,                                                              // filter
            NULL,                                                              // render directory
            hs_routes_fs_directory_route_render_file_entry_with_media_support, // render file
+           NULL,                                                              // create href
            NULL                                                               // context
            ));
 }
@@ -85,6 +89,7 @@ struct HSRoute *hs_routes_fs_directory_route_new_with_options(char *base_directo
                                                               bool (*filter)(char *, bool),
                                                               char * (*render_directory_entry)(char *, char *, void *),
                                                               char * (*render_file_entry)(char *, char *, void *),
+                                                              char * (*create_href)(struct HSServeFlowParams *params, char *, char *),
                                                               void *context)
 {
   struct HSRoute *route = hs_route_new();
@@ -98,10 +103,14 @@ struct HSRoute *hs_routes_fs_directory_route_new_with_options(char *base_directo
   route_context->filter                  = filter;
   route_context->render_directory_entry  = render_directory_entry;
   route_context->render_file_entry       = render_file_entry;
-  route_context->context                 = context;
-  route->extension                       = route_context;
-
-  route->release = _hs_routes_directory_route_release;
+  route_context->create_href             = create_href;
+  if (route_context->create_href == NULL)
+  {
+    route_context->create_href = _hs_routes_fs_default_create_href;
+  }
+  route_context->context = context;
+  route->extension       = route_context;
+  route->release         = _hs_routes_directory_route_release;
 
   return(route);
 }
@@ -307,10 +316,8 @@ static enum HSServeFlowResponse _hs_routes_directory_route_serve(struct HSRoute 
 
       if (!filter_out)
       {
-        char *resource_clone         = strdup(params->request->resource);
-        char *resource_last_dir_name = basename(resource_clone);
-        char *href                   = fsio_join_paths(resource_last_dir_name, entry->d_name);
-        char *relative_href          = href;
+        char *href          = context->create_href(params, context->base_directory, entry->d_name);
+        char *relative_href = href;
         if (href[0] == '/' || href[0] == '\\')
         {
           relative_href = href + 1;
@@ -325,7 +332,6 @@ static enum HSServeFlowResponse _hs_routes_directory_route_serve(struct HSRoute 
           _hs_routes_directory_render_entry(files_buffer, context->render_file_entry, entry->d_name, relative_href, context->context);
         }
 
-        hs_io_free(resource_clone);
         hs_io_free(href);
       }
 
@@ -402,5 +408,12 @@ static void _hs_routes_directory_default_renderer(struct StringBuffer *buffer, c
   stringbuffer_append_string(buffer, "\">");
   stringbuffer_append_string(buffer, name);
   stringbuffer_append_string(buffer, "</a><br>\n");
+}
+
+
+static char *_hs_routes_fs_default_create_href(struct HSServeFlowParams *params, char *base_directory, char *entry)
+{
+  hs_io_noop(base_directory);
+  return(fsio_join_paths(params->request->resource, entry));
 }
 

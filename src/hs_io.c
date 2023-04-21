@@ -313,3 +313,13 @@ static char *_hs_io_read_line_from_buffer(struct StringBuffer *buffer, bool *eof
   return(line);
 } /* _hs_io_read_line_from_buffer */
 
+
+void hs_io_noop(void *ptr)
+{
+  // used to make compiler happy
+  if (ptr == NULL)
+  {
+    return;
+  }
+}
+

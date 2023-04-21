@@ -38,7 +38,7 @@ struct HSRoute *hs_routes_fs_directory_route_new_with_media_support(char * /* ba
  * The base directory and optional additional_head_content value will be released with the route.
  * The optional context will not be released with the route.
  */
-struct HSRoute *hs_routes_fs_directory_route_new_with_options(char * /* base directory */, char * /* additional_head_content */, bool (*filter)(char * /* name */, bool /* is directory */), char * (*render_directory_entry)(char * /* name */, char * /* href */, void * /* context */), char * (*render_file_entry)(char * /* name */, char * /* href */, void * /* context */), void *context);
+struct HSRoute *hs_routes_fs_directory_route_new_with_options(char * /* base directory */, char * /* additional_head_content */, bool (*filter)(char * /* name */, bool /* is directory */), char * (*render_directory_entry)(char * /* name */, char * /* href */, void * /* context */), char * (*render_file_entry)(char * /* name */, char * /* href */, void * /* context */), char * (*create_href)(struct HSServeFlowParams *params, char * /* base directory */, char * /* entry */), void *context);
 
 /**
  * The render_file_entry used by the directory with media support route as standalone function.

@@ -5,6 +5,8 @@
 #include <netinet/ip.h>
 #include <sys/time.h>
 
+#define HS_SERVER_DEFAULT_THREAD_POOL_SIZE    20
+
 struct HSServer;
 struct HSServerInternal;
 
@@ -47,7 +49,7 @@ struct HSServer
 
 /**
  * Creates a new server and returns it.
- * The server is by default setup as single thread implementation
+ * The server is by default setup as multi threaded implementation
  * but can be mutated after this call to allow custom connection handler
  * functions.
  */
@@ -62,6 +64,8 @@ struct HSServer *hs_server_new_single_thread();
 /**
  * Creates a new fully initialized server and returns it.
  * The server will run all requests via thread pool.
+ * In case threads are not supported during compilation, this function will
+ * return a single thread server.
  */
 struct HSServer *hs_server_new_multi_thread(size_t /* thread pool size */);
 

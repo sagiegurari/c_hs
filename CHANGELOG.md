@@ -1,8 +1,10 @@
 ## CHANGELOG
 
-### v0.10.0
+### v0.10.0 (2023-04-21)
 
 * Enhancement: support multi threaded server via internal thread pool
+* Enhancement: make default new server as multi threaded
+* Fix: fix FS directory route relative paths
 
 ### v0.9.0 (2023-04-04)
 

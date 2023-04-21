@@ -12,7 +12,10 @@ include("target/cmake-modules/src/utils.cmake")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_C_FLAGS -pthread)
+if(NOT "$ENV{X_CMAKE_NO_THREADS}" STREQUAL "true")
+  add_definitions(-DHS_THREADS_ENABLED)
+  set(CMAKE_C_FLAGS -pthread)
+endif()
 if(NOT WIN32)
   set(X_CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall -Wextra -Wcast-align -Wunused -Wshadow -Wpedantic")
 endif()
@@ -30,7 +33,7 @@ macro(add_external_lib)
     TAG_NAME ${ARGV1}
     LIBRARY_NAME ${ARGV0}
     LIBRARY_PARENT_DIRECTORY target
-  )
+    )
 endmacro(add_external_lib)
 add_external_lib("stringfn")
 add_external_lib("string_buffer")
@@ -38,8 +41,10 @@ add_external_lib("vector")
 add_external_lib("hashtable")
 add_external_lib("fsio")
 add_external_lib("ini")
-add_external_lib("thread_lock")
-add_external_lib("thread_pool")
+if(NOT "$ENV{X_CMAKE_NO_THREADS}" STREQUAL "true")
+  add_external_lib("thread_lock")
+  add_external_lib("thread_pool")
+endif()
 
 include_directories(include "${STRINGFN_INCLUDE}" "${STRING_BUFFER_INCLUDE}" "${VECTOR_INCLUDE}" "${HASHTABLE_INCLUDE}" "${FSIO_INCLUDE}" "${INI_INCLUDE}" "${THREAD_LOCK_INCLUDE}" "${THREAD_POOL_INCLUDE}")
 
@@ -58,7 +63,7 @@ utils_cppcheck(INCLUDE_DIRECTORY "./include/" SOURCES "./src/*.c" WORKING_DIRECT
 utils_uncrustify(
   CONFIG_FILE "${X_CMAKE_PROJECT_ROOT_DIR}/uncrustify.cfg"
   SOURCES ${SOURCES} ${HEADER_SOURCES} ${TEST_SOURCES} ${EXAMPLE_SOURCES}
-)
+  )
 
 # create static library
 add_library(${CMAKE_PROJECT_NAME} STATIC ${SOURCES} ${STRINGFN_SOURCES} ${STRING_BUFFER_SOURCES} ${VECTOR_SOURCES} ${HASHTABLE_SOURCES} ${FSIO_SOURCES} ${INI_SOURCES} ${THREAD_LOCK_SOURCES} ${THREAD_POOL_SOURCES})
@@ -95,10 +100,10 @@ include(CTest)
 utils_setup_test_lib(
   SOURCES "${COMMON_TEST_SOURCES}"
   COMPILATION_FLAGS "${X_CMAKE_C_FLAGS}"
-)
+  )
 utils_setup_c_all_tests(
   COMPILATION_FLAGS "${X_CMAKE_C_FLAGS}"
   BINARY_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
   LIBRARIES "Test"
-)
+  )
 

@@ -112,12 +112,7 @@ void hs_routes_session_release_session(struct HSSession *session)
 
 char *hs_routes_session_route_generate_cookie_id(void *context)
 {
-  // context is not supported. wrap the function and pass NULL if needed.
-  if (context != NULL)
-  {
-    return(NULL);
-  }
-
+  hs_io_noop(context);
   struct StringBuffer *buffer = stringbuffer_new();
 
   stringbuffer_append_int(buffer, rand());
@@ -216,8 +211,8 @@ void hs_routes_session_route_session_from_string(struct HSSession *session, char
 
 char *hs_routes_session_route_session_read_from_file_based_storage(char *session_id, void *context)
 {
-  // context is not supported. wrap the function and pass NULL if needed.
-  if (session_id == NULL || context != NULL)
+  hs_io_noop(context);
+  if (session_id == NULL)
   {
     return(NULL);
   }
@@ -238,8 +233,8 @@ char *hs_routes_session_route_session_read_from_file_based_storage(char *session
 
 bool hs_routes_session_route_session_write_to_file_based_storage(char *session_id, char *session_string, void *context)
 {
-  // context is not supported. wrap the function and pass NULL if needed.
-  if (session_id == NULL || context != NULL)
+  hs_io_noop(context);
+  if (session_id == NULL)
   {
     return(false);
   }

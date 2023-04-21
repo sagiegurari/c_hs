@@ -2,7 +2,6 @@
 #include "hs_openssl.h"
 #include "hs_router.h"
 #include "hs_server.h"
-#include "threadpool.h"
 #include "vector.h"
 #include <stdlib.h>
 
@@ -28,8 +27,6 @@ static struct HSServer *_hs_server_new(struct HSServerConnectionHandler *);
 static struct HSSocket *_hs_server_plain_socket_accept(struct HSServer *, struct HSSocket *, struct sockaddr *, int);
 static void _hs_server_socket_listen_loop(struct HSServer *, struct HSSocket *, struct sockaddr_in, void *, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t, void *));
 static void _hs_server_single_thread_on_connection(struct HSServerConnectionHandler *, struct HSServer *, struct HSSocket *, void *, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t, void *));
-static void _hs_server_multi_thread_on_connection(struct HSServerConnectionHandler *, struct HSServer *, struct HSSocket *, void *, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t, void *));
-static void _hs_server_multi_thread_on_connection_in_background(void *);
 
 #ifdef HS_SSL_SUPPORTED
 
@@ -37,9 +34,18 @@ static struct HSSocket *_hs_server_ssl_socket_accept(struct HSServer *, struct H
 
 #endif
 
+#ifdef HS_THREADS_ENABLED
+
+#include "threadpool.h"
+
+static void _hs_server_multi_thread_on_connection(struct HSServerConnectionHandler *, struct HSServer *, struct HSSocket *, void *, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t, void *));
+static void _hs_server_multi_thread_on_connection_in_background(void *);
+
+#endif
+
 struct HSServer *hs_server_new()
 {
-  return(hs_server_new_single_thread());
+  return(hs_server_new_multi_thread(HS_SERVER_DEFAULT_THREAD_POOL_SIZE));
 }
 
 struct HSServer *hs_server_new_single_thread()
@@ -58,6 +64,7 @@ struct HSServer *hs_server_new_multi_thread(size_t thread_pool_size)
     return(NULL);
   }
 
+#ifdef HS_THREADS_ENABLED
   struct HSServerConnectionHandler *connection_handler = hs_server_connection_handler_new();
   struct ThreadPoolOptions         options             = threadpool_new_default_options();
   options.max_size                  = thread_pool_size;
@@ -65,6 +72,9 @@ struct HSServer *hs_server_new_multi_thread(size_t thread_pool_size)
   connection_handler->on_connection = _hs_server_multi_thread_on_connection;
 
   return(_hs_server_new(connection_handler));
+#else
+  return(hs_server_new_single_thread());
+#endif
 }
 
 
@@ -372,6 +382,8 @@ static void _hs_server_single_thread_on_connection(struct HSServerConnectionHand
   }
 }
 
+#ifdef HS_THREADS_ENABLED
+
 
 static void _hs_server_multi_thread_on_connection(struct HSServerConnectionHandler *connection_handler, struct HSServer *server, struct HSSocket *socket, void *context, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t, void *))
 {
@@ -427,6 +439,7 @@ static void _hs_server_multi_thread_on_connection_in_background(void *args)
     server->internal->stop_requested = should_stop_server(server, context);
   }
 }
+#endif
 
 #ifdef HS_SSL_SUPPORTED
 #include <openssl/err.h>

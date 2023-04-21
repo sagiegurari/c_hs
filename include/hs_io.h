@@ -70,5 +70,7 @@ void hs_io_release_hashtable_key(char *, void *);
  */
 void hs_io_release_hashtable_key_and_value(char *, void *);
 
+void hs_io_noop(void *);
+
 #endif
 
