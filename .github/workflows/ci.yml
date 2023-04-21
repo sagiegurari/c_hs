@@ -50,12 +50,12 @@ jobs:
       with:
         repository: sagiegurari/c_ini
         path: target/c_ini
-   - name: Checkout c_thread_lock
+    - name: Checkout c_thread_lock
       uses: actions/checkout@v2
       with:
         repository: sagiegurari/c_thread_lock
         path: target/c_thread_lock
-   - name: Checkout c_thread_pool
+    - name: Checkout c_thread_pool
       uses: actions/checkout@v2
       with:
         repository: sagiegurari/c_thread_pool
