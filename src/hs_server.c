@@ -40,6 +40,7 @@ static struct HSSocket *_hs_server_ssl_socket_accept(struct HSServer *, struct H
 
 static void _hs_server_multi_thread_on_connection(struct HSServerConnectionHandler *, struct HSServer *, struct HSSocket *, void *, bool (*should_stop_server)(struct HSServer *, void *), bool (*should_stop_for_connection)(struct HSRouter *, struct HSSocket *, size_t, void *));
 static void _hs_server_multi_thread_on_connection_in_background(void *);
+static void _hs_server_multi_thread_release(struct HSServerConnectionHandler *);
 
 #endif
 
@@ -70,6 +71,7 @@ struct HSServer *hs_server_new_multi_thread(size_t thread_pool_size)
   options.max_size                  = thread_pool_size;
   connection_handler->extension     = threadpool_new_with_options(options, NULL /* api */);
   connection_handler->on_connection = _hs_server_multi_thread_on_connection;
+  connection_handler->release       = _hs_server_multi_thread_release;
 
   return(_hs_server_new(connection_handler));
 #else
@@ -438,6 +440,18 @@ static void _hs_server_multi_thread_on_connection_in_background(void *args)
   {
     server->internal->stop_requested = should_stop_server(server, context);
   }
+}
+
+
+static void _hs_server_multi_thread_release(struct HSServerConnectionHandler *connection_handler)
+{
+  if (connection_handler == NULL || connection_handler->extension == NULL)
+  {
+    return;
+  }
+
+  struct ThreadPool *pool = (struct ThreadPool *)connection_handler->extension;
+  threadpool_release(pool);
 }
 #endif
 
