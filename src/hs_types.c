@@ -25,7 +25,7 @@ struct HSServeFlowParams *hs_types_serve_flow_params_new_pre_populated(struct HS
   params->request          = request;
   params->response         = hs_types_http_response_new();
   params->callbacks        = hs_types_post_response_callbacks_new(1);
-  params->route_state      = hs_types_route_flow_state_new(1);
+  params->route_state      = hs_types_route_flow_state_new();
   params->router_state     = hs_types_router_flow_state_new();
   params->connection_state = NULL;
 

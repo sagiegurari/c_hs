@@ -15,7 +15,7 @@ struct HSRoutesSecurityResponseHeaders
 /**
  * Returns a new instance of the security response headers with default values.
  */
-struct HSRoutesSecurityResponseHeaders *hs_routes_security_headers_response_headers_new();
+struct HSRoutesSecurityResponseHeaders *hs_routes_security_headers_response_headers_new(void);
 
 /**
  * Adds security related response headers.

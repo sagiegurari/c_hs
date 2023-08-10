@@ -180,7 +180,7 @@ void hs_types_router_flow_state_release(struct HSRouterFlowState *);
 /**
  * Creates and returns a new state struct.
  */
-struct HSRouteFlowState *hs_types_route_flow_state_new();
+struct HSRouteFlowState *hs_types_route_flow_state_new(void);
 
 /**
  * Frees all memory used by the provided struct, including
@@ -191,7 +191,7 @@ void hs_types_route_flow_state_release(struct HSRouteFlowState *);
 /**
  * Creates and returns a new state struct.
  */
-struct HSServerConnectionState *hs_types_server_connection_state_new();
+struct HSServerConnectionState *hs_types_server_connection_state_new(void);
 
 /**
  * Frees all memory used by the provided struct, including

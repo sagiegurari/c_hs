@@ -59,7 +59,7 @@ struct HSServer *hs_server_new(void);
  * Creates a new fully initialized server and returns it.
  * The server will run all requests on the current thread.
  */
-struct HSServer *hs_server_new_single_thread();
+struct HSServer *hs_server_new_single_thread(void);
 
 /**
  * Creates a new fully initialized server and returns it.
@@ -87,7 +87,7 @@ bool hs_server_serve(struct HSServer *, struct sockaddr_in, void * /* context */
 /**
  * Returns new connection handler.
  */
-struct HSServerConnectionHandler *hs_server_connection_handler_new();
+struct HSServerConnectionHandler *hs_server_connection_handler_new(void);
 
 /**
  * Releases the connection handler by calling the release function (if exists)

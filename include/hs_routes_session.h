@@ -25,12 +25,12 @@ struct HSRoute *hs_routes_session_route_new(char * /* cookie name */, char * /* 
 /**
  * The session route with file based storage and ini serialization format.
  */
-struct HSRoute *hs_routes_session_route_new_default();
+struct HSRoute *hs_routes_session_route_new_default(void);
 
 /**
  * Creates a new session struct.
  */
-struct HSSession *hs_routes_session_new_session();
+struct HSSession *hs_routes_session_new_session(void);
 
 /**
  * Releases the session and all its content.

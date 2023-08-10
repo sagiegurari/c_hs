@@ -1,5 +1,9 @@
 ## CHANGELOG
 
+### v0.10.1
+
+* Maintenance: Adding void to input parameters where missing
+
 ### v0.10.0 (2023-04-21)
 
 * Enhancement: support multi threaded server via internal thread pool

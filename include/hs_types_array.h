@@ -9,7 +9,7 @@ struct HSArrayStringPair;
 /**
  * Creates and returns a new array struct.
  */
-struct HSArrayStringPair *hs_types_array_string_pair_new();
+struct HSArrayStringPair *hs_types_array_string_pair_new(void);
 
 /**
  * Frees all memory used by the provided struct, including
