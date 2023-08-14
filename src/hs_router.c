@@ -20,7 +20,7 @@ static enum HSServeFlowResponse _hs_router_as_route_serve(struct HSRoute *, stru
 static void                           _hs_router_as_route_release(struct HSRoute *);
 static void _hs_router_run_callbacks(struct HSPostResponseCallbacks *);
 
-struct HSRouter *hs_router_new()
+struct HSRouter *hs_router_new(void)
 {
   struct HSRouter *router = malloc(sizeof(struct HSRouter));
 

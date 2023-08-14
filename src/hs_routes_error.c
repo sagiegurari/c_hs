@@ -4,7 +4,7 @@
 static enum HSServeFlowResponse _hs_routes_404_not_found_serve(struct HSRoute *, struct HSServeFlowParams *);
 static enum HSServeFlowResponse _hs_routes_411_length_required_serve(struct HSRoute *, struct HSServeFlowParams *);
 
-struct HSRoute                  *hs_routes_error_404_not_found_route_new()
+struct HSRoute                  *hs_routes_error_404_not_found_route_new(void)
 {
   struct HSRoute *route = hs_routes_common_serve_all_route_new();
 
@@ -13,7 +13,7 @@ struct HSRoute                  *hs_routes_error_404_not_found_route_new()
   return(route);
 }
 
-struct HSRoute *hs_routes_error_411_length_required_route_new()
+struct HSRoute *hs_routes_error_411_length_required_route_new(void)
 {
   struct HSRoute *route = hs_route_new();
 

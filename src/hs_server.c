@@ -44,12 +44,12 @@ static void _hs_server_multi_thread_release(struct HSServerConnectionHandler *);
 
 #endif
 
-struct HSServer *hs_server_new()
+struct HSServer *hs_server_new(void)
 {
   return(hs_server_new_multi_thread(HS_SERVER_DEFAULT_THREAD_POOL_SIZE));
 }
 
-struct HSServer *hs_server_new_single_thread()
+struct HSServer *hs_server_new_single_thread(void)
 {
   struct HSServerConnectionHandler *connection_handler = hs_server_connection_handler_new();
 
@@ -203,7 +203,7 @@ bool hs_server_serve(struct HSServer *server, struct sockaddr_in address, void *
   return(true);
 } /* hs_server_serve */
 
-struct HSServerConnectionHandler *hs_server_connection_handler_new()
+struct HSServerConnectionHandler *hs_server_connection_handler_new(void)
 {
   struct HSServerConnectionHandler *handler = malloc(sizeof(struct HSServerConnectionHandler));
 

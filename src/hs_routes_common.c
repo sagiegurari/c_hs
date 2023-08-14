@@ -12,7 +12,7 @@ void hs_routes_common_extension_release(struct HSRoute *route)
   hs_io_free(route->extension);
 }
 
-struct HSRoute *hs_routes_common_serve_all_route_new()
+struct HSRoute *hs_routes_common_serve_all_route_new(void)
 {
   struct HSRoute *route = hs_route_new();
 

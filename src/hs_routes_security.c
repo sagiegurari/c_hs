@@ -18,7 +18,7 @@ static void _hs_routes_security_headers_route_release(struct HSRoute *);
 static enum HSServeFlowResponse _hs_routes_security_basic_auth_route_serve(struct HSRoute *, struct HSServeFlowParams *);
 static void _hs_routes_security_basic_auth_route_release(struct HSRoute *);
 
-struct HSRoutesSecurityResponseHeaders *hs_routes_security_headers_response_headers_new()
+struct HSRoutesSecurityResponseHeaders *hs_routes_security_headers_response_headers_new(void)
 {
   struct HSRoutesSecurityResponseHeaders *headers = malloc(sizeof(struct HSRoutesSecurityResponseHeaders));
 

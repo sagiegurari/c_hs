@@ -10,7 +10,7 @@ struct HSCookies
   struct Vector *vector;
 };
 
-struct HSCookie *hs_types_cookie_new()
+struct HSCookie *hs_types_cookie_new(void)
 {
   struct HSCookie *cookie = malloc(sizeof(struct HSCookie));
 
@@ -44,7 +44,7 @@ void hs_types_cookie_release(struct HSCookie *cookie)
   hs_io_free(cookie);
 }
 
-struct HSCookies *hs_types_cookies_new()
+struct HSCookies *hs_types_cookies_new(void)
 {
   struct HSCookies *cookies = malloc(sizeof(struct HSCookies));
 

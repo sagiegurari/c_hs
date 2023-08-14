@@ -71,7 +71,7 @@ struct HSRoute *hs_routes_session_route_new(char *cookie_name, char *session_nam
   return(route);
 }
 
-struct HSRoute *hs_routes_session_route_new_default()
+struct HSRoute *hs_routes_session_route_new_default(void)
 {
   return(hs_routes_session_route_new(strdup(HS_DEFAULT_SESSION_COOKIE_NAME),
                                      strdup(HS_DEFAULT_SESSION_STATE_NAME),
@@ -85,7 +85,7 @@ struct HSRoute *hs_routes_session_route_new_default()
                                      NULL));
 }
 
-struct HSSession *hs_routes_session_new_session()
+struct HSSession *hs_routes_session_new_session(void)
 {
   struct HSSession *session = malloc(sizeof(struct HSSession));
 

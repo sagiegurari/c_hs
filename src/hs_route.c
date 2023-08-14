@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct HSRoute *hs_route_new()
+struct HSRoute *hs_route_new(void)
 {
   struct HSRoute *route = malloc(sizeof(struct HSRoute));
 

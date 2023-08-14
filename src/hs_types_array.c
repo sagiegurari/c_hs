@@ -23,7 +23,7 @@ static void *_hs_types_array_pair_get_value(struct Vector *, size_t);
 static void *_hs_types_array_pair_get_by_key(struct Vector *, char *);
 static void _hs_types_array_pair_remove_by_key(struct Vector *, char *, bool);
 
-struct HSArrayStringPair *hs_types_array_string_pair_new()
+struct HSArrayStringPair *hs_types_array_string_pair_new(void)
 {
   struct HSArrayStringPair *array = malloc(sizeof(struct HSArrayStringPair));
 

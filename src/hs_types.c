@@ -11,7 +11,7 @@ struct HSHttpRequestPayload
   struct HSIOHttpRequestPayload *payload;
 };
 
-struct HSServeFlowParams *hs_types_serve_flow_params_new()
+struct HSServeFlowParams *hs_types_serve_flow_params_new(void)
 {
   struct HSHttpRequest *request = hs_types_http_request_new();
 
@@ -49,7 +49,7 @@ void hs_types_serve_flow_params_release(struct HSServeFlowParams *params)
   hs_io_free(params);
 }
 
-struct HSHttpRequest *hs_types_http_request_new()
+struct HSHttpRequest *hs_types_http_request_new(void)
 {
   struct HSHttpRequest *request = malloc(sizeof(struct HSHttpRequest));
 
@@ -99,7 +99,7 @@ void hs_types_http_request_release(struct HSHttpRequest *request)
 }
 
 
-struct HSHttpResponse *hs_types_http_response_new()
+struct HSHttpResponse *hs_types_http_response_new(void)
 {
   struct HSHttpResponse *response = malloc(sizeof(struct HSHttpResponse));
 
@@ -129,7 +129,7 @@ void hs_types_http_response_release(struct HSHttpResponse *response)
   hs_io_free(response);
 }
 
-struct HSPostResponseCallback *hs_types_post_response_callback_new()
+struct HSPostResponseCallback *hs_types_post_response_callback_new(void)
 {
   struct HSPostResponseCallback *callback = malloc(sizeof(struct HSPostResponseCallback));
 
@@ -217,7 +217,7 @@ bool hs_types_post_response_callbacks_add(struct HSPostResponseCallbacks *callba
   return(true);
 }
 
-struct HSRouterFlowState *hs_types_router_flow_state_new()
+struct HSRouterFlowState *hs_types_router_flow_state_new(void)
 {
   struct HSRouterFlowState *state = malloc(sizeof(struct HSRouterFlowState));
 
@@ -240,7 +240,7 @@ void hs_types_router_flow_state_release(struct HSRouterFlowState *state)
   hs_io_free(state);
 }
 
-struct HSRouteFlowState *hs_types_route_flow_state_new()
+struct HSRouteFlowState *hs_types_route_flow_state_new(void)
 {
   struct HSRouteFlowState *state = malloc(sizeof(struct HSRouteFlowState));
 
@@ -264,7 +264,7 @@ void hs_types_route_flow_state_release(struct HSRouteFlowState *state)
   hs_io_free(state);
 }
 
-struct HSServerConnectionState *hs_types_server_connection_state_new()
+struct HSServerConnectionState *hs_types_server_connection_state_new(void)
 {
   struct HSServerConnectionState *state = malloc(sizeof(struct HSServerConnectionState));
 
