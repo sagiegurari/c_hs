@@ -30,6 +30,7 @@ It does however provide support for many core capabilities.
 <a name="usage"></a>
 ## Usage
 
+<!-- example source start -->
 ```c
 #include "hs.h"
 #include <stdio.h>
@@ -242,6 +243,7 @@ bool _fs_basic_auth(char *auth_value, void *context)
   return(!strcmp(auth_value, "bXl1c2VyOm15cGFzc3dvcmQ=")); // myuser:mypassword
 }
 ```
+<!-- example source end -->
 
 ## Contributing
 See [contributing guide](.github/CONTRIBUTING.md)
