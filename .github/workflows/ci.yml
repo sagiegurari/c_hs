@@ -14,70 +14,23 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Setup Env
-      run: cmake -E make_directory ${{runner.workspace}}/target
-    - name: Checkout cmake-modules
-      uses: actions/checkout@v2
-      with:
-        repository: sagiegurari/cmake-modules
-        path: target/cmake-modules
-    - name: Checkout c_stringfn
-      uses: actions/checkout@v2
-      with:
-        repository: sagiegurari/c_stringfn
-        path: target/c_stringfn
-    - name: Checkout c_string_buffer
-      uses: actions/checkout@v2
-      with:
-        repository: sagiegurari/c_string_buffer
-        path: target/c_string_buffer
-    - name: Checkout c_vector
-      uses: actions/checkout@v2
-      with:
-        repository: sagiegurari/c_vector
-        path: target/c_vector
-    - name: Checkout c_hashtable
-      uses: actions/checkout@v2
-      with:
-        repository: sagiegurari/c_hashtable
-        path: target/c_hashtable
-    - name: Checkout c_fsio
-      uses: actions/checkout@v2
-      with:
-        repository: sagiegurari/c_fsio
-        path: target/c_fsio
-    - name: Checkout c_ini
-      uses: actions/checkout@v2
-      with:
-        repository: sagiegurari/c_ini
-        path: target/c_ini
-    - name: Checkout c_thread_lock
-      uses: actions/checkout@v2
-      with:
-        repository: sagiegurari/c_thread_lock
-        path: target/c_thread_lock
-    - name: Checkout c_thread_pool
-      uses: actions/checkout@v2
-      with:
-        repository: sagiegurari/c_thread_pool
-        path: target/c_thread_pool
+      run: cmake -E make_directory target
     - name: Configure
       shell: bash
-      working-directory: ${{runner.workspace}}/target
+      working-directory: target
       run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
-      env:
-        X_CMAKE_OPEN_SSL: ${{ matrix.open_ssl }}
     - name: Build
       shell: bash
-      working-directory: ${{runner.workspace}}/target
+      working-directory: target
       run: cmake --build . --config $BUILD_TYPE
     - name: Test
       shell: bash
-      working-directory: ${{runner.workspace}}/target
+      working-directory: target
       run: ctest -C $BUILD_TYPE --output-on-failure
     - name: Memory Leak Test
-      if: matrix.open_ssl == false
+      if: matrix.os == 'ubuntu-latest'
       shell: bash
-      working-directory: ${{runner.workspace}}/target
+      working-directory: target
       run: |
         sudo apt update
         sudo apt install -y valgrind --fix-missing
