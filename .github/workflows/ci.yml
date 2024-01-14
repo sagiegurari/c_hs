@@ -19,6 +19,8 @@ jobs:
       shell: bash
       working-directory: target
       run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+      env:
+        X_CMAKE_OPEN_SSL: ${{ matrix.open_ssl }}
     - name: Build
       shell: bash
       working-directory: target
